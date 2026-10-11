@@ -1,0 +1,14 @@
+# Entornos y cachés
+.venv/
+**/.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Configuración local (no subir secretos)
+.env
+**/.env
+.foundry/
+
+# Respaldos locales
+**/_respaldo_plantilla/

@@ -1,0 +1,71 @@
+{
+  "descripcion": "Regresión Logística (C=1, class_weight=balanced) entrenada con el dataset SINTÉTICO del proyecto MALI (semilla 42). Probabilidad de NO continuar = 1 - sigmoide(z).",
+  "metricas_prueba": {
+    "F1_deserta": 0.627,
+    "ROC_AUC": 0.799
+  },
+  "numericas": [
+    "Edad",
+    "Numero_Cursos_Previos",
+    "Porcentaje_Asistencia",
+    "Promedio_Evaluaciones",
+    "Pagos_Atrasados",
+    "Porcentaje_Cursos_Completados",
+    "Numero_Inasistencias",
+    "Continuidad_Previa"
+  ],
+  "medianas": {
+    "Edad": 21.0,
+    "Numero_Cursos_Previos": 1.0,
+    "Porcentaje_Asistencia": 78.1,
+    "Promedio_Evaluaciones": 13.5,
+    "Pagos_Atrasados": 0.0,
+    "Porcentaje_Cursos_Completados": 67.2,
+    "Numero_Inasistencias": 3.0,
+    "Continuidad_Previa": 0.0
+  },
+  "medias": {
+    "Edad": 23.24875,
+    "Numero_Cursos_Previos": 1.614,
+    "Porcentaje_Asistencia": 77.78775,
+    "Promedio_Evaluaciones": 13.4788,
+    "Pagos_Atrasados": 0.44,
+    "Porcentaje_Cursos_Completados": 64.38136250000001,
+    "Numero_Inasistencias": 3.22975,
+    "Continuidad_Previa": 0.408
+  },
+  "escalas": {
+    "Edad": 13.220235377537724,
+    "Numero_Cursos_Previos": 1.267084843252416,
+    "Porcentaje_Asistencia": 12.837464116308174,
+    "Promedio_Evaluaciones": 2.7764420685474422,
+    "Pagos_Atrasados": 0.6805512471518953,
+    "Porcentaje_Cursos_Completados": 21.3044979732824,
+    "Numero_Inasistencias": 2.455445975276182,
+    "Continuidad_Previa": 0.49146312170904544
+  },
+  "categorias_tipo_programa": [
+    "Curso",
+    "Diplomado",
+    "Taller"
+  ],
+  "moda_tipo_programa": "Curso",
+  "coeficientes": [
+    -0.012018335341674543,
+    0.182581899223719,
+    0.7153158863359942,
+    0.5372834648325566,
+    -0.28847510014485633,
+    0.2283730855500122,
+    0.05697209325040512,
+    0.31698075717417745,
+    0.055420643667307465,
+    0.3213762903590086,
+    -0.16050467353678063
+  ],
+  "intercepto": 0.21771355135551085,
+  "umbrales": {
+    "Medio": 0.4,
+    "Alto": 0.6
+  }
+}
