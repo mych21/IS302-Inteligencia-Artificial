@@ -12,3 +12,4 @@ __pycache__/
 
 # Respaldos locales
 **/_respaldo_plantilla/
+**/datos/matriculas.csv
