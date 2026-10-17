@@ -124,10 +124,25 @@ def _sin_informacion() -> str:
 
 def _indicacion_rag(pregunta: str, resultados) -> str:
     return ("Responde la pregunta usando SOLO estos fragmentos de la base de conocimiento del MALI. No agregues "
-            "datos que no estén en ellos (cursos, horarios, precios, fechas, requisitos). Si los fragmentos no "
+            "datos que no estén en ellos (cursos, horarios, precios, fechas, requisitos) ni explicaciones generales que "
+            "no figuren en el texto, y no repitas párrafos. Si los fragmentos no "
             f"responden exactamente lo que se pregunta, dilo y sugiere {CANAL}. Responde en máximo 6 líneas y "
             "termina con la línea «Fuente:» copiando la fuente del fragmento usado.\n\n"
             + conocimiento.como_texto(resultados))
+
+
+def _ficha_curso(curso: str) -> Respuesta:
+    """Información de un curso armada solo con las fuentes: su categoría (base general) y sus horarios
+    (vacantes.csv). Evita que el modelo complete con conocimiento general."""
+    doc = conocimiento.documento_que_menciona(curso)
+    partes = []
+    if doc:
+        partes.append(f"**{curso}** forma parte de: {doc.titulo.lower()} de MALI Educación.")
+    partes.append(v.vacantes_para_usuario(curso))
+    if doc:
+        partes.append(f"Fuente de la oferta: {doc.fuente}")
+    acceso.registrar("curso", "vacantes.csv", "atendida")
+    return Respuesta("curso", "\n\n".join(partes), fuentes=([doc.id] if doc else []) + ["vacantes.csv"])
 
 
 # ------------------------------------------------------------------ orquestación
@@ -172,10 +187,20 @@ def _decidir(pregunta: str) -> Respuesta:
                          fuentes=["alumnos_sinteticos.csv"])
 
     cursos = matricula.detectar_cursos(texto)
-    if (v._pide_vacantes(texto) and not consulta_de_politica) or (cursos and not _pide_dato_inexistente(texto)
-                                   and re.search(r"horario|cuando|inicia|empieza|turno", v._normalizar(texto))):
-        if len(cursos) == 1:
-            matricula.estado["ultimo_curso"] = cursos[0]
+    norm = v._normalizar(texto)
+    if len(cursos) == 1:
+        matricula.estado["ultimo_curso"] = cursos[0]
+    pide_horario = bool(re.search(r"horario|cuando|inicia|empieza|turno|dias|hora\b|sede", norm))
+    seguimiento = (not cursos and matricula.estado.get("ultimo_curso") and len(norm.split()) <= 6
+                   and (pide_horario or v._pide_vacantes(texto)))
+    if seguimiento:                      # «¿y los horarios?» después de preguntar por un curso
+        cursos = [matricula.estado["ultimo_curso"]]
+    if len(cursos) == 1 and not _pide_dato_inexistente(texto) and not consulta_de_politica \
+            and (seguimiento or pide_horario or v._pide_vacantes(texto)
+                 or re.search(r"informacion|info|detalle|sobre|ensenan|tienen|hay|ofrecen|dictan|curso de|taller de",
+                              norm) or len(norm.split()) <= 3):
+        return _ficha_curso(cursos[0])
+    if v._pide_vacantes(texto) and not consulta_de_politica:
         acceso.registrar("vacantes", "vacantes.csv", "atendida")
         return Respuesta("vacantes", v.vacantes_para_usuario(texto), fuentes=["vacantes.csv"])
 

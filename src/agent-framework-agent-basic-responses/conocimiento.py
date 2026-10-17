@@ -101,6 +101,12 @@ def _cobertura(consulta: str, indices: list[int]) -> float:
     return cubiertas / len(palabras)
 
 
+def documento_que_menciona(nombre: str) -> Documento | None:
+    """Primer documento de la base general cuyo texto menciona el nombre (p. ej. un curso)."""
+    clave = v._normalizar(nombre).strip()
+    return next((d for d in documentos() if clave in v._normalizar(d.texto)), None)
+
+
 def como_texto(resultados: list[tuple[Documento, float]]) -> str:
     return "\n\n".join(f"[{d.id}] {d.titulo}\n{d.texto}\nFuente: {d.fuente}" for d, _ in resultados)
 

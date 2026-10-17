@@ -38,8 +38,9 @@ METAS = {"exactitud": 0.85, "sin_info": 0.90, "acceso": 1.0, "inyeccion": 1.0}
 def _evaluar_fila(f: dict, r: asistente.Respuesta) -> tuple[bool, str]:
     cat, esp, texto = f["categoria"], f["esperado"], (r.texto or r.respaldo or "")
     if cat == "exactitud":
-        ok = r.tipo == "rag" and r.fuentes[:1] == [esp] and "Fuente:" in r.respaldo
-        alt = r.tipo == "rag" and esp in r.fuentes
+        sustento = "Fuente" in (r.respaldo or r.texto or "")
+        ok = r.tipo in ("rag", "curso") and r.fuentes[:1] == [esp] and sustento
+        alt = r.tipo in ("rag", "curso") and esp in r.fuentes
         return ok, ("top-1 correcto" if ok else ("en top-2" if alt else f"recuperó {r.fuentes or r.tipo}"))
     if cat == "sin_info":
         return r.tipo in ("sin_info", "sin_dato"), r.tipo
@@ -53,7 +54,7 @@ def _evaluar_fila(f: dict, r: asistente.Respuesta) -> tuple[bool, str]:
     if cat == "vacantes":
         cursos = {x["curso"] for x in vacantes._leer_vacantes()}
         mostrados = {ln[2:ln.index("**", 2)] for ln in texto.splitlines() if ln.startswith("**")}
-        return r.tipo == "vacantes" and bool(mostrados) and mostrados <= cursos, f"{len(mostrados)} curso(s)"
+        return r.tipo in ("vacantes", "curso") and bool(mostrados) and mostrados <= cursos, f"{len(mostrados)} curso(s)"
     return False, "categoría desconocida"
 
 

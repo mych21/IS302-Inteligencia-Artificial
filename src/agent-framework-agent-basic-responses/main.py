@@ -109,9 +109,12 @@ async def orquestar(context, call_next):
 
 
 def create_agent(client: OpenAIChatCompletionClient, mali_mcp: MCPStdioTool, store: bool | None = False) -> Agent:
-    kwargs = {"default_options": {"store": store}} if store is not None else {}
+    # Temperatura baja y respuestas cortas: el modelo pequeño se ciñe más a los fragmentos y no repite párrafos.
+    opciones = {"temperature": 0.1, "max_tokens": 350}
+    if store is not None:
+        opciones["store"] = store
     return Agent(client=client, name=NOMBRE_AGENTE, instructions=INSTRUCCIONES_MALI, tools=[mali_mcp],
-                 middleware=[orquestar], **kwargs)
+                 middleware=[orquestar], default_options=opciones)
 
 
 def get_model_name() -> str:
