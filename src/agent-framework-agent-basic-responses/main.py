@@ -34,6 +34,9 @@ NOMBRE_AGENTE = "MALI Asistente"
 INSTRUCCIONES_MALI = (AQUI / "instrucciones_agente.md").read_text(encoding="utf-8")
 
 
+MODELO_LOCAL: dict = {}        # cliente OpenAI del endpoint local de Foundry y nombre del modelo
+
+
 def create_local_client(model: str) -> OpenAIChatCompletionClient:
     """Inicia Foundry Local, carga el modelo y devuelve un cliente OpenAI apuntando al endpoint local."""
     executable = shutil.which("foundry")
@@ -53,10 +56,9 @@ def create_local_client(model: str) -> OpenAIChatCompletionClient:
     if parsed.scheme != "http" or parsed.hostname not in ("127.0.0.1", "localhost", "::1"):
         raise RuntimeError("Foundry Local endpoint must be a loopback HTTP address.")
 
-    return OpenAIChatCompletionClient(
-        model=model,
-        async_client=AsyncOpenAI(base_url=f"{endpoint.rstrip('/')}/v1", api_key="foundry-local"),
-    )
+    async_client = AsyncOpenAI(base_url=f"{endpoint.rstrip('/')}/v1", api_key="foundry-local")
+    MODELO_LOCAL.update(cliente=async_client, modelo=model)
+    return OpenAIChatCompletionClient(model=model, async_client=async_client)
 
 
 def create_mali_mcp() -> MCPStdioTool:
@@ -108,15 +110,34 @@ async def orquestar(context, call_next):
     if r.texto is not None:
         _fijar_respuesta(context, r.texto)
         return
-    msgs[idx] = Message(role="user", contents=[f"{pregunta}\n\n{MARCA_CONTEXTO}\n{r.contexto}"])
-    if context.stream:
-        context.stream_transform_hooks.append(_hook_anti_repeticion())
-    await call_next()
-    if not context.stream and context.result is not None:
-        for m in context.result.messages:
-            for c in m.contents:
-                if c.type == "text" and c.text:
-                    c.text = recortar_repeticiones(c.text)
+    _fijar_respuesta(context, await redactar_con_modelo(pregunta, r))
+
+
+async def redactar_con_modelo(pregunta: str, r) -> str:
+    """RAG: Phi-4-mini redacta la respuesta con los fragmentos recuperados. La llamada es directa (sin streaming)
+    para poder revisar el texto antes de mostrarlo: se cortan repeticiones, se asegura la línea «Fuente:» y, si el
+    modelo falla o no responde, se entrega el fragmento recuperado tal cual."""
+    cliente = MODELO_LOCAL.get("cliente")
+    texto = ""
+    if cliente is not None:
+        try:
+            resp = await cliente.chat.completions.create(
+                model=MODELO_LOCAL["modelo"], temperature=0.3, max_tokens=250,
+                messages=[{"role": "system", "content": INSTRUCCIONES_MALI},
+                          {"role": "user", "content": f"{pregunta}\n\n{MARCA_CONTEXTO}\n{r.contexto}"}])
+            texto = (resp.choices[0].message.content or "").strip()
+            if resp.choices[0].finish_reason == "length":       # se quedó sin espacio: hasta la última oración
+                corte = max(texto.rfind(". "), texto.rfind(".\n"), texto.rfind("."))
+                texto = texto[:corte + 1] if corte > 0 else texto
+        except Exception:                                       # modelo no disponible: respuesta extractiva
+            texto = ""
+    texto = recortar_repeticiones(texto)
+    fuente = r.respaldo.rsplit("Fuente:", 1)[-1].strip() if "Fuente:" in r.respaldo else ""
+    if len(texto) < 20:
+        return r.respaldo
+    if "Fuente:" not in texto and fuente:
+        texto += f"\n\nFuente: {fuente}"
+    return texto
 
 
 _FRASE = re.compile(r"(?<=[.!?:])\s+|\n+")
@@ -149,33 +170,6 @@ def texto_permitido(texto: str) -> tuple[str, bool]:
 def recortar_repeticiones(texto: str) -> str:
     permitido, cortado = texto_permitido(texto)
     return permitido if cortado else texto
-
-
-def _hook_anti_repeticion():
-    """Transformación del streaming: muestra el texto a medida que llega, pero deja de mostrarlo en cuanto el
-    modelo empieza a repetir una frase."""
-    estado = {"recibido": "", "emitido": "", "cortado": False}
-
-    def hook(update):
-        if estado["cortado"] and getattr(update, "finish_reason", None) is not None:
-            update.finish_reason = "stop"          # se cortó a propósito: la respuesta no queda «incompleta»
-        textos = [c for c in update.contents if c.type == "text"]
-        if not textos:
-            return update
-        otros = [c for c in update.contents if c.type != "text"]
-        if estado["cortado"]:
-            update.contents[:] = otros
-            return update
-        estado["recibido"] += "".join(c.text or "" for c in textos)
-        permitido, cortado = texto_permitido(estado["recibido"])
-        estado["cortado"] = cortado
-        nuevo = permitido[len(estado["emitido"]):] if permitido.startswith(estado["emitido"]) else ""
-        estado["emitido"] += nuevo
-        textos[0].text = nuevo
-        update.contents[:] = otros + [textos[0]]
-        return update
-
-    return hook
 
 
 def create_agent(client: OpenAIChatCompletionClient, mali_mcp: MCPStdioTool, store: bool | None = False) -> Agent:
