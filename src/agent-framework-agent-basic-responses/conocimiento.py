@@ -1,5 +1,6 @@
 """
-Base de conocimiento GENERAL de MALI Asistente (RAG: recuperación con BM25, solo librería estándar).
+Base de conocimiento GENERAL de MALI Asistente (recuperación con BM25, solo librería estándar). La usa el servidor
+MCP general.
 
 - Cada documento es un archivo .md en conocimiento/general/ con título, fuente, nivel de acceso, responsable y
   vigencia. Al editar, agregar o quitar un archivo, la siguiente consulta usa la versión vigente (se reindexa al
@@ -12,11 +13,10 @@ import math
 import re
 from collections import Counter
 from dataclasses import dataclass
-from pathlib import Path
 
-import vacantes as v
+import rutas
+import texto as tx
 
-CARPETA = Path(__file__).resolve().parent / "conocimiento" / "general"
 UMBRAL_RELEVANCIA = 3.0
 COBERTURA_MINIMA = 0.4        # fracción de palabras de la pregunta que deben aparecer en los fragmentos
 
@@ -34,7 +34,8 @@ _indice: dict = {"firma": None}
 
 
 def _firma() -> tuple:
-    return tuple(sorted((p.name, p.stat().st_mtime_ns) for p in CARPETA.glob("*.md")))
+    return str(rutas.conocimiento()), tuple(sorted((p.name, p.stat().st_mtime_ns)
+                                                    for p in rutas.conocimiento().glob("*.md")))
 
 
 def _campo(contenido: str, nombre: str) -> str:
@@ -44,14 +45,14 @@ def _campo(contenido: str, nombre: str) -> str:
 
 def _cargar() -> None:
     docs = []
-    for p in sorted(CARPETA.glob("*.md")):
+    for p in sorted(rutas.conocimiento().glob("*.md")):
         c = p.read_text(encoding="utf-8")
         if _campo(c, "Nivel de acceso").lower() not in ("", "general"):
             continue                      # solo documentos de nivel general
         titulo = re.search(r"^# (.+)$", c, re.M).group(1).strip()
         cuerpo = c.split("\n\n", 1)[1].strip() if "\n\n" in c else ""
         docs.append(Documento(p.stem.split("_")[0], titulo, _campo(c, "Colección"), _campo(c, "Fuente"), cuerpo))
-    tokens = [v._tokens(f"{d.titulo} {d.titulo} {d.coleccion} {d.texto}") for d in docs]
+    tokens = [tx.tokens(f"{d.titulo} {d.titulo} {d.coleccion} {d.texto}") for d in docs]
     _indice.update(firma=_firma(), docs=docs, tokens=tokens,
                    df=Counter(t for d in tokens for t in set(d)),
                    avgdl=sum(map(len, tokens)) / max(1, len(tokens)))
@@ -78,7 +79,7 @@ def _bm25(consulta: list[str], k1: float = 1.4, b: float = 0.75) -> list[float]:
 def buscar(consulta: str, max_resultados: int = 2) -> list[tuple[Documento, float]] | None:
     """Fragmentos relevantes de la base general, o None si no hay información suficiente."""
     docs = documentos()
-    puntajes = _bm25(v._tokens(consulta, expandir=True))
+    puntajes = _bm25(tx.tokens(consulta, expandir=True))
     orden = sorted(range(len(docs)), key=lambda i: -puntajes[i])
     elegidos = [(docs[i], puntajes[i]) for i in orden[:max_resultados] if puntajes[i] >= UMBRAL_RELEVANCIA]
     if len(elegidos) == 2 and elegidos[1][1] < 0.6 * elegidos[0][1]:
@@ -90,31 +91,18 @@ def buscar(consulta: str, max_resultados: int = 2) -> list[tuple[Documento, floa
 
 def _cobertura(consulta: str, indices: list[int]) -> float:
     """Qué parte de la pregunta (palabras propias, o sus sinónimos) aparece en los fragmentos recuperados."""
-    palabras = set(v._tokens(consulta))
+    palabras = set(tx.tokens(consulta))
     if not palabras:
         return 1.0
     presentes = set().union(*(set(_indice["tokens"][i]) for i in indices))
     cubiertas = 0
     for p in palabras:
-        variantes = {p} | set(v._tokens(v.SINONIMOS.get(p, ""))) | set(v._tokens(v.SINONIMOS.get(p + "s", "")))
+        variantes = {p} | set(tx.tokens(tx.SINONIMOS.get(p, ""))) | set(tx.tokens(tx.SINONIMOS.get(p + "s", "")))
         cubiertas += bool(variantes & presentes)
     return cubiertas / len(palabras)
 
 
 def documento_que_menciona(nombre: str) -> Documento | None:
     """Primer documento de la base general cuyo texto menciona el nombre (p. ej. un curso)."""
-    clave = v._normalizar(nombre).strip()
-    return next((d for d in documentos() if clave in v._normalizar(d.texto)), None)
-
-
-def como_texto(resultados: list[tuple[Documento, float]]) -> str:
-    return "\n\n".join(f"[{d.id}] {d.titulo}\n{d.texto}\nFuente: {d.fuente}" for d, _ in resultados)
-
-
-def buscar_informacion(consulta: str) -> str:
-    """Versión en texto (para la herramienta MCP)."""
-    r = buscar(consulta)
-    if not r:
-        return ("SIN_RESULTADOS: no hay información suficiente en las fuentes autorizadas. Indica la limitación y "
-                "orienta a cursosdearte@mali.pe o a https://educacion.mali.pe/.")
-    return como_texto(r)
+    clave = tx.normalizar(nombre).strip()
+    return next((d for d in documentos() if clave in tx.normalizar(d.texto)), None)

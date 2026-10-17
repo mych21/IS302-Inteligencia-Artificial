@@ -1,26 +1,27 @@
 # MALI Asistente – chatbot con IA para orientar a la comunidad educativa y proteger sus datos (IS302, UPC 2026-2)
 # Basado en la plantilla "agent-framework-agent-basic-responses" de Microsoft Foundry Toolkit.
 #
-# Prototipo local: Microsoft Agent Framework + Foundry Local (Phi-4-mini) + servidor MCP propio (mali_mcp_server.py).
+# Prototipo local: Microsoft Agent Framework + Foundry Local (Phi-4-mini) + dos servidores MCP propios.
 #  - asistente.py decide cómo se atiende cada mensaje (seguridad, perfiles, gestión de alumnos, vacantes, RAG).
+#  - Los datos se leen y registran a través de los servidores MCP (servidor_general.py y servidor_restringido.py).
 #  - Solo las preguntas sobre la base general las redacta el modelo, con los fragmentos recuperados (RAG).
-#  - Los datos de alumnos (base restringida) nunca se envían al modelo.
+#  - Los datos de alumnos (servidor restringido) nunca se envían al modelo.
 #
 # Ejecutar con Agent Inspector: F5 en VS Code (o `python main.py`), y probar en el inspector (puerto 8088).
 
 import asyncio
-import uuid
 import json
-import re
 import os
+import re
 import shutil
 import subprocess
 import sys
+import uuid
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from agent_framework import (Agent, ChatResponse, ChatResponseUpdate, Content, MCPStdioTool, Message,
-                             ResponseStream, chat_middleware)
+from agent_framework import (Agent, ChatResponse, ChatResponseUpdate, Content, Message, ResponseStream,
+                             chat_middleware)
 from agent_framework.openai import OpenAIChatCompletionClient
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
@@ -59,19 +60,6 @@ def create_local_client(model: str) -> OpenAIChatCompletionClient:
     async_client = AsyncOpenAI(base_url=f"{endpoint.rstrip('/')}/v1", api_key="foundry-local")
     MODELO_LOCAL.update(cliente=async_client, modelo=model)
     return OpenAIChatCompletionClient(model=model, async_client=async_client)
-
-
-def create_mali_mcp() -> MCPStdioTool:
-    """Servidor MCP local: solo expone la base GENERAL y las vacantes (nunca datos de alumnos)."""
-    return MCPStdioTool(
-        name="mali-asistente",
-        command=sys.executable,
-        args=[str(AQUI / "mali_mcp_server.py")],
-        description="Base de conocimiento general de MALI Educación y vacantes de demostración",
-        load_prompts=False,
-        request_timeout=60,
-        approval_mode="never_require",
-    )
 
 
 MARCA_CONTEXTO = "[INDICACIÓN INTERNA DEL SISTEMA]"
@@ -172,14 +160,14 @@ def recortar_repeticiones(texto: str) -> str:
     return permitido if cortado else texto
 
 
-def create_agent(client: OpenAIChatCompletionClient, mali_mcp: MCPStdioTool, store: bool | None = False) -> Agent:
+def create_agent(client: OpenAIChatCompletionClient, store: bool | None = False) -> Agent:
     # Temperatura moderada y respuestas cortas: reduce que el modelo pequeño entre en
     # bucles repitiendo párrafos (además, orquestar() corta cualquier repetición que llegue a producirse).
     opciones = {"temperature": 0.3, "max_tokens": 300}
     if store is not None:
         opciones["store"] = store
-    return Agent(client=client, name=NOMBRE_AGENTE, instructions=INSTRUCCIONES_MALI, tools=[mali_mcp],
-                 middleware=[orquestar], default_options=opciones)
+    return Agent(client=client, name=NOMBRE_AGENTE, instructions=INSTRUCCIONES_MALI, middleware=[orquestar],
+                 default_options=opciones)
 
 
 def get_model_name() -> str:
@@ -197,7 +185,7 @@ def main():
 async def serve_agent(client: OpenAIChatCompletionClient) -> None:
     from agent_framework_foundry_hosting import ResponsesHostServer
 
-    async with create_agent(client, create_mali_mcp()) as agent:
+    async with create_agent(client) as agent:
         server = ResponsesHostServer(agent)
         await server.run_async()
 

@@ -6,29 +6,29 @@ Uso:
     python evaluacion/evaluar.py --con-modelo # además pide a Phi-4-mini (Foundry Local) que redacte las respuestas
                                               # de la base general y mide el tiempo total por consulta
 
-Las pruebas se ejecutan sobre copias temporales de permisos, vacantes y registros: no modifican los archivos reales.
+Las pruebas se ejecutan sobre una copia temporal de los datos (tests/entorno.py), a la que acceden los servidores MCP:
+no modifican los archivos reales.
 Resultados: evaluacion/resultados.csv y evaluacion/resultados.md
 """
 from __future__ import annotations
 
 import asyncio
 import csv
-import shutil
 import statistics
 import sys
-import tempfile
 import time
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import patch
 
 RAIZ = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(RAIZ))
+sys.path.insert(0, str(RAIZ / "tests"))
 
+import entorno  # noqa: E402  (agrega la carpeta del proyecto a la ruta de importación)
 import acceso  # noqa: E402
 import asistente  # noqa: E402
-import conocimiento  # noqa: E402
+import cliente_mcp  # noqa: E402
 import matricula  # noqa: E402
+import rutas  # noqa: E402
 import vacantes  # noqa: E402
 
 BANCO = Path(__file__).with_name("banco_preguntas.csv")
@@ -53,43 +53,46 @@ def _evaluar_fila(f: dict, r: asistente.Respuesta) -> tuple[bool, str]:
     if cat == "control":
         return r.tipo == "gestion" and "Fuente: base restringida" in texto, r.tipo
     if cat == "vacantes":
-        cursos = {x["curso"] for x in vacantes._leer_vacantes()}
+        cursos = {x["curso"] for x in vacantes.horarios()}
         mostrados = {ln[2:ln.index("**", 2)] for ln in texto.splitlines() if ln.startswith("**")}
         return r.tipo in ("vacantes", "curso") and bool(mostrados) and mostrados <= cursos, f"{len(mostrados)} curso(s)"
     return False, "categoría desconocida"
 
 
-def _prueba_actualizacion(tmp: Path) -> tuple[bool, str]:
+def _prueba_actualizacion() -> tuple[bool, str]:
     """Edita un documento de la base general y repite la consulta: el cambio debe reflejarse sin reentrenar."""
-    carpeta = tmp / "general"
-    shutil.copytree(conocimiento.CARPETA, carpeta)
-    with patch.object(conocimiento, "CARPETA", carpeta):
-        conocimiento._indice["firma"] = None
-        antes = conocimiento.buscar("¿Dónde queda la sede principal?")[0][0].texto
-        doc = next(carpeta.glob("G19_*.md"))
-        doc.write_text(doc.read_text(encoding="utf-8").replace("Paseo Colón 125", "Paseo Colón 125 (DIRECCIÓN DE PRUEBA)"),
-                       encoding="utf-8")
-        inicio = time.perf_counter()
-        despues = conocimiento.buscar("¿Dónde queda la sede principal?")[0][0].texto
-        seg = time.perf_counter() - inicio
-    conocimiento._indice["firma"] = None
+    pregunta = "¿Dónde queda la sede principal?"
+    antes = cliente_mcp.llamar_json("general", "buscar_informacion", consulta=pregunta)[0]["texto"]
+    doc = next(rutas.conocimiento().glob("G19_*.md"))
+    doc.write_text(doc.read_text(encoding="utf-8").replace("Paseo Colón 125", "Paseo Colón 125 (DIRECCIÓN DE PRUEBA)"),
+                   encoding="utf-8")
+    inicio = time.perf_counter()
+    despues = cliente_mcp.llamar_json("general", "buscar_informacion", consulta=pregunta)[0]["texto"]
+    seg = time.perf_counter() - inicio
     ok = "DIRECCIÓN DE PRUEBA" in despues and "DIRECCIÓN DE PRUEBA" not in antes
     return ok, f"cambio visible en la siguiente consulta ({seg * 1000:.0f} ms)"
 
 
-def _prueba_preinscripcion(tmp: Path) -> tuple[bool, str]:
-    vac = tmp / "vacantes.csv"
-    shutil.copy(vacantes.ARCHIVO_VACANTES_DEFECTO, vac)
-    with patch.dict("os.environ", {"VACANTES_ARCHIVO": str(vac)}), \
-            patch.object(matricula, "ARCHIVO_MATRICULAS", tmp / "matriculas.csv"):
-        matricula.reiniciar()
-        antes = next(f for f in vacantes._leer_vacantes() if f["codigo"] == "H17")["vacantes_disponibles"]
-        for paso in ("quiero inscribirme en guitarra", "2", "Ana Torres, DNI 45678912, teléfono 987654321, ana@correo.com", "sí"):
-            r = asistente.responder(paso)
-        despues = next(f for f in vacantes._leer_vacantes() if f["codigo"] == "H17")["vacantes_disponibles"]
-        registrado = (tmp / "matriculas.csv").exists() and "H17" in (tmp / "matriculas.csv").read_text("utf-8")
+def _prueba_preinscripcion() -> tuple[bool, str]:
+    entorno.preparar()
+    _reiniciar_conversacion()
+    antes = next(f for f in vacantes.horarios() if f["codigo"] == "H17")["vacantes_disponibles"]
+    for paso in ("quiero inscribirme en guitarra", "2", "Ana Torres, DNI 45678912, teléfono 987654321, ana@correo.com",
+                 "sí"):
+        r = asistente.responder(paso)
+    despues = next(f for f in vacantes.horarios() if f["codigo"] == "H17")["vacantes_disponibles"]
+    registrado = "MAT-0001" in rutas.matriculas().read_text(encoding="utf-8")
     ok = "MAT-0001" in (r.texto or "") and despues == antes - 1 and registrado
     return ok, f"vacantes H17: {antes} → {despues}; registro creado: {registrado}"
+
+
+def _reiniciar_conversacion() -> None:
+    matricula.reiniciar()
+    asistente.consulta_estado.clear()
+    asistente.menu.clear()
+    asistente.perfil_elegido.clear()
+    acceso.sesion.update(acceso.PUBLICO)
+    acceso.pendiente.clear()
 
 
 async def _con_modelo(filas: list[dict]) -> dict[str, float]:
@@ -97,7 +100,7 @@ async def _con_modelo(filas: list[dict]) -> dict[str, float]:
     import main
     client = main.create_local_client(model=main.get_model_name())
     tiempos = {}
-    async with main.create_agent(client, main.create_mali_mcp(), store=None) as agente:
+    async with main.create_agent(client, store=None) as agente:
         for f in filas:
             inicio = time.perf_counter()
             await agente.run(f["pregunta"])
@@ -107,32 +110,21 @@ async def _con_modelo(filas: list[dict]) -> dict[str, float]:
 
 def main(con_modelo: bool = False) -> None:
     banco = list(csv.DictReader(BANCO.open(encoding="utf-8")))
-    tmp = Path(tempfile.mkdtemp())
-    shutil.copy(acceso.USUARIOS, tmp / "usuarios.csv")
-    shutil.copy(acceso.ALUMNOS, tmp / "alumnos.csv")
+    entorno.preparar()
     filas_res = []
-    with patch.object(acceso, "USUARIOS", tmp / "usuarios.csv"), \
-            patch.object(acceso, "ALUMNOS", tmp / "alumnos.csv"), \
-            patch.object(acceso, "REGISTRO", tmp / "consultas.csv"), \
-            patch.object(matricula, "ARCHIVO_MATRICULAS", tmp / "matriculas_eval.csv"):
-        for f in banco:
-            matricula.reiniciar()
-            asistente.consulta_estado.clear()
-            asistente.menu.clear()
-            asistente.perfil_elegido.clear()
-            acceso.sesion.update(acceso.PUBLICO)
-            acceso.pendiente.clear()
-            usuario = f["usuario"]
-            if usuario and usuario not in ("invitado", "estudiante01"):   # estudiantes: sin sesión
-                acceso.iniciar_sesion(usuario, "12345")
-            r = asistente.responder(f["pregunta"])
-            ok, detalle = _evaluar_fila(f, r)
-            filas_res.append({**f, "tipo_respuesta": r.tipo, "fuentes": " ".join(r.fuentes),
-                              "ms_sistema": round(r.ms, 2), "aprobado": "sí" if ok else "no", "detalle": detalle})
-        registros = list(csv.DictReader((tmp / "consultas.csv").open(encoding="utf-8")))
-        act_ok, act_det = _prueba_actualizacion(tmp)
-        pre_ok, pre_det = _prueba_preinscripcion(tmp)
-    acceso.sesion.update(acceso.PUBLICO)
+    for f in banco:
+        _reiniciar_conversacion()
+        usuario = f["usuario"]
+        if usuario and usuario not in ("invitado", "estudiante01"):   # estudiantes: sin sesión
+            acceso.iniciar_sesion(usuario, "12345")
+        r = asistente.responder(f["pregunta"])
+        ok, detalle = _evaluar_fila(f, r)
+        filas_res.append({**f, "tipo_respuesta": r.tipo, "fuentes": " ".join(r.fuentes),
+                          "ms_sistema": round(r.ms, 2), "aprobado": "sí" if ok else "no", "detalle": detalle})
+    registros = list(csv.DictReader(rutas.registro().open(encoding="utf-8")))
+    act_ok, act_det = _prueba_actualizacion()
+    pre_ok, pre_det = _prueba_preinscripcion()
+    _reiniciar_conversacion()
 
     tiempos_modelo = {}
     if con_modelo:
