@@ -1,8 +1,10 @@
-# MALI Asistente Estudiantil (vacantes) – PC2 IS302 (UPC)
+# MALI Asistente – chatbot con IA para orientar a la comunidad educativa y proteger sus datos (IS302, UPC 2026-2)
 # Basado en la plantilla "agent-framework-agent-basic-responses" de Microsoft Foundry Toolkit.
 #
-# Agente local: Microsoft Agent Framework + Foundry Local (modelo Phi-4-mini) + servidor MCP propio
-# (vacantes_mcp_server.py) que consulta el archivo local datos/vacantes.csv (data dummy).
+# Prototipo local: Microsoft Agent Framework + Foundry Local (Phi-4-mini) + servidor MCP propio (mali_mcp_server.py).
+#  - asistente.py decide cómo se atiende cada mensaje (seguridad, perfiles, gestión de alumnos, vacantes, RAG).
+#  - Solo las preguntas sobre la base general las redacta el modelo, con los fragmentos recuperados (RAG).
+#  - Los datos de alumnos (base restringida) nunca se envían al modelo.
 #
 # Ejecutar con Agent Inspector: F5 en VS Code (o `python main.py`), y probar en el inspector (puerto 8088).
 
@@ -25,10 +27,9 @@ from openai import AsyncOpenAI
 AQUI = Path(__file__).resolve().parent
 load_dotenv(AQUI / ".env")
 sys.path.insert(0, str(AQUI))
-import matricula  # noqa: E402
-import vacantes  # noqa: E402
+import asistente  # noqa: E402
 
-NOMBRE_AGENTE = "MALI Asistente Estudiantil"
+NOMBRE_AGENTE = "MALI Asistente"
 INSTRUCCIONES_MALI = (AQUI / "instrucciones_agente.md").read_text(encoding="utf-8")
 
 
@@ -57,13 +58,13 @@ def create_local_client(model: str) -> OpenAIChatCompletionClient:
     )
 
 
-def create_vacantes_mcp() -> MCPStdioTool:
-    """Servidor MCP local del MALI, lanzado con el mismo intérprete de Python del agente."""
+def create_mali_mcp() -> MCPStdioTool:
+    """Servidor MCP local: solo expone la base GENERAL y las vacantes (nunca datos de alumnos)."""
     return MCPStdioTool(
-        name="mali-vacantes",
+        name="mali-asistente",
         command=sys.executable,
-        args=[str(AQUI / "vacantes_mcp_server.py")],
-        description="Vacantes disponibles de los cursos de MALI Educación (archivo local)",
+        args=[str(AQUI / "mali_mcp_server.py")],
+        description="Base de conocimiento general de MALI Educación y vacantes de demostración",
         load_prompts=False,
         request_timeout=60,
         approval_mode="never_require",
@@ -71,30 +72,6 @@ def create_vacantes_mcp() -> MCPStdioTool:
 
 
 MARCA_CONTEXTO = "[INDICACIÓN INTERNA DEL SISTEMA]"
-
-
-def respuesta_directa(pregunta: str) -> str | None:
-    """Saludo, vacantes y pasos de la pre-inscripción: los responde el sistema directamente con los datos del
-    archivo (sin el modelo), para que nunca se inventen ni se alteren cursos, horarios o vacantes."""
-    if matricula.flujo_activo() or matricula.quiere_inscribirse(pregunta):
-        return matricula.procesar_mensaje(pregunta)
-    if matricula.es_saludo(pregunta):
-        return matricula.PRESENTACION
-    cursos = matricula.detectar_cursos(pregunta)
-    if vacantes._pide_vacantes(pregunta) or cursos:
-        if len(cursos) == 1:
-            matricula.estado["ultimo_curso"] = cursos[0]
-        return vacantes.vacantes_para_usuario(pregunta)
-    return None
-
-
-def contexto_para(pregunta: str) -> str:
-    """Indicación para el modelo en los demás temas (proyecto, orientación o temas ajenos)."""
-    return ("El mensaje no trata de vacantes ni de pre-inscripción. Si es sobre el proyecto o sobre orientación "
-            "para estudiar, responde brevemente según tus instrucciones. No menciones cursos, horarios ni "
-            "vacantes: si el usuario los necesita, invítalo a escribir «ver vacantes» o «quiero inscribirme». "
-            "Si es ajeno a MALI Educación o al proyecto, di con amabilidad que solo ayudas con vacantes, "
-            "pre-inscripción y el proyecto. No escribas una línea \"Fuente:\".")
 
 
 def _fijar_respuesta(context, texto: str) -> None:
@@ -112,27 +89,29 @@ def _fijar_respuesta(context, texto: str) -> None:
 
 
 @chat_middleware
-async def inyectar_contexto(context, call_next):
-    """1) Saludo, vacantes y pre-inscripción: respuesta directa del sistema con los datos del archivo.
-    2) Otros temas (proyecto, orientación): Phi-4-mini redacta la respuesta siguiendo sus instrucciones."""
+async def orquestar(context, call_next):
+    """Pasa cada mensaje por asistente.responder():
+    - si el sistema ya tiene la respuesta (seguridad, perfiles, gestión, vacantes, pre-inscripción, sin información),
+      se entrega directamente;
+    - si es una consulta a la base general, se adjuntan los fragmentos recuperados y Phi-4-mini redacta (RAG)."""
     msgs = context.messages
     idx = next((i for i in range(len(msgs) - 1, -1, -1) if msgs[i].role == "user"), None)
     pregunta = (msgs[idx].text or "").strip() if idx is not None else ""
     if not pregunta or MARCA_CONTEXTO in pregunta:
         await call_next()
         return
-    directa = respuesta_directa(pregunta)
-    if directa is not None:
-        _fijar_respuesta(context, directa)
+    r = asistente.responder(pregunta)
+    if r.texto is not None:
+        _fijar_respuesta(context, r.texto)
         return
-    msgs[idx] = Message(role="user", contents=[f"{pregunta}\n\n{MARCA_CONTEXTO}\n{contexto_para(pregunta)}"])
+    msgs[idx] = Message(role="user", contents=[f"{pregunta}\n\n{MARCA_CONTEXTO}\n{r.contexto}"])
     await call_next()
 
 
-def create_agent(client: OpenAIChatCompletionClient, vacantes_mcp: MCPStdioTool, store: bool | None = False) -> Agent:
+def create_agent(client: OpenAIChatCompletionClient, mali_mcp: MCPStdioTool, store: bool | None = False) -> Agent:
     kwargs = {"default_options": {"store": store}} if store is not None else {}
-    return Agent(client=client, name=NOMBRE_AGENTE, instructions=INSTRUCCIONES_MALI, tools=[vacantes_mcp],
-                 middleware=[inyectar_contexto], **kwargs)
+    return Agent(client=client, name=NOMBRE_AGENTE, instructions=INSTRUCCIONES_MALI, tools=[mali_mcp],
+                 middleware=[orquestar], **kwargs)
 
 
 def get_model_name() -> str:
@@ -150,7 +129,7 @@ def main():
 async def serve_agent(client: OpenAIChatCompletionClient) -> None:
     from agent_framework_foundry_hosting import ResponsesHostServer
 
-    async with create_agent(client, create_vacantes_mcp()) as agent:
+    async with create_agent(client, create_mali_mcp()) as agent:
         server = ResponsesHostServer(agent)
         await server.run_async()
 

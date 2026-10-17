@@ -10,6 +10,8 @@ __pycache__/
 **/.env
 .foundry/
 
-# Respaldos locales
-**/_respaldo_plantilla/
+
+# Datos generados al usar el prototipo
 **/datos/matriculas.csv
+**/registros/consultas.csv
+

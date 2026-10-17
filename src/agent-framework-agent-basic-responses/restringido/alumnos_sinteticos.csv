@@ -1,0 +1,201 @@
+id_alumno,programa,curso,sede,periodo,estado_matricula,porcentaje_asistencia,inasistencias,cursos_inscritos,situacion_administrativa,actualizado_al
+ALU-0001,Curso,Oratoria y Liderazgo,Lima – Principal,Setiembre 2026,Activa,97.6,0,1,Al día,15/10/2026
+ALU-0002,Curso,Dibujo y Pintura,San Miguel 1,Setiembre 2026,Activa,94.8,0,1,Al día,15/10/2026
+ALU-0003,Diplomado,Gestión Cultural,Lima – Principal,Setiembre 2026,Activa,69.7,2,1,Al día,15/10/2026
+ALU-0004,Curso,Teatro y Actuación,Virtual,Octubre 2026,Activa,65.8,3,1,Al día,15/10/2026
+ALU-0005,Curso,Fotografía digital,SJL – Arabiscos,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0006,Curso,Fotografía digital,SJL – Arabiscos,Octubre 2026,Activa,95.5,0,1,Al día,15/10/2026
+ALU-0007,Diplomado,Gestión Cultural,Virtual,Setiembre 2026,Activa,98.7,0,1,Incidencia de pago,15/10/2026
+ALU-0008,Curso,Guitarra,La Molina – Camacho,Octubre 2026,Activa,88.7,1,1,Al día,15/10/2026
+ALU-0009,Taller,Marinera Norteña,San Miguel 1,Setiembre 2026,Activa,73.7,2,1,Al día,15/10/2026
+ALU-0010,Curso,Fotografía digital,SJL – Arabiscos,Setiembre 2026,Activa,59.7,3,1,Incidencia de pago,15/10/2026
+ALU-0011,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,81.6,1,2,Al día,15/10/2026
+ALU-0012,Taller,Taekwondo,SJL – Arabiscos,Octubre 2026,Pendiente de pago,70.0,2,1,Pago pendiente,15/10/2026
+ALU-0013,Curso,Oratoria y Liderazgo,La Molina – Camacho,Octubre 2026,Activa,69.4,2,2,Al día,15/10/2026
+ALU-0014,Curso,Fotografía digital,Chorrillos – Faisanes,Octubre 2026,Activa,82.8,1,1,Incidencia de pago,15/10/2026
+ALU-0015,Curso,Dibujo y Pintura,San Miguel 1,Setiembre 2026,Activa,85.2,1,1,Al día,15/10/2026
+ALU-0016,Taller,Taekwondo,San Miguel 1,Setiembre 2026,Retirada,73.8,2,1,Sin deuda,15/10/2026
+ALU-0017,Curso,Pintura al Óleo,Lima – Principal,Octubre 2026,Activa,72.8,2,1,Al día,15/10/2026
+ALU-0018,Curso,Guitarra,SJL – Arabiscos,Octubre 2026,Activa,64.2,3,3,Al día,15/10/2026
+ALU-0019,Diplomado,Museografía y Diseño de Exhibiciones,San Miguel 1,Setiembre 2026,Pendiente de pago,93.4,1,1,Pago pendiente,15/10/2026
+ALU-0020,Diplomado,Museografía y Diseño de Exhibiciones,Lima – Principal,Octubre 2026,Activa,100,0,1,Incidencia de pago,15/10/2026
+ALU-0021,Curso,Pintura al Óleo,Lima – Principal,Setiembre 2026,Pendiente de pago,100,0,2,Pago pendiente,15/10/2026
+ALU-0022,Curso,Pintura al Óleo,Lima – Principal,Setiembre 2026,Activa,67.6,3,1,Al día,15/10/2026
+ALU-0023,Curso,Guitarra,Chorrillos – Faisanes,Setiembre 2026,Activa,87.9,1,2,Al día,15/10/2026
+ALU-0024,Curso,Fotografía digital,Los Olivos – Villa Sol,Octubre 2026,Retirada,77.2,2,1,Sin deuda,15/10/2026
+ALU-0025,Taller,Kpop,Lima – Principal,Setiembre 2026,Activa,82.7,1,2,Al día,15/10/2026
+ALU-0026,Curso,Dibujo y Pintura,Virtual,Octubre 2026,Activa,81.1,2,1,Incidencia de pago,15/10/2026
+ALU-0027,Taller,Kpop,San Miguel 1,Octubre 2026,Activa,77.1,2,1,Al día,15/10/2026
+ALU-0028,Curso,Guitarra,Lima – Principal,Octubre 2026,Activa,95.9,0,1,Al día,15/10/2026
+ALU-0029,Curso,Fotografía digital,Lima – Principal,Setiembre 2026,Activa,57.9,3,1,Incidencia de pago,15/10/2026
+ALU-0030,Curso,Teatro y Actuación,Chorrillos – Faisanes,Setiembre 2026,Activa,84.7,1,1,Al día,15/10/2026
+ALU-0031,Taller,Ballet,Los Olivos – Villa Sol,Setiembre 2026,Activa,70.0,2,1,Incidencia de pago,15/10/2026
+ALU-0032,Curso,Violín,Virtual,Setiembre 2026,Pendiente de pago,85.3,1,1,Pago pendiente,15/10/2026
+ALU-0033,Curso,Guitarra,Lima – Principal,Octubre 2026,Pendiente de pago,52.2,4,1,Pago pendiente,15/10/2026
+ALU-0034,Diplomado,Museografía y Diseño de Exhibiciones,SJL – Arabiscos,Octubre 2026,Activa,83.3,1,1,Al día,15/10/2026
+ALU-0035,Taller,Marinera Norteña,La Molina – Camacho,Setiembre 2026,Activa,81.0,2,1,Al día,15/10/2026
+ALU-0036,Curso,Guitarra,Chorrillos – Faisanes,Setiembre 2026,Activa,84.8,1,3,Al día,15/10/2026
+ALU-0037,Curso,Pintura al Óleo,Los Olivos – Villa Sol,Setiembre 2026,Activa,83.1,1,3,Al día,15/10/2026
+ALU-0038,Taller,Taekwondo,San Miguel 1,Setiembre 2026,Activa,75.8,2,1,Al día,15/10/2026
+ALU-0039,Taller,Taekwondo,La Molina – Camacho,Setiembre 2026,Activa,68.8,2,1,Al día,15/10/2026
+ALU-0040,Taller,Ballet,La Molina – Camacho,Setiembre 2026,Activa,75.1,2,1,Al día,15/10/2026
+ALU-0041,Taller,Taekwondo,La Molina – Camacho,Setiembre 2026,Activa,100,0,2,Al día,15/10/2026
+ALU-0042,Curso,Pintura al Óleo,Chorrillos – Faisanes,Octubre 2026,Pendiente de pago,79.5,2,2,Pago pendiente,15/10/2026
+ALU-0043,Diplomado,Gestión Cultural,San Miguel 1,Octubre 2026,Activa,67.0,3,2,Al día,15/10/2026
+ALU-0044,Curso,Pintura al Óleo,Lima – Principal,Setiembre 2026,Pendiente de pago,100,0,2,Pago pendiente,15/10/2026
+ALU-0045,Taller,Ballet,SJL – Arabiscos,Octubre 2026,Activa,77.3,2,1,Al día,15/10/2026
+ALU-0046,Taller,Marinera Norteña,Lima – Principal,Octubre 2026,Pendiente de pago,98.9,0,2,Pago pendiente,15/10/2026
+ALU-0047,Curso,Dibujo y Pintura,SJL – Arabiscos,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0048,Curso,Fotografía digital,SJL – Arabiscos,Setiembre 2026,Activa,80.5,2,1,Al día,15/10/2026
+ALU-0049,Curso,Teatro y Actuación,Virtual,Setiembre 2026,Activa,73.1,2,2,Al día,15/10/2026
+ALU-0050,Taller,Kpop,La Molina – Camacho,Octubre 2026,Activa,76.1,2,3,Al día,15/10/2026
+ALU-0051,Diplomado,Gestión Cultural,Los Olivos – Villa Sol,Setiembre 2026,Pendiente de pago,98.2,0,1,Pago pendiente,15/10/2026
+ALU-0052,Curso,Teatro y Actuación,SJL – Arabiscos,Setiembre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0053,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Octubre 2026,Activa,75.9,2,1,Al día,15/10/2026
+ALU-0054,Diplomado,Museografía y Diseño de Exhibiciones,Los Olivos – Villa Sol,Octubre 2026,Pendiente de pago,66.9,3,1,Pago pendiente,15/10/2026
+ALU-0055,Curso,Pintura al Óleo,Virtual,Octubre 2026,Activa,91.1,1,2,Al día,15/10/2026
+ALU-0056,Curso,Pintura al Óleo,San Miguel 1,Octubre 2026,Pendiente de pago,77.7,2,1,Pago pendiente,15/10/2026
+ALU-0057,Taller,Taekwondo,San Miguel 1,Setiembre 2026,Activa,59.3,3,1,Al día,15/10/2026
+ALU-0058,Taller,Taekwondo,Los Olivos – Villa Sol,Setiembre 2026,Activa,89.0,1,1,Al día,15/10/2026
+ALU-0059,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,58.3,3,3,Al día,15/10/2026
+ALU-0060,Curso,Teatro y Actuación,Lima – Principal,Octubre 2026,Activa,74.7,2,1,Al día,15/10/2026
+ALU-0061,Curso,Oratoria y Liderazgo,Los Olivos – Villa Sol,Octubre 2026,Activa,68.1,3,1,Al día,15/10/2026
+ALU-0062,Taller,Ballet,San Miguel 1,Setiembre 2026,Activa,87.7,1,1,Al día,15/10/2026
+ALU-0063,Taller,Kpop,Los Olivos – Villa Sol,Setiembre 2026,Activa,63.3,3,1,Al día,15/10/2026
+ALU-0064,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Pendiente de pago,87.9,1,1,Pago pendiente,15/10/2026
+ALU-0065,Curso,Oratoria y Liderazgo,SJL – Arabiscos,Octubre 2026,Activa,71.5,2,1,Al día,15/10/2026
+ALU-0066,Taller,Kpop,Los Olivos – Villa Sol,Setiembre 2026,Activa,70.6,2,1,Al día,15/10/2026
+ALU-0067,Curso,Oratoria y Liderazgo,Chorrillos – Faisanes,Setiembre 2026,Activa,60.2,3,2,Al día,15/10/2026
+ALU-0068,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Octubre 2026,Pendiente de pago,69.8,2,1,Pago pendiente,15/10/2026
+ALU-0069,Taller,Kpop,San Miguel 1,Octubre 2026,Activa,86.2,1,3,Al día,15/10/2026
+ALU-0070,Curso,Guitarra,San Miguel 1,Octubre 2026,Activa,76.5,2,2,Al día,15/10/2026
+ALU-0071,Curso,Violín,Virtual,Setiembre 2026,Pendiente de pago,72.2,2,2,Pago pendiente,15/10/2026
+ALU-0072,Taller,Marinera Norteña,SJL – Arabiscos,Setiembre 2026,Activa,82.7,1,1,Al día,15/10/2026
+ALU-0073,Curso,Pintura al Óleo,Lima – Principal,Setiembre 2026,Activa,77.7,2,1,Al día,15/10/2026
+ALU-0074,Curso,Fotografía digital,Lima – Principal,Octubre 2026,Activa,70.0,2,1,Al día,15/10/2026
+ALU-0075,Curso,Violín,Virtual,Setiembre 2026,Pendiente de pago,75.1,2,2,Pago pendiente,15/10/2026
+ALU-0076,Diplomado,Museografía y Diseño de Exhibiciones,La Molina – Camacho,Octubre 2026,Activa,81.1,2,2,Al día,15/10/2026
+ALU-0077,Curso,Fotografía digital,Los Olivos – Villa Sol,Setiembre 2026,Activa,57.8,3,1,Al día,15/10/2026
+ALU-0078,Curso,Guitarra,SJL – Arabiscos,Octubre 2026,Activa,74.6,2,2,Al día,15/10/2026
+ALU-0079,Curso,Guitarra,San Miguel 1,Setiembre 2026,Activa,100,0,1,Incidencia de pago,15/10/2026
+ALU-0080,Curso,Fotografía digital,Lima – Principal,Octubre 2026,Activa,60.9,3,1,Al día,15/10/2026
+ALU-0081,Taller,Kpop,Virtual,Octubre 2026,Pendiente de pago,67.8,3,1,Pago pendiente,15/10/2026
+ALU-0082,Curso,Pintura al Óleo,Lima – Principal,Octubre 2026,Activa,83.6,1,1,Al día,15/10/2026
+ALU-0083,Curso,Pintura al Óleo,Chorrillos – Faisanes,Setiembre 2026,Activa,84.0,1,1,Incidencia de pago,15/10/2026
+ALU-0084,Taller,Kpop,San Miguel 1,Setiembre 2026,Activa,60.1,3,1,Al día,15/10/2026
+ALU-0085,Taller,Marinera Norteña,Lima – Principal,Setiembre 2026,Activa,80.9,2,3,Al día,15/10/2026
+ALU-0086,Curso,Pintura al Óleo,San Miguel 1,Octubre 2026,Activa,71.6,2,1,Incidencia de pago,15/10/2026
+ALU-0087,Diplomado,Gestión Cultural,La Molina – Camacho,Setiembre 2026,Pendiente de pago,86.0,1,2,Pago pendiente,15/10/2026
+ALU-0088,Taller,Taekwondo,Los Olivos – Villa Sol,Octubre 2026,Activa,97.8,0,1,Al día,15/10/2026
+ALU-0089,Curso,Oratoria y Liderazgo,La Molina – Camacho,Octubre 2026,Pendiente de pago,65.2,3,2,Pago pendiente,15/10/2026
+ALU-0090,Curso,Fotografía digital,SJL – Arabiscos,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0091,Curso,Violín,La Molina – Camacho,Setiembre 2026,Pendiente de pago,82.4,1,2,Pago pendiente,15/10/2026
+ALU-0092,Curso,Pintura al Óleo,Virtual,Octubre 2026,Activa,64.5,3,1,Al día,15/10/2026
+ALU-0093,Curso,Oratoria y Liderazgo,Chorrillos – Faisanes,Octubre 2026,Pendiente de pago,77.6,2,2,Pago pendiente,15/10/2026
+ALU-0094,Curso,Teatro y Actuación,La Molina – Camacho,Setiembre 2026,Activa,82.3,1,1,Al día,15/10/2026
+ALU-0095,Taller,Kpop,SJL – Arabiscos,Octubre 2026,Activa,99.2,0,1,Al día,15/10/2026
+ALU-0096,Curso,Guitarra,La Molina – Camacho,Setiembre 2026,Activa,91.4,1,1,Al día,15/10/2026
+ALU-0097,Taller,Kpop,Los Olivos – Villa Sol,Octubre 2026,Activa,73.6,2,1,Al día,15/10/2026
+ALU-0098,Curso,Guitarra,Lima – Principal,Setiembre 2026,Activa,97.3,0,1,Al día,15/10/2026
+ALU-0099,Diplomado,Gestión Cultural,Virtual,Octubre 2026,Activa,56.9,3,3,Al día,15/10/2026
+ALU-0100,Taller,Kpop,La Molina – Camacho,Setiembre 2026,Activa,74.7,2,2,Al día,15/10/2026
+ALU-0101,Taller,Ballet,Chorrillos – Faisanes,Octubre 2026,Activa,74.2,2,1,Al día,15/10/2026
+ALU-0102,Curso,Dibujo y Pintura,Los Olivos – Villa Sol,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0103,Curso,Dibujo y Pintura,Los Olivos – Villa Sol,Setiembre 2026,Activa,79.6,2,1,Al día,15/10/2026
+ALU-0104,Curso,Oratoria y Liderazgo,San Miguel 1,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0105,Taller,Kpop,Chorrillos – Faisanes,Octubre 2026,Activa,97.5,0,1,Al día,15/10/2026
+ALU-0106,Curso,Guitarra,Los Olivos – Villa Sol,Octubre 2026,Activa,96.1,0,1,Al día,15/10/2026
+ALU-0107,Curso,Dibujo y Pintura,Chorrillos – Faisanes,Octubre 2026,Retirada,62.3,3,1,Sin deuda,15/10/2026
+ALU-0108,Taller,Ballet,Chorrillos – Faisanes,Setiembre 2026,Activa,65.4,3,1,Al día,15/10/2026
+ALU-0109,Diplomado,Gestión Cultural,Los Olivos – Villa Sol,Setiembre 2026,Activa,70.3,2,1,Al día,15/10/2026
+ALU-0110,Taller,Marinera Norteña,SJL – Arabiscos,Setiembre 2026,Activa,73.5,2,1,Al día,15/10/2026
+ALU-0111,Curso,Violín,Lima – Principal,Setiembre 2026,Activa,81.3,1,2,Al día,15/10/2026
+ALU-0112,Taller,Taekwondo,La Molina – Camacho,Octubre 2026,Activa,87.9,1,1,Al día,15/10/2026
+ALU-0113,Diplomado,Gestión Cultural,Virtual,Setiembre 2026,Activa,75.3,2,2,Al día,15/10/2026
+ALU-0114,Diplomado,Gestión Cultural,Virtual,Setiembre 2026,Activa,93.4,1,3,Al día,15/10/2026
+ALU-0115,Curso,Oratoria y Liderazgo,San Miguel 1,Octubre 2026,Activa,88.0,1,2,Al día,15/10/2026
+ALU-0116,Taller,Ballet,Virtual,Octubre 2026,Retirada,63.5,3,3,Sin deuda,15/10/2026
+ALU-0117,Curso,Guitarra,La Molina – Camacho,Octubre 2026,Activa,72.7,2,1,Al día,15/10/2026
+ALU-0118,Taller,Marinera Norteña,Virtual,Setiembre 2026,Activa,90.3,1,1,Al día,15/10/2026
+ALU-0119,Curso,Teatro y Actuación,Virtual,Setiembre 2026,Activa,79.9,2,1,Al día,15/10/2026
+ALU-0120,Curso,Violín,San Miguel 1,Octubre 2026,Activa,86.9,1,1,Al día,15/10/2026
+ALU-0121,Curso,Guitarra,La Molina – Camacho,Octubre 2026,Activa,63.3,3,2,Al día,15/10/2026
+ALU-0122,Curso,Guitarra,San Miguel 1,Setiembre 2026,Activa,63.2,3,2,Incidencia de pago,15/10/2026
+ALU-0123,Taller,Marinera Norteña,Lima – Principal,Octubre 2026,Activa,63.2,3,3,Incidencia de pago,15/10/2026
+ALU-0124,Curso,Oratoria y Liderazgo,SJL – Arabiscos,Octubre 2026,Pendiente de pago,74.4,2,1,Pago pendiente,15/10/2026
+ALU-0125,Taller,Marinera Norteña,Chorrillos – Faisanes,Octubre 2026,Activa,66.1,3,1,Al día,15/10/2026
+ALU-0126,Taller,Taekwondo,Virtual,Setiembre 2026,Activa,88.1,1,1,Al día,15/10/2026
+ALU-0127,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Octubre 2026,Activa,87.8,1,2,Al día,15/10/2026
+ALU-0128,Taller,Taekwondo,Chorrillos – Faisanes,Octubre 2026,Retirada,69.9,2,1,Sin deuda,15/10/2026
+ALU-0129,Curso,Teatro y Actuación,Virtual,Setiembre 2026,Activa,68.2,3,3,Incidencia de pago,15/10/2026
+ALU-0130,Taller,Kpop,Virtual,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0131,Diplomado,Gestión Cultural,SJL – Arabiscos,Setiembre 2026,Activa,49.5,4,1,Incidencia de pago,15/10/2026
+ALU-0132,Curso,Dibujo y Pintura,La Molina – Camacho,Setiembre 2026,Activa,85.2,1,2,Incidencia de pago,15/10/2026
+ALU-0133,Curso,Guitarra,Virtual,Setiembre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0134,Diplomado,Museografía y Diseño de Exhibiciones,SJL – Arabiscos,Setiembre 2026,Retirada,98.0,0,2,Sin deuda,15/10/2026
+ALU-0135,Curso,Oratoria y Liderazgo,Virtual,Octubre 2026,Activa,88.7,1,2,Al día,15/10/2026
+ALU-0136,Curso,Dibujo y Pintura,SJL – Arabiscos,Octubre 2026,Activa,69.4,2,3,Al día,15/10/2026
+ALU-0137,Diplomado,Gestión Cultural,Virtual,Setiembre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0138,Curso,Dibujo y Pintura,La Molina – Camacho,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0139,Taller,Ballet,Chorrillos – Faisanes,Setiembre 2026,Activa,80.5,2,1,Al día,15/10/2026
+ALU-0140,Curso,Fotografía digital,San Miguel 1,Setiembre 2026,Activa,94.4,0,1,Al día,15/10/2026
+ALU-0141,Curso,Oratoria y Liderazgo,La Molina – Camacho,Setiembre 2026,Activa,79.7,2,1,Al día,15/10/2026
+ALU-0142,Curso,Teatro y Actuación,Los Olivos – Villa Sol,Octubre 2026,Retirada,90.7,1,1,Sin deuda,15/10/2026
+ALU-0143,Taller,Marinera Norteña,San Miguel 1,Octubre 2026,Activa,84.3,1,1,Al día,15/10/2026
+ALU-0144,Diplomado,Gestión Cultural,La Molina – Camacho,Setiembre 2026,Activa,93.1,1,1,Incidencia de pago,15/10/2026
+ALU-0145,Curso,Oratoria y Liderazgo,Virtual,Octubre 2026,Pendiente de pago,86.7,1,2,Pago pendiente,15/10/2026
+ALU-0146,Taller,Kpop,SJL – Arabiscos,Setiembre 2026,Activa,42.9,5,1,Al día,15/10/2026
+ALU-0147,Curso,Oratoria y Liderazgo,Lima – Principal,Setiembre 2026,Activa,80.8,2,1,Al día,15/10/2026
+ALU-0148,Curso,Guitarra,Chorrillos – Faisanes,Setiembre 2026,Activa,56.1,4,2,Al día,15/10/2026
+ALU-0149,Curso,Teatro y Actuación,La Molina – Camacho,Octubre 2026,Activa,79.9,2,2,Al día,15/10/2026
+ALU-0150,Taller,Marinera Norteña,Virtual,Octubre 2026,Pendiente de pago,71.3,2,2,Pago pendiente,15/10/2026
+ALU-0151,Curso,Teatro y Actuación,Chorrillos – Faisanes,Octubre 2026,Activa,85.3,1,3,Al día,15/10/2026
+ALU-0152,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Octubre 2026,Activa,65.2,3,1,Al día,15/10/2026
+ALU-0153,Curso,Guitarra,SJL – Arabiscos,Octubre 2026,Activa,64.2,3,1,Al día,15/10/2026
+ALU-0154,Taller,Kpop,San Miguel 1,Octubre 2026,Activa,97.1,0,2,Al día,15/10/2026
+ALU-0155,Taller,Kpop,SJL – Arabiscos,Octubre 2026,Activa,68.1,3,1,Al día,15/10/2026
+ALU-0156,Curso,Dibujo y Pintura,Los Olivos – Villa Sol,Setiembre 2026,Retirada,64.1,3,1,Sin deuda,15/10/2026
+ALU-0157,Curso,Violín,San Miguel 1,Octubre 2026,Activa,90.1,1,1,Al día,15/10/2026
+ALU-0158,Diplomado,Gestión Cultural,Virtual,Octubre 2026,Activa,91.6,1,1,Al día,15/10/2026
+ALU-0159,Taller,Marinera Norteña,Virtual,Octubre 2026,Activa,93.2,1,1,Incidencia de pago,15/10/2026
+ALU-0160,Curso,Oratoria y Liderazgo,SJL – Arabiscos,Octubre 2026,Activa,82.7,1,1,Incidencia de pago,15/10/2026
+ALU-0161,Taller,Marinera Norteña,SJL – Arabiscos,Setiembre 2026,Pendiente de pago,82.6,1,1,Pago pendiente,15/10/2026
+ALU-0162,Taller,Taekwondo,La Molina – Camacho,Setiembre 2026,Retirada,86.6,1,3,Sin deuda,15/10/2026
+ALU-0163,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,75.2,2,1,Al día,15/10/2026
+ALU-0164,Taller,Ballet,La Molina – Camacho,Setiembre 2026,Activa,77.9,2,3,Al día,15/10/2026
+ALU-0165,Curso,Violín,Lima – Principal,Octubre 2026,Activa,80.0,2,2,Al día,15/10/2026
+ALU-0166,Taller,Kpop,La Molina – Camacho,Setiembre 2026,Activa,88.7,1,1,Al día,15/10/2026
+ALU-0167,Curso,Fotografía digital,San Miguel 1,Setiembre 2026,Activa,57.1,3,1,Al día,15/10/2026
+ALU-0168,Taller,Kpop,Virtual,Octubre 2026,Retirada,76.2,2,1,Sin deuda,15/10/2026
+ALU-0169,Curso,Dibujo y Pintura,Los Olivos – Villa Sol,Octubre 2026,Activa,94.8,0,1,Al día,15/10/2026
+ALU-0170,Curso,Pintura al Óleo,Chorrillos – Faisanes,Octubre 2026,Activa,86.0,1,1,Al día,15/10/2026
+ALU-0171,Taller,Taekwondo,Los Olivos – Villa Sol,Octubre 2026,Retirada,68.2,3,1,Sin deuda,15/10/2026
+ALU-0172,Diplomado,Gestión Cultural,San Miguel 1,Setiembre 2026,Activa,76.3,2,1,Al día,15/10/2026
+ALU-0173,Taller,Kpop,La Molina – Camacho,Octubre 2026,Activa,57.5,3,1,Al día,15/10/2026
+ALU-0174,Taller,Marinera Norteña,Los Olivos – Villa Sol,Setiembre 2026,Activa,93.5,1,1,Al día,15/10/2026
+ALU-0175,Curso,Pintura al Óleo,San Miguel 1,Setiembre 2026,Activa,85.3,1,1,Al día,15/10/2026
+ALU-0176,Curso,Violín,Los Olivos – Villa Sol,Octubre 2026,Activa,83.5,1,2,Al día,15/10/2026
+ALU-0177,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,52.4,4,1,Al día,15/10/2026
+ALU-0178,Taller,Kpop,Virtual,Setiembre 2026,Activa,94.5,0,1,Al día,15/10/2026
+ALU-0179,Curso,Violín,Virtual,Setiembre 2026,Activa,64.0,3,1,Al día,15/10/2026
+ALU-0180,Curso,Oratoria y Liderazgo,Chorrillos – Faisanes,Octubre 2026,Pendiente de pago,97.6,0,2,Pago pendiente,15/10/2026
+ALU-0181,Taller,Marinera Norteña,SJL – Arabiscos,Octubre 2026,Activa,91.5,1,1,Al día,15/10/2026
+ALU-0182,Diplomado,Gestión Cultural,Chorrillos – Faisanes,Octubre 2026,Activa,73.8,2,1,Al día,15/10/2026
+ALU-0183,Curso,Teatro y Actuación,San Miguel 1,Setiembre 2026,Activa,86.6,1,2,Incidencia de pago,15/10/2026
+ALU-0184,Taller,Ballet,SJL – Arabiscos,Setiembre 2026,Activa,90.1,1,1,Al día,15/10/2026
+ALU-0185,Curso,Oratoria y Liderazgo,San Miguel 1,Setiembre 2026,Activa,63.0,3,1,Al día,15/10/2026
+ALU-0186,Curso,Pintura al Óleo,Los Olivos – Villa Sol,Octubre 2026,Activa,88.8,1,1,Al día,15/10/2026
+ALU-0187,Curso,Fotografía digital,Virtual,Setiembre 2026,Activa,84.7,1,2,Incidencia de pago,15/10/2026
+ALU-0188,Taller,Marinera Norteña,SJL – Arabiscos,Octubre 2026,Activa,79.5,2,1,Al día,15/10/2026
+ALU-0189,Curso,Fotografía digital,La Molina – Camacho,Setiembre 2026,Activa,70.1,2,1,Al día,15/10/2026
+ALU-0190,Diplomado,Gestión Cultural,Virtual,Octubre 2026,Activa,77.9,2,1,Al día,15/10/2026
+ALU-0191,Taller,Taekwondo,La Molina – Camacho,Setiembre 2026,Activa,63.5,3,2,Al día,15/10/2026
+ALU-0192,Taller,Taekwondo,La Molina – Camacho,Setiembre 2026,Activa,91.3,1,1,Al día,15/10/2026
+ALU-0193,Curso,Pintura al Óleo,La Molina – Camacho,Octubre 2026,Activa,80.8,2,1,Al día,15/10/2026
+ALU-0194,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,98.6,0,2,Al día,15/10/2026
+ALU-0195,Curso,Teatro y Actuación,Lima – Principal,Setiembre 2026,Activa,59.1,3,1,Al día,15/10/2026
+ALU-0196,Taller,Ballet,SJL – Arabiscos,Setiembre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0197,Diplomado,Museografía y Diseño de Exhibiciones,San Miguel 1,Octubre 2026,Activa,69.2,2,2,Al día,15/10/2026
+ALU-0198,Curso,Oratoria y Liderazgo,Los Olivos – Villa Sol,Octubre 2026,Activa,68.7,3,1,Al día,15/10/2026
+ALU-0199,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,79.3,2,1,Al día,15/10/2026
+ALU-0200,Taller,Marinera Norteña,Virtual,Setiembre 2026,Activa,84.7,1,1,Al día,15/10/2026

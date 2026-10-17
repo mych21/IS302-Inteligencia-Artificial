@@ -208,8 +208,26 @@ def es_saludo(texto: str) -> bool:
         and not quiere_inscribirse(texto)
 
 
+_INTENCION = re.compile(
+    r"\b(inscrib(irme|eme|irte|ir a mi|irlo|irla|o)|inscripcion en|matricul(arme|ame|o|ar a mi)|"
+    r"pre ?inscrib\w*|pre ?inscripcion|agend\w*|reserv(ar|ame|a|o)\s+(una\s+|mi\s+)?(vacante|cupo|horario)|"
+    r"separ(ar|ame|o)\s+(una\s+|mi\s+)?(vacante|cupo)|apuntame|quiero\s+(inscribir|matricular|llevar)\w*)")
+
+
 def quiere_inscribirse(texto: str) -> bool:
-    return any(p in v._normalizar(texto) for p in PALABRAS_INSCRIBIR)
+    """Intención explícita de inscribirse («quiero inscribirme», «inscríbeme», «agéndame una vacante»…)."""
+    return bool(_INTENCION.search(v._normalizar(texto)))
+
+
+def fuera_del_flujo(texto: str) -> bool:
+    """El usuario cambió de tema a mitad de la pre-inscripción (pregunta sin elegir curso u horario)."""
+    paso = estado.get("paso")
+    if paso not in ("curso", "horario"):
+        return False
+    pregunta = "?" in texto or "¿" in texto
+    eligio = bool(detectar_cursos(texto)) or bool(re.search(r"\b\d{1,2}\b|\bh\d", v._normalizar(texto))) \
+        or bool(set(v._normalizar(texto).split()) & set(ORDINALES))
+    return pregunta and not eligio
 
 
 def flujo_activo() -> bool:

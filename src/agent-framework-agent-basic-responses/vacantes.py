@@ -39,6 +39,12 @@ SINONIMOS = {
     "entrar": "ingreso aulas boleta", "aula": "ingreso aulas boleta", "ingresar": "ingreso aulas boleta",
     "contacto": "correo atencion", "correo": "correo atencion", "ia": "inteligencia artificial",
     "fotos": "fotografia", "comic": "historieta manga comics",
+    "paga": "pagos", "pagar": "pagos", "pago": "pagos", "pague": "pagos", "dan": "ofrece ramas artisticas",
+    "empezar": "iniciar basico progresiva", "iniciar": "basico progresiva", "nunca": "basico iniciar",
+    "estudiado": "basico", "principiante": "basico iniciar", "dictan": "sedes buscador", "dicta": "sedes",
+    "recoger": "recoger dejar puntualmente minutos", "anticipacion": "minutos antes", "llegar": "minutos antes",
+    "escribo": "correo contacto atencion", "escribir": "correo contacto", "presento": "reclamaciones libro",
+    "grabadas": "grabarse sesiones virtual", "grabada": "grabarse sesiones", "grabacion": "grabarse sesiones",
 }
 
 
@@ -57,7 +63,7 @@ def _tokens(texto: str, expandir: bool = False) -> list[str]:
 
 # ------------------------------------------------------------------ vacantes (archivo CSV)
 PALABRAS_VACANTES = {"vacante", "vacantes", "cupo", "cupos", "disponibilidad", "disponible", "disponibles",
-                     "lleno", "llenos", "quedan", "queda"}
+                     "lleno", "llenos", "quedan"}
 _GENERICAS_SEDE = {"sede", "principal", "virtual", "zoom", "1", "san", "la", "lo"}
 _GENERICAS_CONSULTA = {"curso", "cursos", "taller", "tallere", "clase", "horario", "programa", "periodo", "temporada",
                        "inscripcion", "inscribir", "matricula", "hay", "cuanta", "cuanto", "ver", "todo", "toda",
@@ -103,7 +109,15 @@ def _pide_solo_generico(resto: set[str]) -> bool:
 
 
 def _pide_vacantes(texto: str) -> bool:
-    return bool(set(_normalizar(texto).split()) & PALABRAS_VACANTES)
+    palabras = set(_normalizar(texto).split())
+    if palabras & PALABRAS_VACANTES:
+        return True
+    try:                                   # «¿qué cursos hay en verano?»: menciona un periodo del archivo
+        periodos = {t for f in _leer_vacantes() for t in _normalizar(f["periodo"]).split() if not t.isdigit()}
+    except FileNotFoundError:
+        return False
+    return bool(palabras & periodos) and bool(palabras & {"curso", "cursos", "taller", "talleres", "horario",
+                                                          "horarios", "clases", "hay", "dan", "ofrecen"})
 
 
 def _coincide(filtro: str, campo: str) -> bool:
