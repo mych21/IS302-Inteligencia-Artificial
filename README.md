@@ -82,7 +82,8 @@ En VS Code: **F5** («Debug Local Agent HTTP Server») abre el Agent Inspector.
 2. «información de guitarra» (muestra cada horario con su código, p. ej. **H17**) → «inscribirme en H17» →
    «Ana Torres, DNI 45678912, teléfono 987654321, ana@correo.com» → «sí» → «PAG-100001» (pago conciliado:
    matrícula completada). Con un código que no está en `pagos_demo.csv` (p. ej. «PAG-000134») la inscripción
-   queda **por confirmar** y el estudiante la sigue con «estado MAT-0001».
+   queda **por confirmar**. Para ver el estado: «hola» → «estudiante» → «3» (estado de mi matrícula) →
+   código de alumno (p. ej. «ALU-0201») → número de documento dado al inscribirse (verificación).
 3. Personal: «personal» → «coord01» → «12345» → «pagos por confirmar» → «aprobar pago MAT-0001» (o «rechazar
    pago MAT-0001») → «Dame los datos del alumno ALU-0007» →
    «actualiza vacantes H16 a 5» → «ver registro de consultas» → «cerrar sesión».

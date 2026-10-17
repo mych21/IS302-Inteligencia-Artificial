@@ -27,12 +27,27 @@ class AsistenteTests(unittest.TestCase):
         acceso.sesion.update(acceso.PUBLICO)
         acceso.pendiente.clear()
         matricula.reiniciar()
+        asistente.consulta_estado.clear()
+        asistente.menu_estudiante.clear()
 
     def tearDown(self):
         for p in self.parches:
             p.stop()
         acceso.sesion.update(acceso.PUBLICO)
         matricula.reiniciar()
+
+    def test_menu_estudiante_y_estado_con_verificacion(self):
+        r = asistente.responder("estudiante")
+        self.assertIn("Estado de mi matrícula", r.texto)
+        self.assertIn("código de alumno", asistente.responder("3").texto)
+        with patch.object(matricula, "ARCHIVO_MATRICULAS", matricula.ARCHIVO_MATRICULAS):
+            self.assertIn("número de documento", asistente.responder("ALU-0001").texto)
+            alumno = next(a for a in acceso._alumnos() if a["id_alumno"] == "ALU-0001")
+            self.assertEqual(asistente.responder("00000000").tipo, "verificacion")       # documento incorrecto
+            r = asistente.responder(f"estado de mi matrícula ALU-0001 {alumno['numero_documento']}")
+        self.assertEqual(r.tipo, "estado_matricula")
+        self.assertNotIn(alumno["numero_documento"], r.texto)
+        self.assertNotIn(alumno["correo"], r.texto)
 
     def test_solo_personal_revisa_pagos(self):
         r = asistente.responder("pagos por confirmar")
@@ -106,7 +121,7 @@ class AsistenteTests(unittest.TestCase):
         asistente.responder("iniciar sesión coord01")
         self.assertIn("Sesión iniciada", asistente.responder("12345").texto)
         self.assertEqual(acceso.sesion["perfil"], "Coordinación Académica")
-        self.assertEqual(asistente.ocultar_si_sensible("12345"), "[mensaje de inicio de sesión oculto]")
+        self.assertEqual(asistente.ocultar_si_sensible("12345"), "[mensaje oculto: contenía una contraseña o un documento de verificación]")
         self.assertNotIn("12345", (self.tmp / "consultas.csv").read_text(encoding="utf-8"))
 
     def test_pregunta_si_es_estudiante_o_personal(self):

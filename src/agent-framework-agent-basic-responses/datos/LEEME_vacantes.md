@@ -28,8 +28,9 @@ Al validar uno, se marca como `usado`, la matrícula pasa a "Matriculado" y el a
 horario y la información del curso. Si el código **no** figura en `pagos_demo.csv` (por ejemplo PAG-000134), la
 matrícula queda "Pago por confirmar (MALI)": la vacante sigue separada y el personal habilitado o la Coordinación
 escribe «pagos por confirmar» para verlos y «aprobar pago MAT-0005» o «rechazar pago MAT-0005» para resolverlos
-(al aprobar, el código se agrega a `pagos_demo.csv` como `usado`; al rechazar, la matrícula vuelve a pendiente de
-pago). El estudiante consulta el estado con «estado MAT-0005». Para reiniciar la demo, restaura las vacantes, pon los pagos en `disponible`
+(todo se lee y se actualiza en `restringido/matricula.csv`: al aprobar pasa a "Matriculado" con el usuario y la
+fecha en `validado_por` y `fecha_validacion`; al rechazar vuelve a pendiente de pago). El estudiante consulta el
+estado con «estado de mi matrícula» + su código de alumno + su número de documento (verificación). Para reiniciar la demo, restaura las vacantes, pon los pagos en `disponible`
 y ejecuta `python restringido/generar_matricula.py` (deja solo las 200 matrículas sintéticas… y las del
 asistente; para quitarlas también, borra sus filas con origen «asistente»).
 

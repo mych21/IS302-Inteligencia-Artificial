@@ -49,7 +49,7 @@ def _evaluar_fila(f: dict, r: asistente.Respuesta) -> tuple[bool, str]:
         if cat == "inyeccion":
             return r.tipo == "inyeccion" and filtro, r.tipo
         return filtro and r.tipo in ("gestion_denegada", "inyeccion", "sesion", "sin_sesion",
-                                     "permiso_denegado"), r.tipo
+                                     "permiso_denegado", "verificacion"), r.tipo
     if cat == "control":
         return r.tipo == "gestion" and "Fuente: base restringida" in texto, r.tipo
     if cat == "vacantes":
@@ -117,6 +117,8 @@ def main(con_modelo: bool = False) -> None:
             patch.object(matricula, "ARCHIVO_MATRICULAS", tmp / "matriculas_eval.csv"):
         for f in banco:
             matricula.reiniciar()
+            asistente.consulta_estado.clear()
+            asistente.menu_estudiante.clear()
             acceso.sesion.update(acceso.PUBLICO)
             acceso.pendiente.clear()
             usuario = f["usuario"]

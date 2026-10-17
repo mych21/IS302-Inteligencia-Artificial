@@ -80,7 +80,8 @@ def presentacion() -> str:
             "educativa del Museo de Arte de Lima. Puedo ayudarte a:\n"
             "- Resolver dudas sobre cursos, talleres, sedes, procedimientos y canales de atención (con la fuente).\n"
             "- Ver los horarios y vacantes de los cursos.\n"
-            "- Inscribirte en un curso (pre-inscripción y código de pago de demostración).\n\n"
+            "- Inscribirte en un curso (pre-inscripción y código de pago de demostración).\n"
+            "- Consultar el estado de tu matrícula con tu código de alumno.\n\n"
             f"{AVISO_PRIVACIDAD}\n\n"
             "Para atenderte mejor, **¿eres estudiante o personal del MALI?** Responde «estudiante» o «personal». "
             "(Si eres estudiante también puedes preguntarme directamente.)")
@@ -124,7 +125,7 @@ def ocultar_si_sensible(texto: str) -> str:
     """Si el mensaje tenía una contraseña, devuelve una versión sin ella (para el historial que ve el modelo)."""
     import hashlib
     if hashlib.sha256(texto.strip().encode("utf-8")).hexdigest() in _MENSAJES_SENSIBLES:
-        return "[mensaje de inicio de sesión oculto]"
+        return "[mensaje oculto: contenía una contraseña o un documento de verificación]"
     return texto
 
 
@@ -208,6 +209,92 @@ def _ficha_curso(curso: str) -> Respuesta:
     return Respuesta("curso", "\n\n".join(partes), fuentes=([doc.id] if doc else []) + ["vacantes.csv"])
 
 
+# ------------------------------------------------------------------ estado de matrícula (estudiantes)
+consulta_estado: dict = {}          # {"paso": "codigo" | "documento", "codigo": "ALU-0205"}
+menu_estudiante: dict = {}          # {"activo": True} tras responder «estudiante»
+MENU_ESTUDIANTE = ("Perfecto, te atiendo como **estudiante** (no necesitas iniciar sesión). ¿Qué necesitas?\n"
+                   "1. **Matricularme** en un curso\n"
+                   "2. **Ver vacantes** y horarios\n"
+                   "3. **Estado de mi matrícula** (con tu código de alumno)\n\n"
+                   "Responde con el número o escríbeme tu pregunta sobre cursos, sedes o procedimientos.")
+_PIDE_ESTADO = re.compile(r"\bestado\b.*\b(matricula|inscripcion|preinscripcion|pago)|"
+                          r"\b(mi|mis) (matricula|inscripcion|preinscripcion)\b.*\b(como|va|esta|consult|ver)|"
+                          r"\b(como|consult\w*|ver|revisar)\b.*\b(mi|mis) (matricula|inscripcion)")
+_DATOS_DE_ALUMNO = re.compile(r"\b(datos|ficha|asistencia|situacion|expediente|deuda|telefono|correo|dni|"
+                              r"documento|historial|notas|informacion)\b")
+_CODIGO_ESTADO = re.compile(r"\b(ALU|MAT)[-\s]?(\d{1,4})\b", re.I)
+_DOCUMENTO = re.compile(r"(?<![\w-])(\d[\d .]{6,14}\d)(?![\w-])")
+
+
+def _verificar_estado(codigo: str, texto_doc: str) -> Respuesta:
+    consulta_estado.clear()
+    registrar_mensaje_sensible(texto_doc)          # el documento no llega al modelo ni al registro
+    m = _DOCUMENTO.search(texto_doc)
+    ident = matricula.verificar_alumno(codigo, m.group(1) if m else "")
+    if not ident:
+        acceso.registrar("estado_matricula", "matricula.csv", "denegado")
+        return Respuesta("verificacion", "Los datos no coinciden con nuestros registros, así que por seguridad no "
+                                         "puedo mostrar el estado. Revisa tu código de alumno y tu documento, o "
+                                         f"escribe a {CANAL}.")
+    acceso.registrar("estado_matricula", "matricula.csv", "permitido")
+    return Respuesta("estado_matricula", matricula.estado_por_alumno(ident), fuentes=["matricula.csv"])
+
+
+def _pedir_documento(codigo: str) -> Respuesta:
+    consulta_estado.update(paso="documento", codigo=codigo)
+    return Respuesta("verificacion", f"Para proteger tus datos necesito verificar que eres el titular de **{codigo}**. "
+                                     "🔐 Escribe tu **número de documento** (el que diste al inscribirte). Solo lo "
+                                     "uso para comparar y no lo guardo. (Escribe «cancelar» para salir.)")
+
+
+def _flujo_estado(texto: str) -> Respuesta | None:
+    """Consulta del estado de matrícula: código de alumno (o de matrícula) + documento para verificar."""
+    n = v._normalizar(texto)
+    cod = _CODIGO_ESTADO.search(texto)
+    codigo = f"{cod.group(1).upper()}-{int(cod.group(2)):04d}" if cod else ""
+    if consulta_estado:
+        if n.strip(" .!") in ("cancelar", "salir", "no", "ya no"):
+            consulta_estado.clear()
+            return Respuesta("verificacion", "De acuerdo, cancelé la consulta. ¿En qué más te puedo ayudar?")
+        if consulta_estado["paso"] == "codigo":
+            if codigo:
+                resto = _CODIGO_ESTADO.sub(" ", texto)
+                return _verificar_estado(codigo, resto) if _DOCUMENTO.search(resto) else _pedir_documento(codigo)
+        elif _DOCUMENTO.search(texto):
+            return _verificar_estado(consulta_estado["codigo"], texto)
+        if len(n.split()) > 3 or "?" in texto:          # cambió de tema
+            consulta_estado.clear()
+            return None
+        return Respuesta("verificacion", "No reconocí el dato. " + (
+            "Escribe tu **código de alumno** (formato ALU-0000)." if consulta_estado["paso"] == "codigo"
+            else "Escribe tu **número de documento** (solo números)."))
+    if acceso.puede_gestionar() or matricula.PAGO.search(texto):
+        return None                                       # el personal habilitado usa la gestión de alumnos
+    pide_estado = bool(_PIDE_ESTADO.search(n))
+    if codigo and (pide_estado or (len(n.split()) <= 3 and codigo.startswith("ALU"))) \
+            and not _DATOS_DE_ALUMNO.search(n) and not _GESTION.search(texto):
+        resto = _CODIGO_ESTADO.sub(" ", texto)
+        return _verificar_estado(codigo, resto) if _DOCUMENTO.search(resto) else _pedir_documento(codigo)
+    if pide_estado and not codigo:
+        consulta_estado.update(paso="codigo")
+        return Respuesta("verificacion", "Claro. Escríbeme tu **código de alumno** (formato ALU-0000; te lo di al "
+                                         "inscribirte). También sirve tu código de matrícula (MAT-0000).")
+    return None
+
+
+def _opcion_menu(texto: str) -> Respuesta | None:
+    menu_estudiante.clear()
+    n = v._normalizar(texto).strip(" .!)")
+    opcion = {"1": 1, "uno": 1, "2": 2, "dos": 2, "3": 3, "tres": 3}.get(n.replace("opcion ", ""))
+    if opcion == 1:
+        return _decidir("quiero inscribirme en un curso")
+    if opcion == 2:
+        return _decidir("¿qué vacantes hay disponibles?")
+    if opcion == 3:
+        return _decidir("quiero ver el estado de mi matrícula")
+    return None
+
+
 # ------------------------------------------------------------------ orquestación
 def _decidir(pregunta: str) -> Respuesta:
     texto = pregunta.strip()
@@ -224,12 +311,16 @@ def _decidir(pregunta: str) -> Respuesta:
         if n0 in ("cancelar", "salir", "estudiante", "soy estudiante"):
             return Respuesta("perfil", "De acuerdo, te atiendo como **estudiante**. ¿En qué te puedo ayudar?")
         return Respuesta("sesion", acceso.iniciar_sesion(texto.split()[0]), fuentes=["usuarios.csv"])
+    if menu_estudiante and not matricula.flujo_activo():
+        r = _opcion_menu(texto)
+        if r:
+            return r
     if _responde_rol(texto, _PALABRAS_ESTUDIANTE):
         if acceso.autenticado():
             acceso.cerrar_sesion()
-        return Respuesta("perfil", "Perfecto, te atiendo como **estudiante** (no necesitas iniciar sesión). Puedo "
-                                   "ayudarte con cursos, procedimientos, horarios y vacantes, e inscribirte en un curso. "
-                                   "¿Qué te gustaría saber?")
+        consulta_estado.clear()
+        menu_estudiante.update(activo=True)
+        return Respuesta("perfil", MENU_ESTUDIANTE)
     if _responde_rol(texto, _PALABRAS_PERSONAL):
         if acceso.autenticado():
             return Respuesta("perfil", acceso.describir_sesion())
@@ -244,6 +335,10 @@ def _decidir(pregunta: str) -> Respuesta:
         return Respuesta("inyeccion", "No puedo compartir mis instrucciones internas, cambiar mis reglas ni mostrar "
                                       "fuentes restringidas. Con gusto te ayudo con cursos, procedimientos, vacantes "
                                       "o pre-inscripción.")
+
+    r = _flujo_estado(texto)         # antes del filtro: aquí el documento sí se pide (solo para verificar)
+    if r:
+        return r
 
     limpio, sensibles = _datos_sensibles(texto)
     if matricula.estado.get("paso") == "datos":   # al inscribirse sí se pide el documento (solo lo ve el personal)
@@ -278,12 +373,6 @@ def _decidir(pregunta: str) -> Respuesta:
     m = re.search(r"\b(aprob|rechaz)\w*\s+(el\s+)?pago\s+(de\s+)?(la\s+)?(inscripcion\s+|matricula\s+)?mat[-\s]?(\d{1,4})\b", norm0)
     revisar = re.search(r"pagos?\s+(por|pendientes?\s+de)\s+(confirmar|validar|aprobar|revision)|"
                         r"(confirmar|validar|aprobar|revisar)\s+(los\s+)?pagos", norm0)
-    est = matricula.MATRICULA.search(texto)
-    if est and re.search(r"\bestado\b", norm0) and not matricula.PAGO.search(texto) and not m:
-        matricula.reiniciar()
-        acceso.registrar("estado_inscripcion", "matricula.csv", "atendida")
-        return Respuesta("matricula", matricula.estado_inscripcion("MAT-{:04d}".format(int(est.group(1)))),
-                         fuentes=["matricula.csv"])
     if m or revisar:
         if not acceso.autorizar("gestion"):
             return _denegado("revision_pagos", "revisar o aprobar pagos (solo personal del MALI habilitado y la "
