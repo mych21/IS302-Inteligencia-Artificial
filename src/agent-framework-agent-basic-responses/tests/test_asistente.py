@@ -28,7 +28,8 @@ class AsistenteTests(unittest.TestCase):
         acceso.pendiente.clear()
         matricula.reiniciar()
         asistente.consulta_estado.clear()
-        asistente.menu_estudiante.clear()
+        asistente.menu.clear()
+        asistente.perfil_elegido.clear()
 
     def tearDown(self):
         for p in self.parches:
@@ -37,7 +38,8 @@ class AsistenteTests(unittest.TestCase):
         matricula.reiniciar()
 
     def test_menu_estudiante_y_estado_con_verificacion(self):
-        r = asistente.responder("estudiante")
+        asistente.responder("hola")
+        r = asistente.responder("1")
         self.assertIn("Estado de mi matrícula", r.texto)
         self.assertIn("código de alumno", asistente.responder("3").texto)
         with patch.object(matricula, "ARCHIVO_MATRICULAS", matricula.ARCHIVO_MATRICULAS):
@@ -124,12 +126,31 @@ class AsistenteTests(unittest.TestCase):
         self.assertEqual(asistente.ocultar_si_sensible("12345"), "[mensaje oculto: contenía una contraseña o un documento de verificación]")
         self.assertNotIn("12345", (self.tmp / "consultas.csv").read_text(encoding="utf-8"))
 
-    def test_pregunta_si_es_estudiante_o_personal(self):
-        self.assertIn("¿eres estudiante o personal", asistente.responder("hola").texto)
-        self.assertIn("estudiante", asistente.responder("estudiante").texto)
-        self.assertIn("usuario", asistente.responder("personal").texto)
+    def test_menu_inicial_solo_acepta_numeros(self):
+        r = asistente.responder("hola")
+        self.assertIn("**¿quién eres?**", r.texto)
+        self.assertIn("1. Soy **estudiante**", r.texto)
+        self.assertIn("No es una opción válida", asistente.responder("quiero inscribirme en guitarra").texto)
+        self.assertIn("No es una opción válida", asistente.responder("5").texto)
+        r = asistente.responder("1")
+        self.assertIn("2. **Ver vacantes**", r.texto)
+        self.assertIn("No es una opción válida", asistente.responder("estado de mi matrícula").texto)
+        self.assertIn("Cursos con vacantes", asistente.responder("1").texto)       # matricularme → pide el curso
+        self.assertIn("1. **Matricularme**", asistente.responder("menú").texto)
+
+    def test_menu_del_personal(self):
+        asistente.responder("hola")
+        self.assertIn("usuario", asistente.responder("2").texto)
         self.assertIn("Ingresa la contraseña", asistente.responder("coord01").texto)
-        self.assertIn("Sesión iniciada", asistente.responder("12345").texto)
+        r = asistente.responder("12345")
+        self.assertIn("Sesión iniciada", r.texto)
+        self.assertIn("1. **Pagos por confirmar**", r.texto)
+        with patch.object(matricula, "ARCHIVO_MATRICULAS", self.tmp / "matriculas.csv"):
+            self.assertEqual(asistente.responder("1").tipo, "administracion")
+        asistente.responder("menú")
+        ultimo = len(asistente.menu["opciones"])
+        self.assertIn("Sesión cerrada", asistente.responder(str(ultimo)).texto)
+        self.assertFalse(acceso.autenticado())
 
     def test_coordinacion_consulta_matriculados(self):
         acceso.iniciar_sesion("coord01", "12345")

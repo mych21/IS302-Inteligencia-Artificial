@@ -77,18 +77,10 @@ def presentacion() -> str:
     if not acceso.autenticado():
         return (
             "¡Hola! Soy **MALI Asistente** 🎨, un prototipo académico de chatbot con IA para orientar a la comunidad "
-            "educativa del Museo de Arte de Lima. Puedo ayudarte a:\n"
-            "- Resolver dudas sobre cursos, talleres, sedes, procedimientos y canales de atención (con la fuente).\n"
-            "- Ver los horarios y vacantes de los cursos.\n"
-            "- Inscribirte en un curso (pre-inscripción y código de pago de demostración).\n"
-            "- Consultar el estado de tu matrícula con tu código de alumno.\n\n"
-            f"{AVISO_PRIVACIDAD}\n\n"
-            "Para atenderte mejor, **¿eres estudiante o personal del MALI?** Responde «estudiante» o «personal». "
-            "(Si eres estudiante también puedes preguntarme directamente.)")
-    return (
-        f"¡Hola, {acceso.sesion['usuario']}! Soy **MALI Asistente** 🎨. {acceso.describir_sesion()}\n\n"
-        "Respondo con la fuente de cada dato y, si no tengo la información, te derivo al canal oficial.\n\n"
-        f"{AVISO_PRIVACIDAD}\n\n¿En qué te puedo ayudar?")
+            "educativa del Museo de Arte de Lima.\n\n"
+            f"{AVISO_PRIVACIDAD}\n\n" + abrir_menu("rol"))
+    return (f"¡Hola, {acceso.sesion['usuario']}! Soy **MALI Asistente** 🎨. {acceso.describir_sesion()}\n\n"
+            + abrir_menu("personal"))
 
 
 _ES_ESTUDIANTE = {"estudiante", "soy estudiante", "alumno", "alumna", "soy alumno", "soy alumna", "soy estudiante del mali"}
@@ -211,12 +203,6 @@ def _ficha_curso(curso: str) -> Respuesta:
 
 # ------------------------------------------------------------------ estado de matrícula (estudiantes)
 consulta_estado: dict = {}          # {"paso": "codigo" | "documento", "codigo": "ALU-0205"}
-menu_estudiante: dict = {}          # {"activo": True} tras responder «estudiante»
-MENU_ESTUDIANTE = ("Perfecto, te atiendo como **estudiante** (no necesitas iniciar sesión). ¿Qué necesitas?\n"
-                   "1. **Matricularme** en un curso\n"
-                   "2. **Ver vacantes** y horarios\n"
-                   "3. **Estado de mi matrícula** (con tu código de alumno)\n\n"
-                   "Responde con el número o escríbeme tu pregunta sobre cursos, sedes o procedimientos.")
 _PIDE_ESTADO = re.compile(r"\bestado\b.*\b(matricula|inscripcion|preinscripcion|pago)|"
                           r"\b(mi|mis) (matricula|inscripcion|preinscripcion)\b.*\b(como|va|esta|consult|ver)|"
                           r"\b(como|consult\w*|ver|revisar)\b.*\b(mi|mis) (matricula|inscripcion)")
@@ -282,17 +268,125 @@ def _flujo_estado(texto: str) -> Respuesta | None:
     return None
 
 
-def _opcion_menu(texto: str) -> Respuesta | None:
-    menu_estudiante.clear()
-    n = v._normalizar(texto).strip(" .!)")
-    opcion = {"1": 1, "uno": 1, "2": 2, "dos": 2, "3": 3, "tres": 3}.get(n.replace("opcion ", ""))
-    if opcion == 1:
-        return _decidir("quiero inscribirme en un curso")
-    if opcion == 2:
-        return _decidir("¿qué vacantes hay disponibles?")
-    if opcion == 3:
-        return _decidir("quiero ver el estado de mi matrícula")
-    return None
+# ------------------------------------------------------------------ menús numerados
+# Al comienzo (y cuando se escribe «menú») el asistente muestra opciones numeradas y SOLO acepta esos números:
+# así cada camino empieza sin ambigüedades. Después de elegir, la conversación sigue normalmente.
+menu: dict = {}                     # {"tipo": "rol" | "estudiante" | "personal", "opciones": [(texto, accion)]}
+perfil_elegido: dict = {}           # {"rol": "estudiante"} cuando el usuario ya eligió
+
+
+def _opciones(tipo: str) -> list[tuple[str, str]]:
+    if tipo == "rol":
+        return [("Soy **estudiante** (o quiero estudiar en el MALI)", "estudiante"),
+                ("Soy **personal del MALI** (inicio de sesión)", "personal")]
+    if tipo == "estudiante":
+        return [("**Matricularme** en un curso", "matricular"),
+                ("**Ver vacantes** y horarios", "vacantes"),
+                ("**Estado de mi matrícula** (con tu código de alumno)", "estado"),
+                ("**Otra consulta** sobre cursos, sedes o procedimientos", "consulta")]
+    ops = []
+    if acceso.autorizar("gestion"):
+        ops += [("**Pagos por confirmar**", "pagos"), ("**Consultar un alumno** por su código", "alumno"),
+                ("**Resumen de matrícula**", "resumen"), ("**Alumnos con asistencia baja**", "asistencia")]
+    if acceso.autorizar("vacantes"):
+        ops.append(("**Ver vacantes** y horarios", "vacantes"))
+    if acceso.autorizar("registro"):
+        ops.append(("**Registro de consultas** (auditoría)", "registro"))
+    if acceso.autorizar("administracion"):
+        ops.append(("**Permisos de los usuarios**", "permisos"))
+    ops += [("**Otra consulta** sobre cursos, sedes o procedimientos", "consulta"), ("**Cerrar sesión**", "cerrar")]
+    return ops
+
+
+def abrir_menu(tipo: str) -> str:
+    ops = _opciones(tipo)
+    menu.clear()
+    menu.update(tipo=tipo, opciones=ops)
+    titulo = {"rol": "Para atenderte mejor, **¿quién eres?**",
+              "estudiante": "¿Qué necesitas?",
+              "personal": "¿Qué deseas hacer?"}[tipo]
+    lineas = [titulo] + [f"{i}. {texto}" for i, (texto, _) in enumerate(ops, 1)]
+    lineas.append(f"\nResponde **solo con el número** (1–{len(ops)}).")
+    if tipo == "personal" and acceso.autorizar("administracion"):
+        lineas.append("También puedes escribir «aprobar pago MAT-0005», «rechazar pago MAT-0005» o "
+                      "«actualiza vacantes H16 a 5».")
+    elif tipo == "personal" and acceso.autorizar("gestion"):
+        lineas.append("Para resolver un pago escribe «aprobar pago MAT-0005» o «rechazar pago MAT-0005».")
+    return "\n".join(lineas)
+
+
+def _pide_menu(n: str) -> bool:
+    return n in ("menu", "menu principal", "volver al menu", "ver menu", "opciones", "ver opciones", "inicio", "0")
+
+
+def _menu_actual() -> str:
+    if acceso.autenticado():
+        return abrir_menu("personal")
+    return abrir_menu("estudiante" if perfil_elegido.get("rol") == "estudiante" else "rol")
+
+
+def _elegir_opcion(texto: str) -> Respuesta:
+    """Con un menú abierto solo se aceptan sus números."""
+    n = v._normalizar(texto).strip(" .!)-")
+    ops = menu["opciones"]
+    m = re.fullmatch(r"(opcion\s*)?(\d{1,2})", n)
+    if not m or not 1 <= int(m.group(2)) <= len(ops):
+        tipo = menu["tipo"]
+        return Respuesta("menu", f"No es una opción válida. 🙂 {abrir_menu(tipo)}")
+    accion = ops[int(m.group(2)) - 1][1]
+    menu.clear()
+    return _ejecutar(accion)
+
+
+def _ejecutar(accion: str) -> Respuesta:
+    if accion == "estudiante":
+        if acceso.autenticado():
+            acceso.cerrar_sesion()
+        perfil_elegido.update(rol="estudiante")
+        return Respuesta("perfil", "Perfecto, te atiendo como **estudiante** (no necesitas iniciar sesión).\n\n"
+                         + abrir_menu("estudiante"))
+    if accion == "personal":
+        perfil_elegido.update(rol="personal")
+        acceso.pendiente.clear()
+        acceso.pendiente.update(esperando_usuario=True)
+        return Respuesta("perfil", "Para el personal del MALI necesito verificar tu perfil. 🔐 Escribe tu **usuario** "
+                                   "(por ejemplo, coord01).")
+    pie = "\n\n_Escribe «menú» para volver a las opciones._"
+    if accion == "matricular":
+        r = _decidir("quiero inscribirme en un curso")
+    elif accion == "vacantes":
+        r = _decidir("¿qué vacantes hay disponibles?")
+    elif accion == "estado":
+        r = _decidir("quiero ver el estado de mi matrícula")
+    elif accion == "consulta":
+        return Respuesta("menu", "Claro, escríbeme tu pregunta sobre cursos, talleres, sedes, procedimientos o "
+                                 "canales de atención. Te responderé con la fuente." + pie)
+    elif accion == "pagos":
+        acceso.registrar("revision_pagos", "matricula.csv", "permitido")
+        r = Respuesta("administracion", matricula.pagos_por_confirmar(), fuentes=["matricula.csv"])
+    elif accion == "alumno":
+        return Respuesta("menu", "Escribe el **código del alumno** (por ejemplo «alumno ALU-0007»)." + pie)
+    elif accion == "resumen":
+        r = _decidir("¿cuántos alumnos matriculados hay?")
+    elif accion == "asistencia":
+        r = _decidir("alumnos con asistencia baja")
+    elif accion == "registro":
+        r = _decidir("ver registro de consultas")
+    elif accion == "permisos":
+        r = _decidir("ver permisos")
+    elif accion == "cerrar":
+        perfil_elegido.clear()
+        return Respuesta("sesion", acceso.cerrar_sesion() + "\n\n" + abrir_menu("rol"))
+    else:
+        return Respuesta("menu", _menu_actual())
+    r.texto = (r.texto or "") + pie if r.texto else r.texto
+    return r
+
+
+def _respuesta_login(texto: str) -> Respuesta:
+    if acceso.autenticado() and texto.startswith("✅"):
+        texto = texto.replace("\n¿En qué te puedo ayudar?", "") + "\n\n" + abrir_menu("personal")
+    return Respuesta("sesion", texto, fuentes=["usuarios.csv"])
 
 
 # ------------------------------------------------------------------ orquestación
@@ -304,23 +398,22 @@ def _decidir(pregunta: str) -> Respuesta:
             acceso.pendiente.clear()
             return Respuesta("sesion", "Inicio de sesión cancelado.")
         registrar_mensaje_sensible(texto)
-        return Respuesta("sesion", acceso.iniciar_sesion(usuario, texto), fuentes=["usuarios.csv"])
+        return _respuesta_login(acceso.iniciar_sesion(usuario, texto))
     n0 = v._normalizar(texto).strip(" !.")
     if acceso.pendiente.get("esperando_usuario"):        # personal: el mensaje es su usuario
         acceso.pendiente.clear()
         if n0 in ("cancelar", "salir", "estudiante", "soy estudiante"):
             return Respuesta("perfil", "De acuerdo, te atiendo como **estudiante**. ¿En qué te puedo ayudar?")
         return Respuesta("sesion", acceso.iniciar_sesion(texto.split()[0]), fuentes=["usuarios.csv"])
-    if menu_estudiante and not matricula.flujo_activo():
-        r = _opcion_menu(texto)
-        if r:
-            return r
-    if _responde_rol(texto, _PALABRAS_ESTUDIANTE):
-        if acceso.autenticado():
-            acceso.cerrar_sesion()
+    if menu:                              # menú abierto: solo números
+        return _elegir_opcion(texto)
+    if _pide_menu(n0):                   # «menú» deja cualquier paso (una pre-inscripción ya registrada se conserva)
         consulta_estado.clear()
-        menu_estudiante.update(activo=True)
-        return Respuesta("perfil", MENU_ESTUDIANTE)
+        matricula.reiniciar()
+        return Respuesta("menu", _menu_actual())
+    if _responde_rol(texto, _PALABRAS_ESTUDIANTE):
+        consulta_estado.clear()
+        return _ejecutar("estudiante")
     if _responde_rol(texto, _PALABRAS_PERSONAL):
         if acceso.autenticado():
             return Respuesta("perfil", acceso.describir_sesion())
@@ -329,7 +422,7 @@ def _decidir(pregunta: str) -> Respuesta:
                                    "(por ejemplo, coord01).")
     if es_login(texto):                  # antes de los filtros: la contraseña no es un dato a descartar
         registrar_mensaje_sensible(texto)
-        return Respuesta("sesion", _comando_sesion(texto), fuentes=["usuarios.csv"])
+        return _respuesta_login(_comando_sesion(texto))
     if es_inyeccion(texto):
         acceso.registrar("intento_inyeccion", "-", "bloqueado")
         return Respuesta("inyeccion", "No puedo compartir mis instrucciones internas, cambiar mis reglas ni mostrar "

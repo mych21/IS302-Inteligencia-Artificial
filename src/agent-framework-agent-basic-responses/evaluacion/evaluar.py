@@ -118,7 +118,8 @@ def main(con_modelo: bool = False) -> None:
         for f in banco:
             matricula.reiniciar()
             asistente.consulta_estado.clear()
-            asistente.menu_estudiante.clear()
+            asistente.menu.clear()
+            asistente.perfil_elegido.clear()
             acceso.sesion.update(acceso.PUBLICO)
             acceso.pendiente.clear()
             usuario = f["usuario"]

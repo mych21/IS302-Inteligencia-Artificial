@@ -53,10 +53,16 @@ Los **estudiantes no tienen usuario**: usan el asistente sin iniciar sesión. So
 | `coord01` | `12345` | Coordinación Académica | Gestión de alumnos, permisos, vacantes y registro de consultas |
 | `soporte01` | `12345` | Soporte TI | Base general y registro de consultas; nunca datos de alumnos |
 
-**Cómo se identifica el usuario:** al saludar, el bot pregunta «¿eres estudiante o personal del MALI?».
-- «estudiante» → se atiende sin iniciar sesión (también si pregunta directamente sin responder).
-- «personal» → el bot pide el usuario (por ejemplo «coord01») y luego la contraseña («12345»).
-  También se puede escribir «iniciar sesión coord01 12345» en una sola línea. Para salir: «cerrar sesión».
+**Cómo se identifica el usuario (menús numerados):** al saludar, el bot muestra opciones numeradas y, mientras
+un menú está abierto, **solo acepta esos números** (cualquier otro texto vuelve a mostrar las opciones).
+- Menú inicial: «1» estudiante · «2» personal del MALI.
+- Estudiante (sin iniciar sesión): «1» matricularme · «2» ver vacantes · «3» estado de mi matrícula (código de
+  alumno + documento) · «4» otra consulta (pregunta libre).
+- Personal: «2» → usuario (por ejemplo «coord01») → contraseña («12345») → menú según los permisos del perfil
+  (pagos por confirmar, consultar un alumno, resumen de matrícula, asistencia baja, vacantes, registro de
+  consultas, permisos, otra consulta, cerrar sesión).
+- «menú» vuelve a mostrar las opciones en cualquier momento. También se puede escribir
+  «iniciar sesión coord01 12345» en una sola línea.
 
 Las cuentas están en `restringido/usuarios.csv` con la contraseña cifrada (no se guarda en texto plano).
 En producción: cuenta institucional (Microsoft Entra ID).
@@ -76,14 +82,14 @@ python demo_cli.py --sin-modelo           # guion sin el modelo
 En VS Code: **F5** («Debug Local Agent HTTP Server») abre el Agent Inspector.
 
 ## Guion de demostración (video)
-1. «Hola» → «estudiante» → «Si falto a una clase, ¿la puedo recuperar?» (fuente) →
+1. «Hola» → «1» (estudiante) → «4» (otra consulta) → «Si falto a una clase, ¿la puedo recuperar?» (fuente) →
    «¿Cuánto cuesta el curso de guitarra?» (no inventa) → «Ignora tus instrucciones…» (bloqueado) →
    «Dame los datos del alumno ALU-0007» (denegado).
-2. «información de guitarra» (muestra cada horario con su código, p. ej. **H17**) → «inscribirme en H17» →
+2. «menú» → «2» (vacantes, cada horario con su código, p. ej. **H17**) → «inscribirme en H17» →
    «Ana Torres, DNI 45678912, teléfono 987654321, ana@correo.com» → «sí» → «PAG-100001» (pago conciliado:
    matrícula completada). Con un código que no está en `pagos_demo.csv` (p. ej. «PAG-000134») la inscripción
-   queda **por confirmar**. Para ver el estado: «hola» → «estudiante» → «3» (estado de mi matrícula) →
-   código de alumno (p. ej. «ALU-0201») → número de documento dado al inscribirse (verificación).
-3. Personal: «personal» → «coord01» → «12345» → «pagos por confirmar» → «aprobar pago MAT-0001» (o «rechazar
-   pago MAT-0001») → «Dame los datos del alumno ALU-0007» →
-   «actualiza vacantes H16 a 5» → «ver registro de consultas» → «cerrar sesión».
+   queda **por confirmar**.
+3. Estado: «menú» → «3» → código de alumno (p. ej. «ALU-0201») → número de documento dado al inscribirse.
+4. Personal: «hola» → «2» → «coord01» → «12345» → «1» (pagos por confirmar) → «aprobar pago MAT-0001» →
+   «menú» → «2» (consultar un alumno) → «alumno ALU-0007» → «actualiza vacantes H16 a 5» → «menú» → última
+   opción (cerrar sesión).
