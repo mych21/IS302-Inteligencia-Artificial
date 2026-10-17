@@ -24,7 +24,6 @@ class AsistenteTests(unittest.TestCase):
             p.start()
         acceso.sesion.update(acceso.PUBLICO)
         acceso.pendiente.clear()
-        acceso.intentos.clear()
         matricula.reiniciar()
 
     def tearDown(self):
@@ -98,11 +97,6 @@ class AsistenteTests(unittest.TestCase):
         self.assertEqual(acceso.sesion["perfil"], "Coordinación Académica")
         self.assertEqual(asistente.ocultar_si_sensible("12345"), "[mensaje de inicio de sesión oculto]")
         self.assertNotIn("12345", (self.tmp / "consultas.csv").read_text(encoding="utf-8"))
-
-    def test_bloqueo_por_intentos(self):
-        for _ in range(3):
-            asistente.responder("iniciar sesión docente02 mala")
-        self.assertIn("bloqueada", asistente.responder("iniciar sesión docente02 12345").texto)
 
     def test_contrasenas_cifradas(self):
         contenido = acceso.USUARIOS.read_text(encoding="utf-8")

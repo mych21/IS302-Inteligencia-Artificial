@@ -7,7 +7,6 @@
 - `usuarios.csv`: cuentas del **personal** (Personal, Coordinación Académica, Soporte TI) con la contraseña cifrada
   (PBKDF2-SHA256 con sal; nunca en texto plano). Contraseña de prueba: `12345`. Los estudiantes no tienen cuenta:
   usan el asistente sin iniciar sesión. La Coordinación Académica decide quién tiene `gestion_alumnos=si`.
-  Se administra con `gestionar_usuarios.py` (crear cuentas, cambiar contraseñas, listar).
   En producción esto lo resolvería la cuenta institucional (p. ej. Microsoft Entra ID) y los permisos de SharePoint.
 
 Estos datos **nunca se envían al modelo de lenguaje**: el sistema arma la respuesta directamente y la registra en

@@ -33,8 +33,8 @@ Usuario ─► Agent Inspector (VS Code) / demo_cli.py
 1. **Estudiantes:** usan el asistente sin iniciar sesión (perfil público): base general, horarios y vacantes, e
    inscripción (pre-inscripción + código de pago de demostración).
 2. **Personal → Autenticación y perfil:** «iniciar sesión <usuario>» y luego la contraseña (o en una línea:
-   «iniciar sesión coord01 12345»). Las cuentas están en `restringido/usuarios.csv` con la contraseña cifrada;
-   3 intentos fallidos bloquean la cuenta en la sesión. Antes de **cada** consulta se verifica el rol y sus permisos.
+   «iniciar sesión coord01 12345»). Las cuentas están en `restringido/usuarios.csv` con la contraseña cifrada.
+   Antes de **cada** consulta se verifica el rol y sus permisos.
 3. **MALI Asistente:** busca solo en las fuentes que el perfil tiene permitidas (base general o base restringida).
    Los mensajes con contraseña no se registran ni se envían al modelo.
 4. **Respuesta:** con la fuente citada o, si no hay información, derivación al canal oficial.
@@ -53,12 +53,10 @@ Los **estudiantes no tienen usuario**: usan el asistente sin iniciar sesión. So
 | `soporte01` | `12345` | Soporte TI | Base general y registro de consultas; nunca datos de alumnos |
 
 **Cómo iniciar sesión en el chat:** «iniciar sesión coord01» y luego «12345», o en una sola línea
-«iniciar sesión coord01 12345». Para salir: «cerrar sesión». Tres contraseñas incorrectas bloquean la cuenta
-hasta reiniciar el agente.
+«iniciar sesión coord01 12345». Para salir: «cerrar sesión».
 
 Las cuentas están en `restringido/usuarios.csv` con la contraseña cifrada (no se guarda en texto plano).
-Cambiar contraseñas o crear cuentas: `python restringido/gestionar_usuarios.py clave coord01 NuevaClave`
-(ver `python restringido/gestionar_usuarios.py`). En producción: cuenta institucional (Microsoft Entra ID).
+En producción: cuenta institucional (Microsoft Entra ID).
 
 ## Cómo ejecutarlo
 ```bash

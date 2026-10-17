@@ -4,8 +4,8 @@ Perfiles, control de acceso, base restringida de gestión de alumnos y registro 
 - Los estudiantes usan el asistente sin iniciar sesión (perfil público «Estudiante»): base general, vacantes y
   pre-inscripción.
 - El personal (Personal, Coordinación Académica y Soporte TI) inicia sesión con usuario y contraseña. Las cuentas
-  están en restringido/usuarios.csv con la contraseña cifrada (PBKDF2 con sal); la de prueba es 12345 y se cambia
-  con restringido/gestionar_usuarios.py. En producción: cuenta institucional (p. ej. Microsoft Entra ID).
+  están en restringido/usuarios.csv con la contraseña cifrada (PBKDF2 con sal); la de prueba es 12345.
+  En producción: cuenta institucional (p. ej. Microsoft Entra ID).
 - Antes de cada consulta se verifica el rol y sus permisos (PERMISOS_POR_PERFIL).
 - Solo la Coordinación Académica y el personal que esta habilite consultan la gestión de alumnos.
 - Los datos de alumnos (sintéticos) se devuelven al usuario sin pasar por el modelo de lenguaje.
@@ -28,14 +28,12 @@ ALUMNOS = AQUI / "restringido" / "alumnos_sinteticos.csv"
 REGISTRO = AQUI / "registros" / "consultas.csv"
 CAMPOS_REGISTRO = ["fecha", "usuario", "perfil", "tipo_consulta", "fuente", "resultado"]
 CAMPOS_USUARIOS = ["usuario", "perfil", "sal", "clave_hash", "gestion_alumnos", "habilitado_por", "descripcion"]
-MAX_INTENTOS = 3
 ITERACIONES = 100_000
 
 ID_ALUMNO = re.compile(r"\bALU[-\s]?(\d{1,4})\b", re.I)
 PUBLICO = {"usuario": "publico", "perfil": "Estudiante"}
 sesion: dict = dict(PUBLICO)
 pendiente: dict = {}            # usuario que está ingresando su contraseña
-intentos: dict = {}             # intentos fallidos por usuario (en esta sesión)
 
 # Qué tipo de consulta puede hacer cada perfil (la gestión de alumnos además exige estar habilitado).
 PERMISOS_POR_PERFIL = {
@@ -87,20 +85,13 @@ def iniciar_sesion(usuario: str, clave: str | None = None) -> str:
         registrar("inicio_sesion", "usuarios.csv", "denegado")
         return ("No existe esa cuenta de personal. Si eres estudiante no necesitas iniciar sesión: pregúntame "
                 "directamente por cursos, vacantes o tu pre-inscripción.")
-    if intentos.get(cuenta["usuario"], 0) >= MAX_INTENTOS:
-        registrar("inicio_sesion", "usuarios.csv", "bloqueado")
-        return "La cuenta está bloqueada en esta sesión por demasiados intentos fallidos. Contacta a Soporte TI."
     if clave is None:
         pendiente.update(usuario=cuenta["usuario"])
         return f"🔐 Ingresa la contraseña de **{cuenta['usuario']}** (escribe «cancelar» para salir)."
     pendiente.clear()
     if not hmac.compare_digest(cifrar(clave, cuenta["sal"]), cuenta["clave_hash"]):
-        intentos[cuenta["usuario"]] = intentos.get(cuenta["usuario"], 0) + 1
         registrar("inicio_sesion", "usuarios.csv", "denegado")
-        quedan = MAX_INTENTOS - intentos[cuenta["usuario"]]
-        return ("Usuario o contraseña incorrectos." + (f" Te quedan {quedan} intento(s)." if quedan > 0 else
-                " La cuenta quedó bloqueada en esta sesión."))
-    intentos.pop(cuenta["usuario"], None)
+        return "Usuario o contraseña incorrectos."
     sesion.update(usuario=cuenta["usuario"], perfil=cuenta["perfil"])
     registrar("inicio_sesion", "usuarios.csv", "permitido")
     return (f"✅ Sesión iniciada como **{cuenta['usuario']}** (perfil: {cuenta['perfil']}).\n"
