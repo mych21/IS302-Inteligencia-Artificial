@@ -42,15 +42,21 @@ Usuario ─► Agent Inspector (VS Code) / demo_cli.py
    `conocimiento/general/`), decide quién usa la gestión de alumnos («habilita a docente01», «ver permisos») y
    revisa el registro («ver registro de consultas»).
 
-## Cuentas del personal (contraseña de prueba: `12345`)
-| Usuario | Perfil | Puede consultar |
-|---|---|---|
-| (sin cuenta) | Estudiante | Base general, vacantes e inscripción |
-| `docente01` | Personal | Base general y vacantes (gestión de alumnos solo si la Coordinación lo habilita) |
-| `docente02` | Personal | Lo anterior + gestión de alumnos (habilitado por coord01) |
-| `coord01` | Coordinación Académica | Gestión de alumnos, permisos, vacantes y registro de consultas |
-| `soporte01` | Soporte TI | Base general y registro de consultas; nunca datos de alumnos |
+## Usuarios del personal
+Los **estudiantes no tienen usuario**: usan el asistente sin iniciar sesión. Solo el personal inicia sesión:
 
+| Usuario | Contraseña | Perfil | Puede consultar |
+|---|---|---|---|
+| `docente01` | `12345` | Personal | Base general y vacantes (gestión de alumnos solo si la Coordinación lo habilita) |
+| `docente02` | `12345` | Personal | Lo anterior + gestión de alumnos (habilitado por coord01) |
+| `coord01` | `12345` | Coordinación Académica | Gestión de alumnos, permisos, vacantes y registro de consultas |
+| `soporte01` | `12345` | Soporte TI | Base general y registro de consultas; nunca datos de alumnos |
+
+**Cómo iniciar sesión en el chat:** «iniciar sesión coord01» y luego «12345», o en una sola línea
+«iniciar sesión coord01 12345». Para salir: «cerrar sesión». Tres contraseñas incorrectas bloquean la cuenta
+hasta reiniciar el agente.
+
+Las cuentas están en `restringido/usuarios.csv` con la contraseña cifrada (no se guarda en texto plano).
 Cambiar contraseñas o crear cuentas: `python restringido/gestionar_usuarios.py clave coord01 NuevaClave`
 (ver `python restringido/gestionar_usuarios.py`). En producción: cuenta institucional (Microsoft Entra ID).
 
