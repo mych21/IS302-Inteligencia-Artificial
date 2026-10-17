@@ -13,7 +13,9 @@ Orden de decisión (las respuestas marcadas con * las arma el sistema, sin el mo
   9. Base general (RAG): se recuperan fragmentos y el modelo redacta citando la fuente.
  10. Sin información suficiente en las fuentes: se reconoce y se deriva al canal oficial .............. *
 
-Todas las consultas quedan en registros/consultas.csv (sin guardar el texto de la conversación).
+Los datos se obtienen a través de los servidores MCP del proyecto (cliente_mcp.py): la base general y las vacantes
+del servidor general; cuentas, alumnos, matrícula, pagos y auditoría del servidor restringido. Todas las consultas
+quedan en registros/consultas.csv (sin guardar el texto de la conversación).
 """
 from __future__ import annotations
 
@@ -22,9 +24,9 @@ import time
 from dataclasses import dataclass, field
 
 import acceso
-import conocimiento
+import cliente_mcp
 import matricula
-import vacantes as v
+import texto as tx
 
 CANAL = "cursosdearte@mali.pe"
 
@@ -94,12 +96,12 @@ _PALABRAS_PERSONAL = {"personal", "docente", "profesor", "profesora", "coordinac
 
 
 def _comando_sesion_simple(texto: str) -> bool:
-    return bool(re.search(r"sesion|perfil|habilita|acceso|registro|vacantes", v._normalizar(texto)))
+    return bool(re.search(r"sesion|perfil|habilita|acceso|registro|vacantes", tx.normalizar(texto)))
 
 
 def _responde_rol(texto: str, palabras: set[str]) -> bool:
     """Respuesta corta a «¿eres estudiante o personal?» (p. ej. «personal mali», «soy docente»)."""
-    t = v._normalizar(texto).split()
+    t = tx.normalizar(texto).split()
     if _GESTION.search(texto) or acceso.ID_ALUMNO.search(texto) or _comando_sesion_simple(texto):
         return False
     return 0 < len(t) <= 5 and "?" not in texto and bool(set(t) & palabras) and not \
@@ -129,7 +131,7 @@ def _denegado(tipo: str, que: str) -> "Respuesta":
 
 
 def es_inyeccion(texto: str) -> bool:
-    return bool(_INYECCION.search(v._normalizar(texto)))
+    return bool(_INYECCION.search(tx.normalizar(texto)))
 
 
 def _datos_sensibles(texto: str) -> tuple[str, list[str]]:
@@ -151,7 +153,7 @@ def es_login(texto: str) -> bool:
 
 
 def _comando_sesion(texto: str) -> str | None:
-    n = v._normalizar(texto)
+    n = tx.normalizar(texto)
     m = _LOGIN.search(texto)
     if m:
         return acceso.iniciar_sesion(m.group(1) or m.group(3), m.group(2) or m.group(4))
@@ -169,7 +171,7 @@ def _comando_sesion(texto: str) -> str | None:
 
 
 def _pide_dato_inexistente(texto: str) -> bool:
-    return bool(set(v._normalizar(texto).split()) & _SIN_DATO)
+    return bool(set(tx.normalizar(texto).split()) & _SIN_DATO)
 
 
 def _sin_informacion() -> str:
@@ -185,21 +187,21 @@ def _indicacion_rag(pregunta: str, resultados) -> str:
             f"responden exactamente lo que se pregunta, dilo y sugiere {CANAL}. Responde en máximo 3 oraciones, sin repetir "
             "ideas, y "
             "termina con la línea «Fuente:» copiando la fuente del fragmento usado.\n\n"
-            + conocimiento.como_texto(resultados))
+            + "\n\n".join(f"[{d['id']}] {d['titulo']}\n{d['texto']}\nFuente: {d['fuente']}" for d in resultados))
 
 
 def _ficha_curso(curso: str) -> Respuesta:
     """Información de un curso armada solo con las fuentes: su categoría (base general) y sus horarios
     (vacantes.csv). Evita que el modelo complete con conocimiento general."""
-    doc = conocimiento.documento_que_menciona(curso)
+    doc = cliente_mcp.llamar_json("general", "documento_de_curso", curso=curso)
     partes = []
     if doc:
-        partes.append(f"**{curso}** forma parte de: {doc.titulo.lower()} de MALI Educación.")
-    partes.append(v.vacantes_para_usuario(curso))
+        partes.append(f"**{curso}** forma parte de: {doc['titulo'].lower()} de MALI Educación.")
+    partes.append(cliente_mcp.llamar("general", "consultar_vacantes", consulta=curso))
     if doc:
-        partes.append(f"Fuente de la oferta: {doc.fuente}")
+        partes.append(f"Fuente de la oferta: {doc['fuente']}")
     acceso.registrar("curso", "vacantes.csv", "atendida")
-    return Respuesta("curso", "\n\n".join(partes), fuentes=([doc.id] if doc else []) + ["vacantes.csv"])
+    return Respuesta("curso", "\n\n".join(partes), fuentes=([doc["id"]] if doc else []) + ["vacantes.csv"])
 
 
 # ------------------------------------------------------------------ estado de matrícula (estudiantes)
@@ -218,14 +220,15 @@ def _verificar_estado(codigo: str, texto_doc: str) -> Respuesta:
     consulta_estado.clear()
     registrar_mensaje_sensible(texto_doc)          # el documento no llega al modelo ni al registro
     m = _DOCUMENTO.search(texto_doc)
-    ident = matricula.verificar_alumno(codigo, m.group(1) if m else "")
+    ident = cliente_mcp.llamar("restringido", "verificar_alumno", codigo=codigo, documento=m.group(1) if m else "")
     if not ident:
         acceso.registrar("estado_matricula", "matricula.csv", "denegado")
         return Respuesta("verificacion", "Los datos no coinciden con nuestros registros, así que por seguridad no "
                                          "puedo mostrar el estado. Revisa tu código de alumno y tu documento, o "
                                          f"escribe a {CANAL}.")
     acceso.registrar("estado_matricula", "matricula.csv", "permitido")
-    return Respuesta("estado_matricula", matricula.estado_por_alumno(ident), fuentes=["matricula.csv"])
+    return Respuesta("estado_matricula", cliente_mcp.llamar("restringido", "estado_matricula", id_alumno=ident),
+                     fuentes=["matricula.csv"])
 
 
 def _pedir_documento(codigo: str) -> Respuesta:
@@ -237,7 +240,7 @@ def _pedir_documento(codigo: str) -> Respuesta:
 
 def _flujo_estado(texto: str) -> Respuesta | None:
     """Consulta del estado de matrícula: código de alumno (o de matrícula) + documento para verificar."""
-    n = v._normalizar(texto)
+    n = tx.normalizar(texto)
     cod = _CODIGO_ESTADO.search(texto)
     codigo = f"{cod.group(1).upper()}-{int(cod.group(2)):04d}" if cod else ""
     if consulta_estado:
@@ -352,7 +355,7 @@ def _menu_actual() -> str:
 
 def _elegir_opcion(texto: str) -> Respuesta:
     """Con un menú abierto solo se aceptan sus números."""
-    n = v._normalizar(texto).strip(" .!)-")
+    n = tx.normalizar(texto).strip(" .!)-")
     if n in _VOLVER and menu["tipo"] == "personal":
         menu.clear()
         return _ejecutar("cerrar")
@@ -383,7 +386,6 @@ def _ejecutar(accion: str) -> Respuesta:
         acceso.pendiente.update(esperando_usuario=True)
         return Respuesta("perfil", "Para el personal del MALI necesito verificar tu perfil. 🔐 Escribe tu **usuario** "
                                    "(por ejemplo, coord01).")
-    pie = ""                              # el recordatorio lo agrega responder()
     if accion == "matricular":
         r = _decidir("quiero inscribirme en un curso")
     elif accion == "vacantes":
@@ -392,12 +394,11 @@ def _ejecutar(accion: str) -> Respuesta:
         r = _decidir("quiero ver el estado de mi matrícula")
     elif accion == "consulta":
         return Respuesta("menu", "Claro, escríbeme tu pregunta sobre cursos, talleres, sedes, procedimientos o "
-                                 "canales de atención. Te responderé con la fuente." + pie)
+                                 "canales de atención. Te responderé con la fuente.")
     elif accion == "pagos":
-        acceso.registrar("revision_pagos", "matricula.csv", "permitido")
-        r = Respuesta("administracion", matricula.pagos_por_confirmar(), fuentes=["matricula.csv"])
+        r = Respuesta("administracion", acceso.pagos_por_confirmar(), fuentes=["matricula.csv"])
     elif accion == "alumno":
-        return Respuesta("menu", "Escribe el **código del alumno** (por ejemplo «alumno ALU-0007»)." + pie)
+        return Respuesta("menu", "Escribe el **código del alumno** (por ejemplo «alumno ALU-0007»).")
     elif accion == "resumen":
         r = _decidir("¿cuántos alumnos matriculados hay?")
     elif accion == "asistencia":
@@ -411,13 +412,12 @@ def _ejecutar(accion: str) -> Respuesta:
         return Respuesta("sesion", acceso.cerrar_sesion() + "\n\n" + abrir_menu("rol"))
     else:
         return Respuesta("menu", _menu_actual())
-    r.texto = (r.texto or "") + pie if r.texto else r.texto
     return r
 
 
 def _respuesta_login(texto: str) -> Respuesta:
     if acceso.autenticado() and texto.startswith("✅"):
-        texto = texto.replace("\n¿En qué te puedo ayudar?", "") + "\n\n" + abrir_menu("personal")
+        texto += "\n\n" + abrir_menu("personal")
     return Respuesta("sesion", texto, fuentes=["usuarios.csv"])
 
 
@@ -426,12 +426,12 @@ def _decidir(pregunta: str) -> Respuesta:
     texto = pregunta.strip()
     if acceso.pendiente.get("usuario"):  # el mensaje es la contraseña del usuario que inició sesión
         usuario = acceso.pendiente["usuario"]
-        if v._normalizar(texto).strip() in ("cancelar", "salir"):
+        if tx.normalizar(texto).strip() in ("cancelar", "salir"):
             acceso.pendiente.clear()
             return Respuesta("sesion", "Inicio de sesión cancelado.")
         registrar_mensaje_sensible(texto)
         return _respuesta_login(acceso.iniciar_sesion(usuario, texto))
-    n0 = v._normalizar(texto).strip(" !.")
+    n0 = tx.normalizar(texto).strip(" !.")
     if acceso.pendiente.get("esperando_usuario"):        # personal: el mensaje es su usuario
         acceso.pendiente.clear()
         if n0 in _VOLVER or _pide_menu_principal(n0) or n0 in ("cancelar", "salir"):
@@ -444,7 +444,7 @@ def _decidir(pregunta: str) -> Respuesta:
         return _elegir_opcion(texto)
     if _pide_menu_principal(n0):
         return Respuesta("menu", _menu_principal())
-    if _pide_menu(n0) or n0 in _VOLVER:  # «0» / «volver»: sale del paso actual y vuelve al menú de su perfil                   # «menú» deja cualquier paso (una pre-inscripción ya registrada se conserva)
+    if _pide_menu(n0) or n0 in _VOLVER:  # «0», «volver» o «menú»: deja el paso actual (lo ya registrado se conserva)
         consulta_estado.clear()
         matricula.reiniciar()
         return Respuesta("menu", _menu_actual())
@@ -489,7 +489,7 @@ def _decidir(pregunta: str) -> Respuesta:
     if cmd:
         return Respuesta("sesion", cmd, fuentes=["usuarios.csv"])
 
-    norm0 = v._normalizar(texto)
+    norm0 = tx.normalizar(texto)
     if re.search(r"registro de consultas|\bauditoria\b|ver (el )?registro", norm0):
         return Respuesta("administracion", acceso.ver_registro(), fuentes=["consultas.csv"])
     if re.search(r"(ver|revisar|lista\w*) (los )?permisos|quien(es)? tiene(n)? acceso", norm0):
@@ -507,18 +507,16 @@ def _decidir(pregunta: str) -> Respuesta:
         if not acceso.autorizar("gestion"):
             return _denegado("revision_pagos", "revisar o aprobar pagos (solo personal del MALI habilitado y la "
                                                "Coordinación Académica)")
-        acceso.registrar("revision_pagos", "matricula.csv", "permitido")
         if m:
-            codigo = "MAT-{:04d}".format(int(m.group(6)))
-            r = matricula.resolver_pago(codigo, m.group(1) == "aprob", acceso.sesion["usuario"])
+            r = acceso.resolver_pago("MAT-{:04d}".format(int(m.group(6))), m.group(1) == "aprob")
         else:
-            r = matricula.pagos_por_confirmar()
+            r = acceso.pagos_por_confirmar()
         return Respuesta("administracion", r, fuentes=["matricula.csv"])
 
     if matricula.flujo_activo() and (matricula.fuera_del_flujo(texto)
-                                     or v._normalizar(texto).strip(" !.") in _GRACIAS):
+                                     or tx.normalizar(texto).strip(" !.") in _GRACIAS):
         matricula.reiniciar()            # cambió de tema: se deja la pre-inscripción y se atiende la pregunta
-    consulta_de_politica = bool(_POLITICA.search(v._normalizar(texto)))
+    consulta_de_politica = bool(_POLITICA.search(tx.normalizar(texto)))
     if matricula.flujo_activo() or (matricula.quiere_inscribirse(texto) and not consulta_de_politica):
         if not acceso.autorizar("inscripcion"):
             matricula.reiniciar()
@@ -529,32 +527,33 @@ def _decidir(pregunta: str) -> Respuesta:
     if matricula.es_saludo(texto):
         return Respuesta("saludo", presentacion())
 
-    if acceso.ID_ALUMNO.search(texto) or _GESTION.search(texto) or _GESTION_LIBRE.search(v._normalizar(texto)):
+    if acceso.ID_ALUMNO.search(texto) or _GESTION.search(texto) or _GESTION_LIBRE.search(tx.normalizar(texto)):
         r = acceso.consultar_gestion(texto)
         return Respuesta("gestion" if r != acceso.DENEGADO else "gestion_denegada", r,
                          fuentes=["alumnos_sinteticos.csv"])
 
     cursos = matricula.detectar_cursos(texto)
-    norm = v._normalizar(texto)
+    norm = tx.normalizar(texto)
     if len(cursos) == 1:
         matricula.estado["ultimo_curso"] = cursos[0]
     pide_horario = bool(re.search(r"horario|cuando|inicia|empieza|turno|dias|hora\b|sede", norm))
     seguimiento = (not cursos and matricula.estado.get("ultimo_curso") and len(norm.split()) <= 6
-                   and (pide_horario or v._pide_vacantes(texto)))
+                   and (pide_horario or matricula.pide_vacantes(texto)))
     if seguimiento:                      # «¿y los horarios?» después de preguntar por un curso
         cursos = [matricula.estado["ultimo_curso"]]
     if len(cursos) == 1 and not _pide_dato_inexistente(texto) and not consulta_de_politica \
-            and (seguimiento or pide_horario or v._pide_vacantes(texto)
+            and (seguimiento or pide_horario or matricula.pide_vacantes(texto)
                  or re.search(r"informacion|info|detalle|sobre|ensenan|tienen|hay|ofrecen|dictan|curso de|taller de",
                               norm) or len(norm.split()) <= 3):
         if not acceso.autorizar("vacantes"):
             return _denegado("vacantes", "consultar vacantes")
         return _ficha_curso(cursos[0])
-    if v._pide_vacantes(texto) and not consulta_de_politica:
+    if matricula.pide_vacantes(texto) and not consulta_de_politica:
         if not acceso.autorizar("vacantes"):
             return _denegado("vacantes", "consultar vacantes")
         acceso.registrar("vacantes", "vacantes.csv", "atendida")
-        return Respuesta("vacantes", v.vacantes_para_usuario(texto), fuentes=["vacantes.csv"])
+        return Respuesta("vacantes", cliente_mcp.llamar("general", "consultar_vacantes", consulta=texto),
+                         fuentes=["vacantes.csv"])
 
     if _pide_dato_inexistente(texto):
         acceso.registrar("sin_informacion", "-", "derivada")
@@ -563,18 +562,18 @@ def _decidir(pregunta: str) -> Respuesta:
                                      f"Consulta a {CANAL} o la sección «Cursos y horarios» de "
                                      "https://educacion.mali.pe/.")
 
-    if v._normalizar(texto).strip(" !.") in _GRACIAS:
+    if tx.normalizar(texto).strip(" !.") in _GRACIAS:
         return Respuesta("cortesia", "¡Con gusto! Si necesitas algo más sobre los cursos del MALI, aquí estaré. 😊")
 
     if not acceso.autorizar("general"):
         return _denegado("base_general", "consultar la base general")
-    resultados = conocimiento.buscar(texto)
+    resultados = cliente_mcp.llamar_json("general", "buscar_informacion", consulta=texto)
     if resultados:
-        d = resultados[0][0]
-        acceso.registrar("base_general", d.id, "atendida")
+        d = resultados[0]
+        acceso.registrar("base_general", d["id"], "atendida")
         return Respuesta("rag", None, contexto=_indicacion_rag(texto, resultados),
-                         respaldo=f"{d.texto}\nFuente: {d.fuente} [{d.id} – {d.titulo}]",
-                         fuentes=[x.id for x, _ in resultados])
+                         respaldo=f"{d['texto']}\nFuente: {d['fuente']} [{d['id']} – {d['titulo']}]",
+                         fuentes=[x["id"] for x in resultados])
 
     acceso.registrar("sin_informacion", "-", "derivada")
     return Respuesta("sin_info", _sin_informacion())

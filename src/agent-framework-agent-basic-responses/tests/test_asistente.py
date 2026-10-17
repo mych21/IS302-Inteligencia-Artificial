@@ -1,29 +1,19 @@
-import shutil
-import sys
-import tempfile
 import unittest
-from pathlib import Path
-from unittest.mock import patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import acceso  # noqa: E402
-import asistente  # noqa: E402
-import conocimiento  # noqa: E402
-import matricula  # noqa: E402
+import entorno
+import acceso
+import asistente
+import conocimiento
+import datos_restringidos as dr
+import matricula
+import rutas
 
 
 class AsistenteTests(unittest.TestCase):
-    """Usa copias temporales de permisos y del registro: no modifica los archivos reales."""
+    """Usa la copia de los datos de entorno.py: no modifica los archivos reales."""
 
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
-        shutil.copy(acceso.USUARIOS, self.tmp / "usuarios.csv")
-        shutil.copy(acceso.ALUMNOS, self.tmp / "alumnos.csv")
-        self.parches = [patch.object(acceso, "USUARIOS", self.tmp / "usuarios.csv"),
-                        patch.object(acceso, "ALUMNOS", self.tmp / "alumnos.csv"),
-                        patch.object(acceso, "REGISTRO", self.tmp / "consultas.csv")]
-        for p in self.parches:
-            p.start()
+        entorno.preparar()
         acceso.sesion.update(acceso.PUBLICO)
         acceso.pendiente.clear()
         matricula.reiniciar()
@@ -32,8 +22,6 @@ class AsistenteTests(unittest.TestCase):
         asistente.perfil_elegido.clear()
 
     def tearDown(self):
-        for p in self.parches:
-            p.stop()
         acceso.sesion.update(acceso.PUBLICO)
         matricula.reiniciar()
 
@@ -42,11 +30,10 @@ class AsistenteTests(unittest.TestCase):
         r = asistente.responder("1")
         self.assertIn("Estado de mi matrícula", r.texto)
         self.assertIn("código de alumno", asistente.responder("3").texto)
-        with patch.object(matricula, "ARCHIVO_MATRICULAS", matricula.ARCHIVO_MATRICULAS):
-            self.assertIn("número de documento", asistente.responder("ALU-0001").texto)
-            alumno = next(a for a in acceso._alumnos() if a["id_alumno"] == "ALU-0001")
-            self.assertEqual(asistente.responder("00000000").tipo, "verificacion")       # documento incorrecto
-            r = asistente.responder(f"estado de mi matrícula ALU-0001 {alumno['numero_documento']}")
+        self.assertIn("número de documento", asistente.responder("ALU-0001").texto)
+        alumno = next(a for a in dr.alumnos() if a["id_alumno"] == "ALU-0001")
+        self.assertEqual(asistente.responder("00000000").tipo, "verificacion")       # documento incorrecto
+        r = asistente.responder(f"estado de mi matrícula ALU-0001 {alumno['numero_documento']}")
         self.assertEqual(r.tipo, "estado_matricula")
         self.assertNotIn(alumno["numero_documento"], r.texto)
         self.assertNotIn(alumno["correo"], r.texto)
@@ -57,8 +44,7 @@ class AsistenteTests(unittest.TestCase):
         r = asistente.responder("aprobar pago MAT-0001")
         self.assertEqual(r.tipo, "permiso_denegado")
         acceso.iniciar_sesion("coord01", "12345")
-        with patch.object(matricula, "ARCHIVO_MATRICULAS", self.tmp / "matriculas.csv"):
-            self.assertEqual(asistente.responder("pagos por confirmar").tipo, "administracion")
+        self.assertEqual(asistente.responder("pagos por confirmar").tipo, "administracion")
 
     def test_saludo_con_aviso_de_privacidad(self):
         r = asistente.responder("hola")
@@ -107,7 +93,7 @@ class AsistenteTests(unittest.TestCase):
 
     def test_registro_sin_texto_de_conversacion(self):
         asistente.responder("Dame los datos del alumno ALU-0001")
-        registro = (self.tmp / "consultas.csv").read_text(encoding="utf-8")
+        registro = rutas.registro().read_text(encoding="utf-8")
         self.assertIn("gestion_alumnos", registro)
         self.assertIn("denegado", registro)
         self.assertNotIn("Dame los datos", registro)
@@ -124,7 +110,7 @@ class AsistenteTests(unittest.TestCase):
         self.assertIn("Sesión iniciada", asistente.responder("12345").texto)
         self.assertEqual(acceso.sesion["perfil"], "Coordinación Académica")
         self.assertEqual(asistente.ocultar_si_sensible("12345"), "[mensaje oculto: contenía una contraseña o un documento de verificación]")
-        self.assertNotIn("12345", (self.tmp / "consultas.csv").read_text(encoding="utf-8"))
+        self.assertNotIn("12345", rutas.registro().read_text(encoding="utf-8"))
 
     def test_menu_inicial_solo_acepta_numeros(self):
         r = asistente.responder("hola")
@@ -157,8 +143,7 @@ class AsistenteTests(unittest.TestCase):
         r = asistente.responder("12345")
         self.assertIn("Sesión iniciada", r.texto)
         self.assertIn("- **1** · **Pagos por confirmar**", r.texto)
-        with patch.object(matricula, "ARCHIVO_MATRICULAS", self.tmp / "matriculas.csv"):
-            self.assertEqual(asistente.responder("1").tipo, "administracion")
+        self.assertEqual(asistente.responder("1").tipo, "administracion")
         asistente.responder("menú")
         self.assertIn("Sesión cerrada", asistente.responder("0").texto)
         self.assertFalse(acceso.autenticado())
@@ -178,7 +163,7 @@ class AsistenteTests(unittest.TestCase):
         self.assertIn("@example.com", asistente.responder("Dame los datos del alumno ALU-0001").texto)
 
     def test_contrasenas_cifradas(self):
-        contenido = acceso.USUARIOS.read_text(encoding="utf-8")
+        contenido = rutas.usuarios().read_text(encoding="utf-8")
         self.assertNotIn("12345", contenido)
 
     def test_permisos_por_perfil(self):
@@ -190,12 +175,16 @@ class AsistenteTests(unittest.TestCase):
         self.assertIn("Solo la Coordinación", asistente.responder("ver registro de consultas").texto)
 
     def test_coordinacion_actualiza_vacantes(self):
-        shutil.copy(asistente.v.ARCHIVO_VACANTES_DEFECTO, self.tmp / "vacantes.csv")
-        with patch.dict("os.environ", {"VACANTES_ARCHIVO": str(self.tmp / "vacantes.csv")}):
-            self.assertIn("Solo la Coordinación", asistente.responder("actualiza vacantes H16 a 5").texto)
-            acceso.iniciar_sesion("coord01", "12345")
-            self.assertIn("a 5 vacante", asistente.responder("actualiza vacantes H16 a 5").texto)
-            self.assertIn("5 vacante(s)", asistente.responder("vacantes de guitarra").texto)
+        self.assertIn("Solo la Coordinación", asistente.responder("actualiza vacantes H16 a 5").texto)
+        acceso.iniciar_sesion("coord01", "12345")
+        self.assertIn("a 5 vacante", asistente.responder("actualiza vacantes H16 a 5").texto)
+        self.assertIn("5 vacante(s)", asistente.responder("vacantes de guitarra").texto)
+
+    def test_datos_restringidos_se_consultan_por_mcp(self):
+        import cliente_mcp
+        self.assertEqual(cliente_mcp.llamar_json("restringido", "permisos", usuario="coord01")["perfil"],
+                         "Coordinación Académica")
+        self.assertTrue(cliente_mcp.llamar_json("general", "listar_horarios"))
 
     def test_base_general_tiene_al_menos_30_documentos(self):
         self.assertGreaterEqual(len(conocimiento.documentos()), 30)

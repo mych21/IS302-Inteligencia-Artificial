@@ -1,13 +1,19 @@
-"""Genera 200 registros SINTÉTICOS de alumnos para la base restringida (no son datos reales del MALI).
+"""Genera los datos SINTÉTICOS de la base restringida (no son datos reales del MALI).
 
-Incluye datos personales FICTICIOS para simular el registro real: nombre, número de documento (empieza con 99, un
-rango que no corresponde a DNI reales emitidos), teléfono (900 000 xxx) y correo @example.com (dominio reservado).
-Solo los ve el personal autorizado del MALI. Las filas de alumnos inscritos por el asistente (ALU-0201…) se conservan.
-Uso: python restringido/generar_alumnos_sinteticos.py
+- restringido/alumnos_sinteticos.csv: 200 alumnos con datos personales FICTICIOS: nombre, número de documento (empieza
+  con 99, un rango que no corresponde a DNI emitidos), teléfono (900 000 xxx) y correo @example.com (dominio
+  reservado). La semilla es fija, así que el resultado siempre es el mismo.
+- restringido/matricula.csv: una matrícula por alumno sintético (MAT-S0001…).
+Los alumnos y matrículas creados por el asistente (ALU-0201…, MAT-0001…) se conservan.
+Uso: python restringido/generar_datos_sinteticos.py
 """
-import csv
 import random
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import datos_restringidos as dr  # noqa: E402
+import rutas  # noqa: E402
 
 CURSOS = [("Dibujo y Pintura", "Curso"), ("Pintura al Óleo", "Curso"), ("Ballet", "Taller"), ("Kpop", "Taller"),
           ("Marinera Norteña", "Taller"), ("Teatro y Actuación", "Curso"), ("Fotografía digital", "Curso"),
@@ -21,8 +27,6 @@ NOMBRES = ["Lucía", "Mateo", "Valeria", "Santiago", "Camila", "Diego", "Sofía"
            "Alessia", "Bruno", "Antonella", "Emilio", "Luciana", "Rodrigo", "Micaela", "Gonzalo", "Paula", "Iván"]
 APELLIDOS = ["Quispe", "Flores", "Rojas", "Huamán", "Mendoza", "Torres", "Ramírez", "Castillo", "Vargas", "Chávez",
              "Salazar", "Paredes", "Gutiérrez", "Romero", "Medina", "Cárdenas", "Ríos", "Vega", "Silva", "Aguilar"]
-CAMPOS = ["id_alumno", "nombre", "numero_documento", "telefono", "correo", "programa", "curso", "sede", "periodo", "estado_matricula",
-          "porcentaje_asistencia", "inasistencias", "cursos_inscritos", "situacion_administrativa", "actualizado_al"]
 
 
 def _sin_tildes(t: str) -> str:
@@ -43,7 +47,7 @@ def datos_personales(n: int, semilla: int = 7) -> list[tuple[str, str, str, str]
     return salida
 
 
-def generar(n: int = 200, semilla: int = 42) -> list[dict]:
+def generar_alumnos(n: int = 200, semilla: int = 42) -> list[dict]:
     rnd = random.Random(semilla)
     filas = []
     for i in range(1, n + 1):
@@ -67,15 +71,31 @@ def generar(n: int = 200, semilla: int = 42) -> list[dict]:
     return filas
 
 
+FECHAS_PERIODO = {"Setiembre 2026": ("01/09/2026", "30/09/2026"), "Octubre 2026": ("01/10/2026", "31/10/2026")}
+ESTADOS = {"Activa": "Matriculado", "Pendiente de pago": "Pendiente de pago", "Retirada": "Retirado"}
+
+
+def generar_matriculas(alumnos: list[dict]) -> list[dict]:
+    filas = []
+    for n, a in enumerate(alumnos, 1):
+        ini, fin = FECHAS_PERIODO.get(a["periodo"], ("", ""))
+        filas.append({"codigo_matricula": f"MAT-S{n:04d}", "id_alumno": a["id_alumno"], "nombre": a["nombre"],
+                      "numero_documento": a["numero_documento"], "telefono": a["telefono"], "correo": a["correo"],
+                      "curso": a["curso"], "codigo_horario": "", "sede": a["sede"],
+                      "modalidad": "Virtual (Zoom)" if a["sede"] == "Virtual" else "Presencial", "horario": "",
+                      "periodo": a["periodo"], "fecha_inicio": ini, "fecha_fin": fin,
+                      "estado": ESTADOS.get(a["estado_matricula"], a["estado_matricula"]), "codigo_pago": "",
+                      "fecha_registro": a["actualizado_al"], "origen": "sistema (sintético)"})
+    return filas
+
+
 if __name__ == "__main__":
-    destino = Path(__file__).resolve().parent / "alumnos_sinteticos.csv"
-    filas = generar()
-    if destino.exists():                                  # conserva los alumnos creados por el asistente
-        sinteticos = {f["id_alumno"] for f in filas}
-        filas += [f for f in csv.DictReader(destino.read_text(encoding="utf-8").splitlines())
-                  if f["id_alumno"] not in sinteticos]
-    with open(destino, "w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=CAMPOS, extrasaction="ignore", restval="")
-        w.writeheader()
-        w.writerows(filas)
-    print(f"{len(filas)} registros sintéticos en {destino}")
+    alumnos = generar_alumnos()
+    sinteticos = {f["id_alumno"] for f in alumnos}
+    otros = [f for f in dr.alumnos() if f["id_alumno"] not in sinteticos]
+    dr._guardar(rutas.alumnos(), dr.CAMPOS_ALUMNOS, alumnos + otros)
+    del_asistente = [m for m in dr.matriculas() if m.get("origen") == "asistente"]
+    matriculas = generar_matriculas(alumnos)
+    dr._guardar(rutas.matriculas(), dr.CAMPOS_MATRICULA, matriculas + del_asistente)
+    print(f"{len(alumnos)} alumnos y {len(matriculas)} matrículas sintéticas "
+          f"(se conservaron {len(otros)} alumnos y {len(del_asistente)} matrículas del asistente).")
