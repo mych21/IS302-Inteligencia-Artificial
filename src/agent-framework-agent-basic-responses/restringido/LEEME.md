@@ -4,6 +4,11 @@
   `generar_alumnos_sinteticos.py` (semilla 42). Solo contienen un identificador interno (ALU-0001…) y los campos
   necesarios para gestión: programa, curso, sede, periodo, estado de matrícula, asistencia, inasistencias, cursos
   inscritos y situación administrativa. No hay nombres, DNI, teléfonos ni correos (minimización).
+- `matricula.csv`: registro de **todos los alumnos matriculados**: código de matrícula, código de alumno (ALU-…),
+  curso, sede, horario, periodo, fechas, estado (Matriculado, Pendiente de pago, Pre-inscrito, Retirado) y código de
+  pago. Contiene 200 matrículas sintéticas (MAT-S0001…, generadas con `generar_matricula.py`) y las inscripciones
+  hechas en el asistente (MAT-0001…, con nombre y correo del alumno). Solo lo consultan la Coordinación y el personal
+  habilitado («¿cuántos alumnos están matriculados?», «alumnos matriculados en guitarra», «ALU-0201»).
 - `usuarios.csv`: cuentas del **personal** (Personal, Coordinación Académica, Soporte TI) con la contraseña cifrada
   (PBKDF2-SHA256 con sal; nunca en texto plano). Contraseña de prueba: `12345`. Los estudiantes no tienen cuenta:
   usan el asistente sin iniciar sesión. La Coordinación Académica decide quién tiene `gestion_alumnos=si`.

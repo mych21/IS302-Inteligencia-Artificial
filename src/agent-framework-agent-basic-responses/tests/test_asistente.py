@@ -105,6 +105,14 @@ class AsistenteTests(unittest.TestCase):
         self.assertIn("Ingresa la contraseña", asistente.responder("coord01").texto)
         self.assertIn("Sesión iniciada", asistente.responder("12345").texto)
 
+    def test_coordinacion_consulta_matriculados(self):
+        acceso.iniciar_sesion("coord01", "12345")
+        r = asistente.responder("me dices cuantos alumnos estan matriculados")
+        self.assertEqual(r.tipo, "gestion")
+        self.assertIn("Alumnos matriculados", r.texto)
+        acceso.cerrar_sesion()
+        self.assertEqual(asistente.responder("cuantos alumnos estan matriculados").tipo, "gestion_denegada")
+
     def test_contrasenas_cifradas(self):
         contenido = acceso.USUARIOS.read_text(encoding="utf-8")
         self.assertNotIn("12345", contenido)

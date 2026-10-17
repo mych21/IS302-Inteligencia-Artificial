@@ -105,17 +105,18 @@ class MatriculaTests(unittest.TestCase):
         self.assertIn("código de pago", matricula.procesar_mensaje("sí"))
         self.assertIn("No reconocí", matricula.procesar_mensaje("12345"))
         r = matricula.procesar_mensaje("PAG-100002")
-        self.assertIn("Inscripción completada", r)
+        self.assertIn("Matrícula completada", r)
         self.assertIn("Lun y Mié 18:00–20:00", r)
-        self.assertIn("Inscrito DEMO", (self.tmp / "matriculas.csv").read_text(encoding="utf-8"))
+        self.assertIn("Matriculado", (self.tmp / "matriculas.csv").read_text(encoding="utf-8"))
         self.assertIn("PAG-100002,usado,MAT-0001", (self.tmp / "pagos.csv").read_text(encoding="utf-8"))
+        self.assertIn("código de alumno** es **ALU-0201", r)
 
     def test_pago_posterior_y_codigo_usado(self):
         for paso in ("quiero inscribirme en dibujo y pintura", "1", "Ana Torres ana@correo.com", "sí", "después"):
             r = matricula.procesar_mensaje(paso)
         self.assertIn("pendiente de pago", r)
         r = matricula.procesar_mensaje("pago MAT-0001 PAG-100001")
-        self.assertIn("Inscripción completada", r)
+        self.assertIn("Matrícula completada", r)
         self.assertNotIn("Ana Torres", r)                 # pago posterior: no se muestra el nombre
         self.assertIn("ya tiene un pago", matricula.procesar_mensaje("pago MAT-0001 PAG-100003"))
 

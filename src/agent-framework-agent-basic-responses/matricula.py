@@ -2,7 +2,7 @@
 Flujo de matrícula del MALI Asistente Estudiantil (solo librería estándar).
 
 Pasos: 1) curso → 2) horario → 3) nombre y correo → 4) confirmación → registro.
-Al confirmar: descuenta 1 vacante en datos/vacantes.csv y registra la matrícula en datos/matriculas.csv.
+Al confirmar: descuenta 1 vacante en datos/vacantes.csv crea el código de alumno y registra la matrícula en restringido/matricula.csv.
 
 `procesar_mensaje(texto)` devuelve la indicación que el agente debe responder en cada paso. El estado de la
 conversación se guarda en memoria (un usuario a la vez, suficiente para la demostración).
@@ -16,12 +16,13 @@ from pathlib import Path
 
 import vacantes as v
 
-ARCHIVO_MATRICULAS = v.AQUI / "datos" / "matriculas.csv"
+ARCHIVO_MATRICULAS = v.AQUI / "restringido" / "matricula.csv"      # todos los alumnos matriculados
 ARCHIVO_PAGOS = v.AQUI / "datos" / "pagos_demo.csv"
 PAGO = re.compile(r"\bPAG[-\s]?(\d{6})\b", re.I)
 MATRICULA = re.compile(r"\bMAT[-\s]?(\d{1,4})\b", re.I)
-CAMPOS_MATRICULA = ["codigo_matricula", "fecha_registro", "codigo_horario", "curso", "sede", "modalidad", "horario",
-                    "periodo", "fecha_inicio", "fecha_fin", "nombre", "correo", "estado", "codigo_pago"]
+CAMPOS_MATRICULA = ["codigo_matricula", "id_alumno", "nombre", "correo", "curso", "codigo_horario", "sede",
+                    "modalidad", "horario", "periodo", "fecha_inicio", "fecha_fin", "estado", "codigo_pago",
+                    "fecha_registro", "origen"]
 
 PALABRAS_INSCRIBIR = ("inscrib", "inscripc", "matricul", "agend", "reserv", "separ", "apunt", "registr")
 PALABRAS_SALUDO = {"hola", "buenas", "buenos", "hey", "saludos", "holi", "eres", "ayudar", "ayudarme", "ayudame",
@@ -194,13 +195,18 @@ def registrar_matricula(codigo_horario: str, nombre: str, correo: str) -> str:
     _guardar_tabla(filas, campos, delim)
 
     matriculas = _leer_matriculas()
-    codigo = f"MAT-{len(matriculas) + 1:04d}"
-    matriculas.append({"codigo_matricula": codigo, "fecha_registro": datetime.now().strftime("%d/%m/%Y %H:%M"),
+    codigo = f"MAT-{sum(m.get('origen') == 'asistente' for m in matriculas) + 1:04d}"
+    ids = [int(m["id_alumno"][4:]) for m in matriculas if m.get("id_alumno", "").startswith("ALU-")]
+    previo = next((m["id_alumno"] for m in matriculas if m.get("correo", "").lower() == correo.strip().lower()
+                   and m.get("id_alumno")), None)
+    id_alumno = previo or f"ALU-{max(ids + [200]) + 1:04d}"
+    matriculas.append({"codigo_matricula": codigo, "id_alumno": id_alumno, "origen": "asistente",
+                       "fecha_registro": datetime.now().strftime("%d/%m/%Y %H:%M"),
                        "codigo_horario": fila["codigo"], "curso": fila["curso"], "sede": fila["sede"],
                        "modalidad": fila.get("modalidad", ""), "horario": fila["horario"], "periodo": fila["periodo"],
                        "fecha_inicio": fila["fecha_inicio"], "fecha_fin": fila.get("fecha_fin", ""),
                        "nombre": nombre.strip(), "correo": correo.strip(),
-                       "estado": "Pre-inscrito DEMO (pendiente de pago)", "codigo_pago": ""})
+                       "estado": "Pre-inscrito (pendiente de pago)", "codigo_pago": ""})
     _guardar_matriculas(matriculas)
     return (f"OK {codigo}: {nombre.strip()} quedó pre-inscrito(a) en {fila['curso']} – {fila['sede']} – "
             f"{fila['horario']}, del {fila['fecha_inicio']} al {fila.get('fecha_fin', '-')}. Vacantes restantes en ese horario: "
@@ -233,7 +239,7 @@ def validar_pago(codigo_matricula: str, codigo_pago: str) -> str:
         w = csv.DictWriter(f, fieldnames=list(pagos[0]))
         w.writeheader()
         w.writerows(pagos)
-    mat.update(estado="Inscrito DEMO (pago validado)", codigo_pago=pago["codigo_pago"])
+    mat.update(estado="Matriculado", codigo_pago=pago["codigo_pago"])
     _guardar_matriculas(matriculas)
     return "OK"
 
@@ -245,7 +251,8 @@ def ficha_inscripcion(codigo_matricula: str, mostrar_nombre: bool = True) -> str
     filas, _, _ = _leer_tabla()
     hor = next((f for f in filas if f["codigo"] == mat["codigo_horario"]), {})
     doc = conocimiento.documento_que_menciona(mat["curso"])
-    lineas = [f"🎉 ¡Inscripción completada! Código **{mat['codigo_matricula']}** · pago **{mat['codigo_pago']}** validado.",
+    lineas = [f"🎉 ¡Matrícula completada! Código de matrícula **{mat['codigo_matricula']}** · pago **{mat['codigo_pago']}** validado.",
+              f"Tu **código de alumno** es **{mat.get('id_alumno', '')}**.",
               "", f"**{mat['curso']}**" + (f" — {doc.titulo.lower()} de MALI Educación" if doc else ""),
               *([f"- Alumno(a): {mat['nombre']}"] if mostrar_nombre else []),
               f"- Sede: {mat['sede']}" + ("" if mat["sede"].lower() == "virtual" else f" ({mat['modalidad']})")
@@ -279,10 +286,16 @@ def ficha_inscripcion(codigo_matricula: str, mostrar_nombre: bool = True) -> str
     return "\n".join(lineas)
 
 
+def _id_alumno(codigo_matricula: str) -> str:
+    return next((m.get("id_alumno", "") for m in _leer_matriculas()
+                 if m["codigo_matricula"] == codigo_matricula), "")
+
+
 def _pedir_pago(codigo_matricula: str, detalle: str) -> str:
     estado.clear()
     estado.update(paso="pago", codigo_matricula=codigo_matricula)
-    return (f"¡Listo! Tu pre-inscripción quedó registrada con el código **{codigo_matricula}**.\n- {detalle}\n\n"
+    return (f"¡Listo! Tu pre-inscripción quedó registrada con el código **{codigo_matricula}**.\n"
+            f"- Tu **código de alumno** es **{_id_alumno(codigo_matricula)}** (guárdalo para tus trámites).\n- {detalle}\n\n"
             "Para **finalizar tu inscripción**, envíame el **código de pago** de tu operación (formato PAG-000000, "
             "por ejemplo PAG-100001). Si aún no pagas, escribe «después»: tu vacante queda separada como "
             "pre-inscripción y podrás enviarme el código más tarde junto con tu código de pre-inscripción.")
@@ -304,7 +317,7 @@ def procesar_pago(texto: str, codigo_matricula: str | None = None) -> str:
 
 # ------------------------------------------------------------------ conversación
 def consultar_matriculas() -> str:
-    """Lista las matrículas registradas en datos/matriculas.csv."""
+    """Lista las matrículas registradas en restringido/matricula.csv."""
     if not ARCHIVO_MATRICULAS.exists():
         return "Aún no hay matrículas registradas."
     filas = _leer_matriculas()

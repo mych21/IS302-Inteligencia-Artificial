@@ -58,6 +58,8 @@ _GESTION = re.compile(
     r"registros? de (los )?alumnos|base de (datos de )?alumnos|situaci[oó]n (administrativa )?del alumno|"
     r"asistencia del alumno|expediente|ficha del alumno|informaci[oó]n de (los )?alumnos|"
     r"alumnos? (matriculados|inscritos|retirados)", re.I)
+_GESTION_LIBRE = re.compile(r"\b(cuantos|cuantas|total|numero|cantidad|lista\w*|listado|quienes|reporte)\b.*\balumn|"
+                            r"\balumn\w*\b.*\b(matricul|inscrit|retirad)|\bmatriculados\b|\bregistro de matricula")
 _SIN_DATO = {"precio", "precios", "cuesta", "cuestan", "costo", "costos", "pension", "mensualidad", "tarifa",
              "descuento", "descuentos", "beca", "becas", "certificado", "certificados", "diploma", "promocion"}
 _POLITICA = re.compile(r"\b(si me|cuando me|asegurad\w*|asegura|garantiz\w*|que pasa si|para que usan|"
@@ -284,7 +286,7 @@ def _decidir(pregunta: str) -> Respuesta:
     if matricula.es_saludo(texto):
         return Respuesta("saludo", presentacion())
 
-    if acceso.ID_ALUMNO.search(texto) or _GESTION.search(texto):
+    if acceso.ID_ALUMNO.search(texto) or _GESTION.search(texto) or _GESTION_LIBRE.search(v._normalizar(texto)):
         r = acceso.consultar_gestion(texto)
         return Respuesta("gestion" if r != acceso.DENEGADO else "gestion_denegada", r,
                          fuentes=["alumnos_sinteticos.csv"])

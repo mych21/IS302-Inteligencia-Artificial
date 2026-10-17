@@ -25,6 +25,7 @@ from pathlib import Path
 AQUI = Path(__file__).resolve().parent
 USUARIOS = AQUI / "restringido" / "usuarios.csv"
 ALUMNOS = AQUI / "restringido" / "alumnos_sinteticos.csv"
+# El registro de matrícula (restringido/matricula.csv) lo administra matricula.py
 REGISTRO = AQUI / "registros" / "consultas.csv"
 CAMPOS_REGISTRO = ["fecha", "usuario", "perfil", "tipo_consulta", "fuente", "resultado"]
 CAMPOS_USUARIOS = ["usuario", "perfil", "sal", "clave_hash", "gestion_alumnos", "habilitado_por", "descripcion"]
@@ -176,6 +177,49 @@ def _ficha(a: dict) -> str:
             f"- Situación administrativa: {a['situacion_administrativa']}\n(actualizado al {a['actualizado_al']})")
 
 
+def _linea_matricula(x: dict) -> str:
+    quien = f"{x['id_alumno']}" + (f" ({x['nombre']})" if x.get("nombre") else "")
+    horario = f" · {x['horario']}" if x.get("horario") else ""
+    return f"- {x['codigo_matricula']} · {quien} · {x['curso']} · {x['sede']}{horario} · {x['periodo']} · {x['estado']}"
+
+
+def _resumen_matricula(matriculas: list[dict], norm: str) -> str:
+    """Respuestas sobre el registro de matrícula: totales, por curso o por estado."""
+    import matricula as reg
+    filas = matriculas
+    cursos = reg.detectar_cursos(norm)
+    if cursos:
+        filas = [x for x in filas if x["curso"] in cursos]
+    if "retirad" in norm:
+        filas = [x for x in filas if x["estado"] == "Retirado"]
+    elif "pendiente" in norm or "pre inscrit" in norm or "preinscrit" in norm:
+        filas = [x for x in filas if x["estado"].startswith(("Pendiente", "Pre-inscrito"))]
+    matriculados = [x for x in filas if x["estado"] == "Matriculado"]
+    estados, periodos = {}, {}
+    for x in filas:
+        estados[x["estado"]] = estados.get(x["estado"], 0) + 1
+    for x in matriculados:
+        periodos[x["periodo"]] = periodos.get(x["periodo"], 0) + 1
+    titulo = f" en {', '.join(cursos)}" if cursos else ""
+    if "retirad" in norm:
+        cabecera = f"**Alumnos retirados{titulo}: {len(filas)}**"
+    elif "pendiente" in norm or "inscrit" in norm and "pre" in norm:
+        cabecera = f"**Matrículas pendientes de pago{titulo}: {len(filas)}**"
+    else:
+        cabecera = f"**Alumnos matriculados{titulo}: {len(matriculados)}** (de {len(filas)} registros de matrícula)"
+    lineas = [cabecera + ".",
+              "Por estado: " + ", ".join(f"{k}: {v}" for k, v in sorted(estados.items())) + ".",
+              "Matriculados por periodo: " + (", ".join(f"{k}: {v}" for k, v in sorted(periodos.items())) or "—") + "."]
+    muestra = [x for x in filas if x.get("origen") == "asistente"] + [x for x in filas if x.get("origen") != "asistente"]
+    if muestra:
+        lineas.append("Registros (primeros 10):")
+        lineas += [_linea_matricula(x) for x in muestra[:10]]
+        if len(muestra) > 10:
+            lineas.append(f"- … y {len(muestra) - 10} más.")
+    lineas.append("Fuente: base restringida matricula.csv (datos sintéticos y matrículas del asistente).")
+    return "\n".join(lineas)
+
+
 DENEGADO = ("Lo siento, la gestión de alumnos solo está disponible para la Coordinación Académica y el personal que "
             "esta habilite. Con tu perfil no puedo mostrar datos de alumnos. Si necesitas acceso, solicítalo a la "
             "Coordinación Académica.")
@@ -186,16 +230,24 @@ def consultar_gestion(texto: str) -> str:
     if not autorizar("gestion"):
         registrar("gestion_alumnos", "alumnos_sinteticos.csv", "denegado")
         return DENEGADO
+    import matricula as reg
     alumnos = _alumnos()
+    matriculas = reg._leer_matriculas()
     m = ID_ALUMNO.search(texto)
     if m:
         ident = f"ALU-{int(m.group(1)):04d}"
         a = next((x for x in alumnos if x["id_alumno"] == ident), None)
-        registrar("gestion_alumnos", "alumnos_sinteticos.csv", "permitido" if a else "sin_resultado")
-        if not a:
-            return f"No existe el alumno {ident} en la base de gestión (sintética)."
-        return _ficha(a) + "\nFuente: base restringida alumnos_sinteticos.csv (datos sintéticos)."
-    norm = texto.lower()
+        suyas = [x for x in matriculas if x.get("id_alumno") == ident]
+        registrar("gestion_alumnos", "alumnos_sinteticos.csv", "permitido" if (a or suyas) else "sin_resultado")
+        if not a and not suyas:
+            return f"No existe el alumno {ident} en la base de gestión."
+        partes = [_ficha(a)] if a else [f"**{ident}**" + (f" – {suyas[0]['nombre']}" if suyas[0].get("nombre") else "")]
+        if suyas:
+            partes.append("Matrículas:\n" + "\n".join(_linea_matricula(x) for x in suyas))
+        return "\n".join(partes) + "\nFuente: base restringida (alumnos_sinteticos.csv y matricula.csv)."
+    norm = re.sub(r"[áéíóú]", lambda c: "aeiou"["áéíóú".index(c.group())], texto.lower())
+    if re.search(r"matricul|inscrit|retirad", norm):
+        return _resumen_matricula(matriculas, norm)
     registrar("gestion_alumnos", "alumnos_sinteticos.csv", "permitido")
     if "asistencia" in norm or "inasist" in norm:
         bajos = sorted((a for a in alumnos if float(a["porcentaje_asistencia"]) < 70 and a["estado_matricula"] != "Retirada"),
