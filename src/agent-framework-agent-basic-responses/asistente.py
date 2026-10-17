@@ -92,6 +92,24 @@ _ES_ESTUDIANTE = {"estudiante", "soy estudiante", "alumno", "alumna", "soy alumn
 _ES_PERSONAL = {"personal", "soy personal", "personal del mali", "soy personal del mali", "soy del personal",
                 "docente", "soy docente", "profesor", "soy profesor", "coordinacion", "soy de coordinacion",
                 "coordinacion academica", "soporte", "soporte ti", "soy de soporte", "trabajador", "soy trabajador"}
+_PALABRAS_ESTUDIANTE = {"estudiante", "alumno", "alumna"}
+_PALABRAS_PERSONAL = {"personal", "docente", "profesor", "profesora", "coordinacion", "coordinador", "coordinadora",
+                      "soporte", "trabajador", "trabajadora", "administrativo", "administrativa", "staff", "colaborador"}
+
+
+def _comando_sesion_simple(texto: str) -> bool:
+    return bool(re.search(r"sesion|perfil|habilita|acceso|registro|vacantes", v._normalizar(texto)))
+
+
+def _responde_rol(texto: str, palabras: set[str]) -> bool:
+    """Respuesta corta a «¿eres estudiante o personal?» (p. ej. «personal mali», «soy docente»)."""
+    t = v._normalizar(texto).split()
+    if _GESTION.search(texto) or acceso.ID_ALUMNO.search(texto) or _comando_sesion_simple(texto):
+        return False
+    return 0 < len(t) <= 5 and "?" not in texto and bool(set(t) & palabras) and not \
+        (set(t) & (_PALABRAS_ESTUDIANTE if palabras is _PALABRAS_PERSONAL else _PALABRAS_PERSONAL))
+
+
 _MENSAJES_SENSIBLES: set[str] = set()     # huellas de mensajes con contraseña (para ocultarlos al modelo)
 
 
@@ -204,13 +222,13 @@ def _decidir(pregunta: str) -> Respuesta:
         if n0 in ("cancelar", "salir", "estudiante", "soy estudiante"):
             return Respuesta("perfil", "De acuerdo, te atiendo como **estudiante**. ¿En qué te puedo ayudar?")
         return Respuesta("sesion", acceso.iniciar_sesion(texto.split()[0]), fuentes=["usuarios.csv"])
-    if n0 in _ES_ESTUDIANTE:
+    if _responde_rol(texto, _PALABRAS_ESTUDIANTE):
         if acceso.autenticado():
             acceso.cerrar_sesion()
         return Respuesta("perfil", "Perfecto, te atiendo como **estudiante** (no necesitas iniciar sesión). Puedo "
                                    "ayudarte con cursos, procedimientos, horarios y vacantes, e inscribirte en un curso. "
                                    "¿Qué te gustaría saber?")
-    if n0 in _ES_PERSONAL:
+    if _responde_rol(texto, _PALABRAS_PERSONAL):
         if acceso.autenticado():
             return Respuesta("perfil", acceso.describir_sesion())
         acceso.pendiente.update(esperando_usuario=True)
