@@ -21,7 +21,8 @@ def generar() -> list[dict]:
     filas = []
     for n, a in enumerate(alumnos, 1):
         ini, fin = PERIODOS.get(a["periodo"], ("", ""))
-        filas.append({"codigo_matricula": f"MAT-S{n:04d}", "id_alumno": a["id_alumno"], "nombre": "", "correo": "",
+        filas.append({"codigo_matricula": f"MAT-S{n:04d}", "id_alumno": a["id_alumno"], "nombre": a["nombre"],
+                      "correo": a["correo"],
                       "curso": a["curso"], "codigo_horario": "", "sede": a["sede"],
                       "modalidad": "Virtual (Zoom)" if a["sede"] == "Virtual" else "Presencial", "horario": "",
                       "periodo": a["periodo"], "fecha_inicio": ini, "fecha_fin": fin,
@@ -32,5 +33,6 @@ def generar() -> list[dict]:
 
 if __name__ == "__main__":
     previas = [m for m in matricula._leer_matriculas() if m.get("origen") == "asistente"]
+    # Solo se regeneran las filas sintéticas; las inscripciones del asistente se conservan.
     matricula._guardar_matriculas(generar() + previas)
     print(f"{len(generar())} matrículas sintéticas + {len(previas)} del asistente en {matricula.ARCHIVO_MATRICULAS}")

@@ -109,8 +109,10 @@ def main(con_modelo: bool = False) -> None:
     banco = list(csv.DictReader(BANCO.open(encoding="utf-8")))
     tmp = Path(tempfile.mkdtemp())
     shutil.copy(acceso.USUARIOS, tmp / "usuarios.csv")
+    shutil.copy(acceso.ALUMNOS, tmp / "alumnos.csv")
     filas_res = []
     with patch.object(acceso, "USUARIOS", tmp / "usuarios.csv"), \
+            patch.object(acceso, "ALUMNOS", tmp / "alumnos.csv"), \
             patch.object(acceso, "REGISTRO", tmp / "consultas.csv"), \
             patch.object(matricula, "ARCHIVO_MATRICULAS", tmp / "matriculas_eval.csv"):
         for f in banco:

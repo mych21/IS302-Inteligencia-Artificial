@@ -196,10 +196,9 @@ def registrar_matricula(codigo_horario: str, nombre: str, correo: str) -> str:
 
     matriculas = _leer_matriculas()
     codigo = f"MAT-{sum(m.get('origen') == 'asistente' for m in matriculas) + 1:04d}"
-    ids = [int(m["id_alumno"][4:]) for m in matriculas if m.get("id_alumno", "").startswith("ALU-")]
-    previo = next((m["id_alumno"] for m in matriculas if m.get("correo", "").lower() == correo.strip().lower()
-                   and m.get("id_alumno")), None)
-    id_alumno = previo or f"ALU-{max(ids + [200]) + 1:04d}"
+    import acceso
+    programa = "Taller" if "taller" in fila.get("categoria", "").lower() else "Curso"
+    id_alumno = acceso.alumno_para_inscripcion(nombre, correo, fila["curso"], fila["sede"], fila["periodo"], programa)
     matriculas.append({"codigo_matricula": codigo, "id_alumno": id_alumno, "origen": "asistente",
                        "fecha_registro": datetime.now().strftime("%d/%m/%Y %H:%M"),
                        "codigo_horario": fila["codigo"], "curso": fila["curso"], "sede": fila["sede"],
@@ -241,6 +240,8 @@ def validar_pago(codigo_matricula: str, codigo_pago: str) -> str:
         w.writerows(pagos)
     mat.update(estado="Matriculado", codigo_pago=pago["codigo_pago"])
     _guardar_matriculas(matriculas)
+    import acceso
+    acceso.marcar_alumno_activo(mat.get("id_alumno", ""))
     return "OK"
 
 

@@ -18,7 +18,9 @@ class AsistenteTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
         shutil.copy(acceso.USUARIOS, self.tmp / "usuarios.csv")
+        shutil.copy(acceso.ALUMNOS, self.tmp / "alumnos.csv")
         self.parches = [patch.object(acceso, "USUARIOS", self.tmp / "usuarios.csv"),
+                        patch.object(acceso, "ALUMNOS", self.tmp / "alumnos.csv"),
                         patch.object(acceso, "REGISTRO", self.tmp / "consultas.csv")]
         for p in self.parches:
             p.start()
@@ -112,6 +114,12 @@ class AsistenteTests(unittest.TestCase):
         self.assertIn("Alumnos matriculados", r.texto)
         acceso.cerrar_sesion()
         self.assertEqual(asistente.responder("cuantos alumnos estan matriculados").tipo, "gestion_denegada")
+
+    def test_datos_personales_solo_para_personal(self):
+        r = asistente.responder("Dame los datos del alumno ALU-0001")
+        self.assertNotIn("@example.com", r.texto)
+        acceso.iniciar_sesion("coord01", "12345")
+        self.assertIn("@example.com", asistente.responder("Dame los datos del alumno ALU-0001").texto)
 
     def test_contrasenas_cifradas(self):
         contenido = acceso.USUARIOS.read_text(encoding="utf-8")

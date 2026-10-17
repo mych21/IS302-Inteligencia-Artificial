@@ -73,10 +73,13 @@ def _copias_temporales():
     shutil.copy(vacantes._archivo_vacantes(), tmp / "vacantes.csv")
     shutil.copy(matricula.ARCHIVO_PAGOS, tmp / "pagos.csv")
     shutil.copy(acceso.USUARIOS, tmp / "usuarios.csv")
+    shutil.copy(acceso.ALUMNOS, tmp / "alumnos.csv")
+    shutil.copy(matricula.ARCHIVO_MATRICULAS, tmp / "matriculas.csv")
     return [patch.dict(os.environ, {"VACANTES_ARCHIVO": str(tmp / "vacantes.csv")}),
             patch.object(matricula, "ARCHIVO_PAGOS", tmp / "pagos.csv"),
             patch.object(matricula, "ARCHIVO_MATRICULAS", tmp / "matriculas.csv"),
             patch.object(acceso, "USUARIOS", tmp / "usuarios.csv"),
+            patch.object(acceso, "ALUMNOS", tmp / "alumnos.csv"),
             patch.object(acceso, "REGISTRO", tmp / "consultas.csv")]
 
 

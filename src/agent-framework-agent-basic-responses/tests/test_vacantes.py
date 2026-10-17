@@ -62,6 +62,10 @@ class MatriculaTests(unittest.TestCase):
         shutil.copy(matricula.ARCHIVO_PAGOS, self.tmp / "pagos.csv")
         self.pag = patch.object(matricula, "ARCHIVO_PAGOS", self.tmp / "pagos.csv")
         self.pag.start()
+        import acceso
+        shutil.copy(acceso.ALUMNOS, self.tmp / "alumnos.csv")
+        self.alu = patch.object(acceso, "ALUMNOS", self.tmp / "alumnos.csv")
+        self.alu.start()
         self.env.start()
         self.mat.start()
         matricula.reiniciar()
@@ -70,6 +74,7 @@ class MatriculaTests(unittest.TestCase):
         self.env.stop()
         self.mat.stop()
         self.pag.stop()
+        self.alu.stop()
         matricula.reiniciar()
 
     def test_saludo(self):
@@ -100,6 +105,8 @@ class MatriculaTests(unittest.TestCase):
         self.assertNotIn("nombre completo", r)
 
     def test_pago_completa_la_inscripcion(self):
+        import acceso
+        esperado = "ALU-{:04d}".format(max(int(a["id_alumno"][4:]) for a in acceso._alumnos()) + 1)
         for paso in ("quiero inscribirme en dibujo y pintura", "2", "Ana Torres ana@correo.com"):
             matricula.procesar_mensaje(paso)
         self.assertIn("código de pago", matricula.procesar_mensaje("sí"))
@@ -109,7 +116,9 @@ class MatriculaTests(unittest.TestCase):
         self.assertIn("Lun y Mié 18:00–20:00", r)
         self.assertIn("Matriculado", (self.tmp / "matriculas.csv").read_text(encoding="utf-8"))
         self.assertIn("PAG-100002,usado,MAT-0001", (self.tmp / "pagos.csv").read_text(encoding="utf-8"))
-        self.assertIn("código de alumno** es **ALU-0201", r)
+        self.assertIn(f"código de alumno** es **{esperado}", r)
+        padron = (self.tmp / "alumnos.csv").read_text(encoding="utf-8")
+        self.assertIn(f"{esperado},Ana Torres,ana@correo.com", padron)       # mismo código en el padrón de alumnos
 
     def test_pago_posterior_y_codigo_usado(self):
         for paso in ("quiero inscribirme en dibujo y pintura", "1", "Ana Torres ana@correo.com", "sí", "después"):

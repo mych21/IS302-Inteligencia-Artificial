@@ -170,10 +170,56 @@ def _alumnos() -> list[dict]:
         return list(csv.DictReader(f))
 
 
+CAMPOS_ALUMNOS = ["id_alumno", "nombre", "correo", "programa", "curso", "sede", "periodo", "estado_matricula",
+                  "porcentaje_asistencia", "inasistencias", "cursos_inscritos", "situacion_administrativa",
+                  "actualizado_al"]
+
+
+def _guardar_alumnos(filas: list[dict]) -> None:
+    with open(ALUMNOS, "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=CAMPOS_ALUMNOS, extrasaction="ignore")
+        w.writeheader()
+        w.writerows(filas)
+
+
+def alumno_para_inscripcion(nombre: str, correo: str, curso: str, sede: str, periodo: str, programa: str) -> str:
+    """Devuelve el código del alumno (lo crea en el padrón de alumnos si es nuevo, buscando por correo).
+    Así matricula.csv y alumnos_sinteticos.csv usan siempre los mismos códigos ALU-…"""
+    alumnos = _alumnos()
+    hoy = datetime.now().strftime("%d/%m/%Y")
+    a = next((x for x in alumnos if x.get("correo", "").lower() == correo.strip().lower()), None)
+    if a:
+        a.update(curso=curso, sede=sede, periodo=periodo, estado_matricula="Pendiente de pago",
+                 situacion_administrativa="Pago pendiente", actualizado_al=hoy,
+                 cursos_inscritos=str(int(a.get("cursos_inscritos") or 0) + 1))
+    else:
+        ultimo = max([int(x["id_alumno"][4:]) for x in alumnos if x["id_alumno"].startswith("ALU-")] + [0])
+        a = {"id_alumno": f"ALU-{ultimo + 1:04d}", "nombre": nombre.strip(), "correo": correo.strip(),
+             "programa": programa, "curso": curso, "sede": sede, "periodo": periodo,
+             "estado_matricula": "Pendiente de pago", "porcentaje_asistencia": "", "inasistencias": "0",
+             "cursos_inscritos": "1", "situacion_administrativa": "Pago pendiente", "actualizado_al": hoy}
+        alumnos.append(a)
+    _guardar_alumnos(alumnos)
+    return a["id_alumno"]
+
+
+def marcar_alumno_activo(id_alumno: str) -> None:
+    """Tras validar el pago: matrícula activa y situación administrativa al día."""
+    alumnos = _alumnos()
+    a = next((x for x in alumnos if x["id_alumno"] == id_alumno), None)
+    if a:
+        a.update(estado_matricula="Activa", situacion_administrativa="Al día",
+                 actualizado_al=datetime.now().strftime("%d/%m/%Y"))
+        _guardar_alumnos(alumnos)
+
+
 def _ficha(a: dict) -> str:
-    return (f"**{a['id_alumno']}** (dato sintético)\n- Programa: {a['programa']} – {a['curso']} – {a['sede']} "
-            f"({a['periodo']})\n- Matrícula: {a['estado_matricula']}\n- Asistencia: {a['porcentaje_asistencia']} % "
-            f"({a['inasistencias']} inasistencia(s))\n- Cursos inscritos: {a['cursos_inscritos']}\n"
+    contacto = f"\n- Nombre: {a['nombre']}\n- Correo: {a['correo']}" if a.get("nombre") else ""
+    asistencia = (f"{a['porcentaje_asistencia']} % ({a['inasistencias']} inasistencia(s))"
+                  if a.get("porcentaje_asistencia") else "sin clases registradas aún")
+    return (f"**{a['id_alumno']}** (dato sintético){contacto}\n- Programa: {a['programa']} – {a['curso']} – {a['sede']} "
+            f"({a['periodo']})\n- Matrícula: {a['estado_matricula']}\n- Asistencia: {asistencia}\n"
+            f"- Cursos inscritos: {a['cursos_inscritos']}\n"
             f"- Situación administrativa: {a['situacion_administrativa']}\n(actualizado al {a['actualizado_al']})")
 
 
@@ -250,7 +296,8 @@ def consultar_gestion(texto: str) -> str:
         return _resumen_matricula(matriculas, norm)
     registrar("gestion_alumnos", "alumnos_sinteticos.csv", "permitido")
     if "asistencia" in norm or "inasist" in norm:
-        bajos = sorted((a for a in alumnos if float(a["porcentaje_asistencia"]) < 70 and a["estado_matricula"] != "Retirada"),
+        bajos = sorted((a for a in alumnos if a["porcentaje_asistencia"] and float(a["porcentaje_asistencia"]) < 70
+                        and a["estado_matricula"] != "Retirada"),
                        key=lambda a: float(a["porcentaje_asistencia"]))
         return (f"Alumnos activos con asistencia menor a 70 %: {len(bajos)} de {len(alumnos)}.\n"
                 + "\n".join(f"- {a['id_alumno']}: {a['porcentaje_asistencia']} % – {a['curso']} ({a['sede']})"
