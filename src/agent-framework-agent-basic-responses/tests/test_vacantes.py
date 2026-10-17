@@ -59,6 +59,9 @@ class MatriculaTests(unittest.TestCase):
         shutil.copy(vacantes.ARCHIVO_VACANTES_DEFECTO, self.tmp / "vacantes.csv")
         self.env = patch.dict(os.environ, {"VACANTES_ARCHIVO": str(self.tmp / "vacantes.csv")})
         self.mat = patch.object(matricula, "ARCHIVO_MATRICULAS", self.tmp / "matriculas.csv")
+        shutil.copy(matricula.ARCHIVO_PAGOS, self.tmp / "pagos.csv")
+        self.pag = patch.object(matricula, "ARCHIVO_PAGOS", self.tmp / "pagos.csv")
+        self.pag.start()
         self.env.start()
         self.mat.start()
         matricula.reiniciar()
@@ -66,6 +69,7 @@ class MatriculaTests(unittest.TestCase):
     def tearDown(self):
         self.env.stop()
         self.mat.stop()
+        self.pag.stop()
         matricula.reiniciar()
 
     def test_saludo(self):
@@ -94,6 +98,26 @@ class MatriculaTests(unittest.TestCase):
         r = matricula.procesar_mensaje("marinera norteña?")
         self.assertIn("horarios de Marinera Norteña", r)
         self.assertNotIn("nombre completo", r)
+
+    def test_pago_completa_la_inscripcion(self):
+        for paso in ("quiero inscribirme en dibujo y pintura", "2", "Ana Torres ana@correo.com"):
+            matricula.procesar_mensaje(paso)
+        self.assertIn("código de pago", matricula.procesar_mensaje("sí"))
+        self.assertIn("No reconocí", matricula.procesar_mensaje("12345"))
+        r = matricula.procesar_mensaje("PAG-100002")
+        self.assertIn("Inscripción completada", r)
+        self.assertIn("Lun y Mié 18:00–20:00", r)
+        self.assertIn("Inscrito DEMO", (self.tmp / "matriculas.csv").read_text(encoding="utf-8"))
+        self.assertIn("PAG-100002,usado,MAT-0001", (self.tmp / "pagos.csv").read_text(encoding="utf-8"))
+
+    def test_pago_posterior_y_codigo_usado(self):
+        for paso in ("quiero inscribirme en dibujo y pintura", "1", "Ana Torres ana@correo.com", "sí", "después"):
+            r = matricula.procesar_mensaje(paso)
+        self.assertIn("pendiente de pago", r)
+        r = matricula.procesar_mensaje("pago MAT-0001 PAG-100001")
+        self.assertIn("Inscripción completada", r)
+        self.assertNotIn("Ana Torres", r)                 # pago posterior: no se muestra el nombre
+        self.assertIn("ya tiene un pago", matricula.procesar_mensaje("pago MAT-0001 PAG-100003"))
 
     def test_cancelar_no_registra(self):
         matricula.procesar_mensaje("inscríbeme en guitarra")

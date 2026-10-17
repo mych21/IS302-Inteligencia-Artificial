@@ -21,7 +21,10 @@ las mismas columnas, o apunta a otro archivo con la variable `VACANTES_ARCHIVO` 
 
 Al confirmar una inscripción, el agente descuenta 1 en `vacantes_disponibles` y registra la matrícula en
 `datos/matriculas.csv` (se crea solo, con código MAT-0001, MAT-0002…; estado "Pre-inscrito (pendiente de pago)").
-Para reiniciar la demo, restaura las vacantes y borra `matriculas.csv`.
+Luego pide el código de pago: `datos/pagos_demo.csv` tiene 20 códigos de demostración (PAG-100001 a PAG-100020).
+Al validar uno, se marca como `usado`, la matrícula pasa a "Inscrito DEMO (pago validado)" y el asistente muestra el
+horario y la información del curso. Para reiniciar la demo, restaura las vacantes, pon los pagos en `disponible`
+y borra `matriculas.csv`.
 
 El agente lee el archivo en cada consulta: si lo editas, no hace falta reiniciar nada.
 Si guardas desde Excel, usa "CSV UTF-8 (delimitado por comas)".

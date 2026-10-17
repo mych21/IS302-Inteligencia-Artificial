@@ -17,8 +17,11 @@ from pathlib import Path
 import vacantes as v
 
 ARCHIVO_MATRICULAS = v.AQUI / "datos" / "matriculas.csv"
+ARCHIVO_PAGOS = v.AQUI / "datos" / "pagos_demo.csv"
+PAGO = re.compile(r"\bPAG[-\s]?(\d{6})\b", re.I)
+MATRICULA = re.compile(r"\bMAT[-\s]?(\d{1,4})\b", re.I)
 CAMPOS_MATRICULA = ["codigo_matricula", "fecha_registro", "codigo_horario", "curso", "sede", "modalidad", "horario",
-                    "periodo", "fecha_inicio", "nombre", "correo", "estado"]
+                    "periodo", "fecha_inicio", "nombre", "correo", "estado", "codigo_pago"]
 
 PALABRAS_INSCRIBIR = ("inscrib", "inscripc", "matricul", "agend", "reserv", "separ", "apunt", "registr")
 PALABRAS_SALUDO = {"hola", "buenas", "buenos", "hey", "saludos", "holi", "eres", "ayudar", "ayudarme", "ayudame",
@@ -160,6 +163,20 @@ def _extraer_datos(texto: str, con_nombre: bool = True) -> None:
 
 
 # ------------------------------------------------------------------ registro de la matrícula
+def _leer_matriculas() -> list[dict]:
+    if not ARCHIVO_MATRICULAS.exists():
+        return []
+    return list(csv.DictReader(ARCHIVO_MATRICULAS.read_text(encoding="utf-8").splitlines()))
+
+
+def _guardar_matriculas(filas: list[dict]) -> None:
+    with open(ARCHIVO_MATRICULAS, "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=CAMPOS_MATRICULA, extrasaction="ignore")
+        w.writeheader()
+        for fila in filas:
+            w.writerow({c: fila.get(c, "") or "" for c in CAMPOS_MATRICULA})
+
+
 def registrar_matricula(codigo_horario: str, nombre: str, correo: str) -> str:
     """Descuenta una vacante del horario y registra la matrícula. Devuelve un resumen o un mensaje de error."""
     filas, campos, delim = _leer_tabla()
@@ -175,21 +192,111 @@ def registrar_matricula(codigo_horario: str, nombre: str, correo: str) -> str:
         fila["actualizado_al"] = datetime.now().strftime("%d/%m/%Y")
     _guardar_tabla(filas, campos, delim)
 
-    nuevo = not ARCHIVO_MATRICULAS.exists()
-    previas = 0 if nuevo else max(0, len(ARCHIVO_MATRICULAS.read_text(encoding="utf-8").splitlines()) - 1)
-    codigo = f"MAT-{previas + 1:04d}"
-    with open(ARCHIVO_MATRICULAS, "a", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=CAMPOS_MATRICULA)
-        if nuevo:
-            w.writeheader()
-        w.writerow({"codigo_matricula": codigo, "fecha_registro": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                    "codigo_horario": fila["codigo"], "curso": fila["curso"], "sede": fila["sede"],
-                    "modalidad": fila.get("modalidad", ""), "horario": fila["horario"], "periodo": fila["periodo"],
-                    "fecha_inicio": fila["fecha_inicio"], "nombre": nombre.strip(), "correo": correo.strip(),
-                    "estado": "Pre-inscrito DEMO (pendiente de confirmación y pago)"})
+    matriculas = _leer_matriculas()
+    codigo = f"MAT-{len(matriculas) + 1:04d}"
+    matriculas.append({"codigo_matricula": codigo, "fecha_registro": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                       "codigo_horario": fila["codigo"], "curso": fila["curso"], "sede": fila["sede"],
+                       "modalidad": fila.get("modalidad", ""), "horario": fila["horario"], "periodo": fila["periodo"],
+                       "fecha_inicio": fila["fecha_inicio"], "nombre": nombre.strip(), "correo": correo.strip(),
+                       "estado": "Pre-inscrito DEMO (pendiente de pago)", "codigo_pago": ""})
+    _guardar_matriculas(matriculas)
     return (f"OK {codigo}: {nombre.strip()} quedó pre-inscrito(a) en {fila['curso']} – {fila['sede']} – "
             f"{fila['horario']}, inicia {fila['fecha_inicio']}. Vacantes restantes en ese horario: "
             f"{fila['vacantes_disponibles']}.")
+
+
+# ------------------------------------------------------------------ pago y confirmación final
+def _leer_pagos() -> list[dict]:
+    with open(ARCHIVO_PAGOS, encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+
+def validar_pago(codigo_matricula: str, codigo_pago: str) -> str:
+    """Valida un código de pago de demostración (datos/pagos_demo.csv) y completa la inscripción."""
+    matriculas = _leer_matriculas()
+    mat = next((m for m in matriculas if m["codigo_matricula"].upper() == codigo_matricula.upper()), None)
+    if mat is None:
+        return f"ERROR: no encontré la pre-inscripción {codigo_matricula}."
+    if mat.get("codigo_pago"):
+        return f"ERROR: la inscripción {codigo_matricula} ya tiene un pago validado ({mat['codigo_pago']})."
+    pagos = _leer_pagos()
+    pago = next((p for p in pagos if p["codigo_pago"].upper() == codigo_pago.upper()), None)
+    if pago is None:
+        return f"ERROR: el código de pago {codigo_pago} no existe."
+    if pago["estado"] != "disponible":
+        return f"ERROR: el código de pago {codigo_pago} ya fue usado."
+    pago.update(estado="usado", codigo_matricula=mat["codigo_matricula"],
+                fecha_uso=datetime.now().strftime("%d/%m/%Y %H:%M"))
+    with open(ARCHIVO_PAGOS, "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(pagos[0]))
+        w.writeheader()
+        w.writerows(pagos)
+    mat.update(estado="Inscrito DEMO (pago validado)", codigo_pago=pago["codigo_pago"])
+    _guardar_matriculas(matriculas)
+    return "OK"
+
+
+def ficha_inscripcion(codigo_matricula: str, mostrar_nombre: bool = True) -> str:
+    """Resumen final con el horario, la información del curso y recordatorios tomados de las fuentes."""
+    import conocimiento
+    mat = next(m for m in _leer_matriculas() if m["codigo_matricula"] == codigo_matricula)
+    filas, _, _ = _leer_tabla()
+    hor = next((f for f in filas if f["codigo"] == mat["codigo_horario"]), {})
+    doc = conocimiento.documento_que_menciona(mat["curso"])
+    lineas = [f"🎉 ¡Inscripción completada! Código **{mat['codigo_matricula']}** · pago **{mat['codigo_pago']}** validado.",
+              "", f"**{mat['curso']}**" + (f" — {doc.titulo.lower()} de MALI Educación" if doc else ""),
+              *([f"- Alumno(a): {mat['nombre']}"] if mostrar_nombre else []),
+              f"- Sede: {mat['sede']}" + ("" if mat["sede"].lower() == "virtual" else f" ({mat['modalidad']})")
+              + (" – clases en vivo por Zoom" if "zoom" in mat["modalidad"].lower() else ""),
+              f"- Horario: {mat['horario']}",
+              f"- Inicio: {mat['fecha_inicio']} ({mat['periodo']})"]
+    if hor.get("publico"):
+        lineas.append(f"- Público: {hor['publico']}")
+    recordatorios = []
+    for titulo_doc in ("Ingreso a clases", "Inasistencias", "Cancelación de horarios"):
+        d = next((x for x in conocimiento.documentos() if x.titulo.startswith(titulo_doc)), None)
+        if d:
+            recordatorios.append(d)
+    if "virtual" in mat["modalidad"].lower():
+        d = next((x for x in conocimiento.documentos() if x.titulo.startswith("Modalidad virtual")), None)
+        if d:
+            recordatorios.insert(0, d)
+    if recordatorios:
+        lineas += ["", "Ten en cuenta:"]
+        resumen = {"Ingreso a clases": "Para ingresar al aula debes presentar tu boleta (física o virtual) o la constancia de matrícula.",
+                   "Inasistencias": "Las sesiones no son recuperables ni acumulables si faltas.",
+                   "Cancelación de horarios": "El horario puede cancelarse si no llega a un mínimo de 5 alumnos inscritos.",
+                   "Modalidad virtual": "Las clases son en vivo por Zoom y tienes acceso al Campus Virtual durante el mes."}
+        for d in recordatorios:
+            clave = next(k for k in resumen if d.titulo.startswith(k))
+            lineas.append(f"- {resumen[clave]}")
+        lineas.append(f"Fuente: {recordatorios[-1].fuente}")
+    lineas += ["", "Inscripción de demostración: el código de pago y los datos son simulados. "
+               "Para una matrícula real escribe a cursosdearte@mali.pe."]
+    return "\n".join(lineas)
+
+
+def _pedir_pago(codigo_matricula: str, detalle: str) -> str:
+    estado.clear()
+    estado.update(paso="pago", codigo_matricula=codigo_matricula)
+    return (f"¡Listo! Tu pre-inscripción quedó registrada con el código **{codigo_matricula}**.\n- {detalle}\n\n"
+            "Para **finalizar tu inscripción**, envíame el **código de pago** de tu operación (formato PAG-000000, "
+            "por ejemplo PAG-100001). Si aún no pagas, escribe «después»: tu vacante queda separada como "
+            "pre-inscripción y podrás enviarme el código más tarde junto con tu código de pre-inscripción.")
+
+
+def procesar_pago(texto: str, codigo_matricula: str | None = None) -> str:
+    en_flujo = codigo_matricula is None        # pago posterior: no se muestra el nombre (podría ser de otra persona)
+    codigo_matricula = codigo_matricula or estado.get("codigo_matricula")
+    m = PAGO.search(texto)
+    if not m:
+        return ("No reconocí un código de pago. Envíalo con el formato PAG-000000 (por ejemplo PAG-100001) o "
+                "escribe «después» para completarlo más tarde. No compartas números de tarjeta.")
+    r = validar_pago(codigo_matricula, f"PAG-{m.group(1)}")
+    if r.startswith("ERROR"):
+        return r.replace("ERROR: ", "No pude validar el pago: ") + " Revisa el código e inténtalo de nuevo."
+    reiniciar()
+    return ficha_inscripcion(codigo_matricula, mostrar_nombre=en_flujo)
 
 
 # ------------------------------------------------------------------ conversación
@@ -197,7 +304,7 @@ def consultar_matriculas() -> str:
     """Lista las matrículas registradas en datos/matriculas.csv."""
     if not ARCHIVO_MATRICULAS.exists():
         return "Aún no hay matrículas registradas."
-    filas = list(csv.DictReader(ARCHIVO_MATRICULAS.read_text(encoding="utf-8").splitlines()))
+    filas = _leer_matriculas()
     return "\n".join(f"- {f['codigo_matricula']} | {f['nombre']} | {f['curso']} | {f['sede']} | {f['horario']} | "
                      f"{f['estado']}" for f in filas) or "Aún no hay matrículas registradas."
 
@@ -216,12 +323,14 @@ _INTENCION = re.compile(
 
 def quiere_inscribirse(texto: str) -> bool:
     """Intención explícita de inscribirse («quiero inscribirme», «inscríbeme», «agéndame una vacante»…)."""
-    return bool(_INTENCION.search(v._normalizar(texto)))
+    return bool(_INTENCION.search(v._normalizar(texto))) or bool(MATRICULA.search(texto) and PAGO.search(texto))
 
 
 def fuera_del_flujo(texto: str) -> bool:
     """El usuario cambió de tema a mitad de la pre-inscripción (pregunta sin elegir curso u horario)."""
     paso = estado.get("paso")
+    if paso == "pago":
+        return ("?" in texto or "¿" in texto) and not PAGO.search(texto)
     if paso not in ("curso", "horario", "datos"):
         return False
     pregunta = "?" in texto or "¿" in texto
@@ -286,6 +395,16 @@ def _resumen() -> str:
 def procesar_mensaje(texto: str) -> str:
     """Devuelve el mensaje que el agente debe dar al usuario para el paso actual de la matrícula."""
     palabras = set(v._normalizar(texto).split())
+    if estado.get("paso") == "pago":
+        if palabras & {"despues", "luego", "mas", "tarde", "ahora", "no", "cancelar", "salir"} and not PAGO.search(texto):
+            codigo = estado.get("codigo_matricula")
+            reiniciar()
+            return (f"De acuerdo. Tu pre-inscripción **{codigo}** queda pendiente de pago. Cuando tengas el código, "
+                    f"escríbeme por ejemplo: «pago {codigo} PAG-100001».")
+        return procesar_pago(texto)
+    if MATRICULA.search(texto) and PAGO.search(texto):      # pago posterior: «pago MAT-0004 PAG-100003»
+        mat = f"MAT-{int(MATRICULA.search(texto).group(1)):04d}"
+        return procesar_pago(texto, mat)
     cancelar = palabras & PALABRAS_NO and not palabras & PALABRAS_SI
     if flujo_activo() and cancelar and (estado.get("paso") != "datos" or palabras & {"cancelar", "cancela", "salir"}):
         reiniciar()
@@ -335,9 +454,7 @@ def procesar_mensaje(texto: str) -> str:
             if r.startswith("ERROR"):
                 return r.replace("ERROR: ", "No pude registrar la pre-inscripción: ") + " " + _pedir_curso()
             codigo, _, detalle = r[3:].partition(": ")
-            return (f"¡Listo! Tu pre-inscripción quedó registrada con el código {codigo}.\n- {detalle}\n"
-                    "Es una pre-inscripción de demostración (no es una matrícula oficial). Para matricularte de "
-                    "verdad, escribe a cursosdearte@mali.pe.")
+            return _pedir_pago(codigo, detalle)
         if palabras & PALABRAS_NO:
             reiniciar()
             return DESPEDIDA
