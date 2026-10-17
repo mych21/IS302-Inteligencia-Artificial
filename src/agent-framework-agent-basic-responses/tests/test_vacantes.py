@@ -129,6 +129,20 @@ class MatriculaTests(unittest.TestCase):
         self.assertNotIn("Ana Torres", r)                 # pago posterior: no se muestra el nombre
         self.assertIn("ya tiene un pago", matricula.procesar_mensaje("pago MAT-0001 PAG-100003"))
 
+    def test_inscripcion_por_codigo_de_horario(self):
+        r = matricula.procesar_mensaje("inscribirme en H16")
+        self.assertIn("Elegiste **H16**", r)
+        self.assertEqual(matricula.estado["codigo"], "H16")
+
+    def test_elige_horario_por_sede_dias_y_hora(self):
+        matricula.procesar_mensaje("quiero inscribirme en dibujo y pintura")
+        matricula.procesar_mensaje("el de las 6 de la tarde, lunes y miércoles")
+        self.assertEqual(matricula.estado["codigo"], "H20")
+        matricula.reiniciar()
+        matricula.estado["ultimo_curso"] = "Violín"
+        matricula.procesar_mensaje("quisiera inscribir en la molian camacho lunes y miercoles de 10 a 11")
+        self.assertEqual(matricula.estado.get("codigo"), "H18")
+
     def test_cancelar_no_registra(self):
         matricula.procesar_mensaje("inscríbeme en guitarra")
         matricula.procesar_mensaje("cancelar")

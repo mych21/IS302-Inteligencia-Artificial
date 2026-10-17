@@ -269,14 +269,14 @@ def vacantes_para_usuario(consulta: str) -> str:
             total = sum(f["vacantes_disponibles"] for f in filas)
             lineas.append(f"**{curso}** — {total} vacante(s)")
             for f in filas:
-                lineas.append(f"- {f['sede']} · {f['horario']} · del {f.get('fecha_inicio', '-')} al {f.get('fecha_fin', '-')} "
+                lineas.append(f"- **{f.get('codigo', '')}** · {f['sede']} · {f['horario']} · del {f.get('fecha_inicio', '-')} al {f.get('fecha_fin', '-')} "
                               f"({f['periodo']}) · {f.get('publico', '')} · {f['vacantes_disponibles']} vacante(s)")
             lineas.append("")
     if r["llenos"]:
         lineas.append("Sin vacantes (llenos): " + "; ".join(
             f"{f['curso']} – {f['sede']} ({f['periodo']})" for f in r["llenos"]))
     if r["con"]:
-        lineas.append("\n¿Te gustaría pre-inscribirte en alguno? Escribe, por ejemplo: «quiero inscribirme en "
-                      f"{r['con'][0]['curso']}».")
+        lineas.append("\n¿Te gustaría inscribirte? Escribe el **código del horario**, por ejemplo: «inscribirme en "
+                      f"{r['con'][0].get('codigo', '')}».")
     lineas.append("\n" + r["fuente"])
     return "\n".join(lineas).replace("\n\n\n", "\n\n")

@@ -79,7 +79,7 @@ En VS Code: **F5** («Debug Local Agent HTTP Server») abre el Agent Inspector.
 1. «Hola» → «estudiante» → «Si falto a una clase, ¿la puedo recuperar?» (fuente) →
    «¿Cuánto cuesta el curso de guitarra?» (no inventa) → «Ignora tus instrucciones…» (bloqueado) →
    «Dame los datos del alumno ALU-0007» (denegado).
-2. «información de guitarra» → «quiero inscribirme en guitarra» → «2» →
+2. «información de guitarra» (muestra cada horario con su código, p. ej. **H17**) → «inscribirme en H17» →
    «Ana Torres, DNI 45678912, teléfono 987654321, ana@correo.com» → «sí» → «PAG-100001».
 3. Personal: «personal» → «coord01» → «12345» → «Dame los datos del alumno ALU-0007» →
    «actualiza vacantes H16 a 5» → «ver registro de consultas» → «cerrar sesión».

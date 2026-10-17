@@ -124,23 +124,55 @@ def _linea(n: int, f: dict) -> str:
             f"{f['publico']} – {_vac(f)} vacante(s) [código {f['codigo']}]")
 
 
+_DIAS = {"lunes": "lun", "lun": "lun", "martes": "mar", "miercoles": "mie", "mie": "mie", "jueves": "jue",
+         "jue": "jue", "viernes": "vie", "vie": "vie", "sabado": "sab", "sabados": "sab", "sab": "sab"}
+
+
+def _puntaje_opcion(texto: str, f: dict) -> int:
+    """Qué tanto coincide lo que escribió el usuario (sede, días, hora) con un horario."""
+    import difflib
+    norm = v._normalizar(texto)
+    palabras = norm.split()
+    puntos = 0
+    claves_sede = v._set(f["sede"]) - v._GENERICAS_SEDE
+    for p in palabras:
+        if len(p) > 3 and (p in claves_sede or difflib.get_close_matches(p, claves_sede, 1, 0.75)):
+            puntos += 2
+    dias_horario = {_DIAS[d] for d in v._normalizar(f["horario"]).split() if d in _DIAS}
+    dias_texto = {_DIAS[p] for p in palabras if p in _DIAS}
+    if dias_texto:
+        puntos += 2 if dias_texto == dias_horario else (1 if dias_texto & dias_horario else -1)
+    inicio = re.search(r"(\d{1,2}):\d{2}", f["horario"])
+    horas = [int(h) for h in re.findall(r"\b(\d{1,2})(?::\d{2})?\b", norm) if int(h) <= 23]
+    if inicio and horas:
+        puntos += 2 if int(inicio.group(1)) in horas or int(inicio.group(1)) - 12 in horas else -1
+    return puntos
+
+
 def _elegir_opcion(texto: str, ops: list[dict]) -> dict | None:
     norm = v._normalizar(texto)
-    cod = re.search(r"\bh\s?(\d{1,3})\b", norm)
+    cod = CODIGO_HORARIO.search(texto)
     if cod:
         codigo = f"H{int(cod.group(1)):02d}"
         return next((f for f in ops if f["codigo"].upper() == codigo), None)
-    num = re.search(r"\b(\d{1,2})\b", norm)
+    num = re.fullmatch(r"\s*(?:el|la|opcion|numero)?\s*(\d{1,2})\s*", norm)
     n = int(num.group(1)) if num else next((ORDINALES[w] for w in norm.split() if w in ORDINALES), None)
     if n and 1 <= n <= len(ops):
         return ops[n - 1]
-    t = v._set(texto) - v._GENERICAS_SEDE
-    por_sede = [f for f in ops if t & (v._set(f["sede"]) - v._GENERICAS_SEDE)]
-    if len(por_sede) == 1:
-        return por_sede[0]
+    puntajes = sorted(((_puntaje_opcion(texto, f), i) for i, f in enumerate(ops)), reverse=True)
+    if puntajes and puntajes[0][0] > 0 and (len(puntajes) == 1 or puntajes[0][0] > puntajes[1][0]):
+        return ops[puntajes[0][1]]
     if len(ops) == 1 and set(norm.split()) & PALABRAS_SI:
         return ops[0]
     return None
+
+
+def _horario_por_codigo(texto: str) -> dict | None:
+    cod = CODIGO_HORARIO.search(texto)
+    if not cod:
+        return None
+    filas, _, _ = _leer_tabla()
+    return next((f for f in filas if f["codigo"].upper() == f"H{int(cod.group(1)):02d}"), None)
 
 
 _ETIQUETA_TEL = r"(?:tel[eé]fono|telf?\.?|cel(?:ular)?\.?|whatsapp|m[oó]vil)"
@@ -374,15 +406,18 @@ def es_saludo(texto: str) -> bool:
         and not quiere_inscribirse(texto)
 
 
+CODIGO_HORARIO = re.compile(r"\bh\s?-?(\d{1,2})\b", re.I)
 _INTENCION = re.compile(
-    r"\b(inscrib(irme|eme|irte|ir a mi|irlo|irla|o)|inscripcion en|matricul(arme|ame|o|ar a mi)|"
+    r"\b(inscrib(irme|eme|irte|ir a mi|irlo|irla|o)\b|(quisiera|quiero|deseo|me gustaria|puedo) inscribir\b|"
+    r"inscripcion en|matricul(arme|ame|o|ar a mi)\b|(quisiera|quiero|deseo) matricular\b|me apunto|"
     r"pre ?inscrib\w*|pre ?inscripcion|agend\w*|reserv(ar|ame|a|o)\s+(una\s+|mi\s+)?(vacante|cupo|horario)|"
     r"separ(ar|ame|o)\s+(una\s+|mi\s+)?(vacante|cupo)|apuntame|quiero\s+(inscribir|matricular|llevar)\w*)")
 
 
 def quiere_inscribirse(texto: str) -> bool:
     """Intención explícita de inscribirse («quiero inscribirme», «inscríbeme», «agéndame una vacante»…)."""
-    return bool(_INTENCION.search(v._normalizar(texto))) or bool(MATRICULA.search(texto) and PAGO.search(texto))
+    return bool(_INTENCION.search(v._normalizar(texto))) or bool(MATRICULA.search(texto) and PAGO.search(texto)) \
+        or bool(CODIGO_HORARIO.search(texto) and (_horario_por_codigo(texto) or len(texto.split()) <= 4))
 
 
 def fuera_del_flujo(texto: str) -> bool:
@@ -421,6 +456,11 @@ def _pedir_horario(curso: str, sede_texto: str = "") -> str:
         estado.pop("curso", None)
         return f"Lo siento, {curso} no tiene vacantes en este momento. " + _pedir_curso()
     estado.update(paso="horario", curso=curso, opciones=[f["codigo"] for f in ops])
+    elegido = _elegir_opcion(sede_texto, ops) if len(ops) > 1 and sede_texto else None
+    if elegido:                                   # ya indicó sede, días u hora: se elige ese horario
+        estado.update(paso="datos", codigo=elegido["codigo"])
+        return (f"Elegiste **{elegido['codigo']}**: {curso} – " + _linea(1, elegido)[3:] + "\n\n"
+                + (_resumen() if _datos_completos() else _pedir_datos()))
     if len(ops) == 1:
         estado.update(paso="datos", codigo=ops[0]["codigo"])
         if _datos_completos():
@@ -429,7 +469,8 @@ def _pedir_horario(curso: str, sede_texto: str = "") -> str:
                 "\nSi te acomoda, envíame tu nombre completo, número de documento, teléfono y correo para registrar "
                 "tu pre-inscripción (o escribe «cancelar»).")
     return (f"Estos son los horarios de {curso} con vacantes:\n" + "\n".join(_linea(i, f) for i, f in enumerate(ops, 1))
-            + "\n¿Cuál horario eliges? Responde con el número de la opción.")
+            + "\n¿Cuál horario eliges? Responde con el número de la opción o con su código (por ejemplo, "
+            f"«{ops[0]['codigo']}»).")
 
 
 def _pedir_datos() -> str:
@@ -470,8 +511,22 @@ def procesar_mensaje(texto: str) -> str:
         reiniciar()
         return DESPEDIDA
 
-    cursos = detectar_cursos(texto)
     paso = estado.get("paso")
+    if CODIGO_HORARIO.search(texto) and paso in (None, "curso", "horario", "datos"):   # «inscribirme en H18»
+        fila = _horario_por_codigo(texto)
+        if fila is None:
+            return f"No existe el horario {CODIGO_HORARIO.search(texto).group(0).upper()}. " + _pedir_curso()
+        if _vac(fila) <= 0:
+            return f"El horario {fila['codigo']} de {fila['curso']} ya no tiene vacantes. " + _pedir_horario(fila["curso"])
+        estado.update(curso=fila["curso"], codigo=fila["codigo"], opciones=[fila["codigo"]])
+        _extraer_datos(CODIGO_HORARIO.sub(" ", texto))
+        if _datos_completos():
+            return _resumen()
+        return (f"Elegiste **{fila['codigo']}**: {fila['curso']} – " + _linea(1, fila)[3:] + "\n\n" + _pedir_datos())
+
+    cursos = detectar_cursos(texto)
+    if not cursos and estado.get("ultimo_curso") and paso in (None, "curso") and quiere_inscribirse(texto):
+        cursos = [estado["ultimo_curso"]]                  # «quisiera inscribirme…» justo después de ver un curso
 
     # Cambio de curso en cualquier paso: si nombra otro curso (y no está enviando su correo), se cambia
     if cursos and len(cursos) == 1 and cursos[0] != estado.get("curso") and not EMAIL.search(texto) \
