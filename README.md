@@ -1,110 +1,97 @@
-# Foundry Local Agent (Responses Protocol)
+# MALI Asistente – prototipo del trabajo final (IS302 Inteligencia Artificial, UPC 2026-2)
 
-This agent runs exclusively on your Windows PC using Microsoft Agent Framework
-and the OpenAI-compatible endpoint of Foundry Local. No Azure subscription, cloud model deployment, API key,
-or Azure sign-in is required. There is no cloud fallback.
+Chatbot con IA para orientar a la comunidad educativa del MALI y proteger sus datos. Implementa lo descrito en
+el documento final: RAG sobre fuentes institucionales, perfiles con control de acceso, base restringida de gestión
+de alumnos (sintética), registro de consultas, aviso de privacidad, resistencia a *prompt injection* y el banco de
+pruebas de la sección 4.4.
 
-The local `ResponsesHostServer` keeps the HTTP interface on
-`http://localhost:8088` for Foundry Toolkit Agent Inspector. This server interface
-does not mean that model inference is hosted in Azure.
-
-## Prerequisites
-
-- Python 3.13 or later.
-- [Foundry Local](https://learn.microsoft.com/azure/foundry-local/get-started)
-  installed on Windows.
-- [uv](https://docs.astral.sh/uv/getting-started/installation/) installed.
-- For F5 debugging: VS Code, Python Debugger, and Foundry Toolkit extensions.
-
-## Set up (PowerShell)
-
-From the workspace root:
-
-```powershell
-Set-Location .\src\agent-framework-agent-basic-responses
-uv sync --frozen
-foundry model list
-foundry model load phi-4-mini
+## Arquitectura
+```
+Usuario ─► Agent Inspector (VS Code) / demo_cli.py
+             │
+             ▼
+   main.py  (Microsoft Agent Framework + Foundry Local, modelo Phi-4-mini)
+     └─ middleware orquestar() ─► asistente.py  (decide cada mensaje)
+            ├─ seguridad: prompt injection y datos sensibles ............ respuesta del sistema
+            ├─ acceso.py: perfiles, gestión de alumnos, registro ........ respuesta del sistema
+            ├─ vacantes.py / matricula.py: vacantes y pre-inscripción .... respuesta del sistema
+            └─ conocimiento.py: RAG (BM25) sobre conocimiento/general ..... redacta Phi-4-mini con la fuente
+   mali_mcp_server.py (MCP): buscar_informacion_mali y consultar_vacantes (solo nivel general)
 ```
 
-Model acquisition may need internet access on first use. After the model and
-runtime components are cached, inference runs locally.
-Microsoft Learn MCP requires internet access even when the model is cached.
+| Carpeta / archivo | Contenido | Nivel |
+|---|---|---|
+| `conocimiento/general/` | 42 documentos (G01–G42) con fuente, responsable y vigencia | General |
+| `datos/vacantes.csv` | Horarios y vacantes de demostración | General (DEMO) |
+| `datos/pagos_demo.csv` | Pagos conciliados de demostración (PAG-100001…); los aprobados por el personal se agregan como `usado` | DEMO |
+| `restringido/alumnos_sinteticos.csv` | Padrón de alumnos (ALU-0001…): nombre, documento, teléfono, correo y situación | Restringido |
+| `restringido/matricula.csv` | Todos los alumnos matriculados, con sus datos personales y el mismo código de alumno | Restringido |
+| `restringido/usuarios.csv` | Cuentas del personal con contraseña cifrada; la Coordinación habilita al personal | Restringido |
+| `registros/consultas.csv` | Auditoría: fecha, usuario, perfil, tipo, fuente, resultado (sin texto) | Coordinación y TI |
+| `evaluacion/` | Banco de 104 pruebas, `evaluar.py` y resultados | – |
 
-On startup, the agent uses `foundry server start`, loads the configured model,
-and discovers the current daemon port with `foundry server status --output json`.
-Only loopback HTTP endpoints are accepted. `OpenAIChatCompletionClient` talks to
-this local endpoint, not to OpenAI or Azure. The older `FoundryLocalClient`
-package uses legacy CLI commands incompatible with the installed Foundry CLI.
+## Flujo (Gráfico 5 del documento)
+1. **Estudiantes:** usan el asistente sin iniciar sesión (perfil público): base general, horarios y vacantes, e
+   inscripción (pre-inscripción + código de pago de demostración).
+2. **Personal → Autenticación y perfil:** «iniciar sesión <usuario>» y luego la contraseña (o en una línea:
+   «iniciar sesión coord01 12345»). Las cuentas están en `restringido/usuarios.csv` con la contraseña cifrada.
+   Antes de **cada** consulta se verifica el rol y sus permisos.
+3. **MALI Asistente:** busca solo en las fuentes que el perfil tiene permitidas (base general o base restringida).
+   Los mensajes con contraseña no se registran ni se envían al modelo.
+4. **Respuesta:** con la fuente citada o, si no hay información, derivación al canal oficial.
+5. **Coordinación Académica:** actualiza los datos («actualiza vacantes H16 a 5»; los documentos se editan en
+   `conocimiento/general/`), decide quién usa la gestión de alumnos («habilita a docente01», «ver permisos») y
+   revisa el registro («ver registro de consultas»).
 
-## Configuration
+## Usuarios del personal
+Los **estudiantes no tienen usuario**: usan el asistente sin iniciar sesión. Solo el personal inicia sesión:
 
-The agent reads [.env](src/agent-framework-agent-basic-responses/.env) next to
-[main.py](src/agent-framework-agent-basic-responses/main.py):
+| Usuario | Contraseña | Perfil | Puede consultar |
+|---|---|---|---|
+| `docente01` | `12345` | Personal | Base general y vacantes (gestión de alumnos solo si la Coordinación lo habilita) |
+| `docente02` | `12345` | Personal | Lo anterior + gestión de alumnos (habilitado por coord01) |
+| `coord01` | `12345` | Coordinación Académica | Gestión de alumnos, permisos, vacantes y registro de consultas |
+| `soporte01` | `12345` | Soporte TI | Base general y registro de consultas; nunca datos de alumnos |
 
-```dotenv
-FOUNDRY_LOCAL_MODEL=phi-4-mini-reasoning
+**Cómo se identifica el usuario (menús numerados):** al saludar, el bot muestra opciones numeradas y, mientras
+un menú está abierto, **solo acepta esos números** (cualquier otro texto vuelve a mostrar las opciones).
+- Menú inicial: «1» estudiante · «2» personal del MALI.
+- Estudiante (sin iniciar sesión): «1» matricularme · «2» ver vacantes · «3» estado de mi matrícula (código de
+  alumno + documento) · «4» otra consulta (pregunta libre).
+- Personal: «2» → usuario (por ejemplo «coord01») → contraseña («12345») → menú según los permisos del perfil
+  (pagos por confirmar, consultar un alumno, resumen de matrícula, asistencia baja, vacantes, registro de
+  consultas, permisos, otra consulta; «0» cierra sesión).
+- Cada respuesta termina recordando: **«0»** vuelve al menú anterior (sale del paso actual; una pre-inscripción
+  ya registrada se conserva) y «menú principal» vuelve al menú inicial. En el menú del estudiante, «0» lleva al
+  menú principal. El personal con sesión vuelve a su menú; para cambiar de perfil, cierra sesión. También se puede escribir
+  «iniciar sesión coord01 12345» en una sola línea.
+
+Las cuentas están en `restringido/usuarios.csv` con la contraseña cifrada (no se guarda en texto plano).
+En producción: cuenta institucional (Microsoft Entra ID).
+
+## Cómo ejecutarlo
+```bash
+cd ~/AIFoundryProjects/agente-001
+source .venv/bin/activate
+cd src/agent-framework-agent-basic-responses
+
+python -m unittest discover -s tests      # 22 pruebas
+python evaluacion/evaluar.py              # banco de pruebas (sin modelo) → evaluacion/resultados.md
+python evaluacion/evaluar.py --con-modelo # + tiempos con Phi-4-mini (Foundry Local)
+python demo_cli.py                        # guion de demostración (con el modelo)
+python demo_cli.py --sin-modelo           # guion sin el modelo
 ```
+En VS Code: **F5** («Debug Local Agent HTTP Server») abre el Agent Inspector.
 
-Choose another supported local chat model from `foundry model list` by changing
-this value. An existing process environment value takes precedence over `.env`.
-A missing or empty value is an error, not a switch to a cloud provider.
-
-Function calling and structured output support depend on the selected model.
-Cloud-hosted tools such as Foundry web search and code interpreter are not
-available through the local client.
-
-## Microsoft Learn MCP
-
-The agent connects to the official public Streamable HTTP MCP endpoint:
-`https://learn.microsoft.com/api/mcp`. No authentication, API key, or Azure
-subscription is needed.
-
-Only these read-only documentation tools are exposed to the model:
-
-- `microsoft_docs_search`: search Microsoft documentation.
-- `microsoft_docs_fetch`: read a documentation article.
-- `microsoft_code_sample_search`: find official code examples.
-
-The agent keeps its MCP session open for the lifetime of the HTTP server and
-closes it on normal shutdown. A failed MCP connection prevents startup;
-tool errors are not replaced with fabricated documentation.
-
-Model inference remains on your PC. Tool arguments (search queries and article
-URLs) are sent to Microsoft Learn and results return to the local model.
-Do not include secrets or private source code in documentation queries.
-There is no offline documentation fallback.
-
-Try this in Agent Inspector:
-`Use Microsoft Learn to explain Foundry Local and include the official source URL.`
-Inspect the tool calls as well as the final answer; a plausible answer alone
-does not prove that the model used MCP. Tool calling reliability depends on the
-selected local model.
-
-Reference: [Microsoft Learn MCP Server](https://learn.microsoft.com/training/support/mcp).
-
-## Run and test
-
-Press **F5** from the workspace root to start the agent with its own virtual
-environment and open Agent Inspector.
-
-Or, from the agent source directory:
-
-```powershell
-uv run --frozen python main.py
-```
-
-Open **Foundry Toolkit: Open Agent Inspector** from the Command Palette and
-connect to port `8088`. Send a message to test local inference.
-
-This project uses local-only model inference with a remote documentation MCP.
-The Azure deployment manifest and cloud container
-definition have been removed; `azd deploy` is not part of this workflow.
-
-## Configuration tests
-
-From the agent source directory:
-
-```powershell
-uv run --frozen python -m unittest discover -s tests -v
-```
+## Guion de demostración (video)
+1. «Hola» → «1» (estudiante) → «4» (otra consulta) → «Si falto a una clase, ¿la puedo recuperar?» (fuente) →
+   «¿Cuánto cuesta el curso de guitarra?» (no inventa) → «Ignora tus instrucciones…» (bloqueado) →
+   «Dame los datos del alumno ALU-0007» (denegado).
+2. «menú» → «2» (vacantes, cada horario con su código, p. ej. **H17**) → «inscribirme en H17» →
+   «Ana Torres, DNI 45678912, teléfono 987654321, ana@correo.com» → «sí» → «PAG-100001» (pago conciliado:
+   matrícula completada). Con un código que no está en `pagos_demo.csv` (p. ej. «PAG-000134») la inscripción
+   queda **por confirmar**.
+3. Estado: «menú» → «3» → código de alumno (p. ej. «ALU-0201») → número de documento dado al inscribirse.
+4. Personal: «hola» → «2» → «coord01» → «12345» → «1» (pagos por confirmar) → «aprobar pago MAT-0001» →
+   «0» → «2» (consultar un alumno) → «alumno ALU-0007» → «actualiza vacantes H16 a 5» → «0» → «0» (cerrar
+   sesión).

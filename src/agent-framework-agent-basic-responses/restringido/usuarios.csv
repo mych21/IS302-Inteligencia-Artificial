@@ -1,0 +1,5 @@
+usuario,perfil,sal,clave_hash,gestion_alumnos,habilitado_por,descripcion
+docente01,Personal,bf54d8045da4414cbb3d1e98c48b0bb4,4cc7cd188c545e8436ab0e9eb45822d05b2ac92285b6a3e5975dbb8ba9ff5945,no,,Docente sin acceso a gestión de alumnos
+docente02,Personal,f9b00938a65d227d7a22b4d85d89cf8a,62f621216a793f44c1cae8e48ab9c8bfcaa50cbad1ed3c5d964de0387f0fc1fe,si,coord01,Docente habilitado por la Coordinación Académica
+coord01,Coordinación Académica,f31b063d76bee3f9fb1f59d347392791,957ce656a30c9a65c863aaffaf09d4615662112ff1ea5900bf81536e4de2fdde,si,,Coordinación Académica (administra la gestión de alumnos)
+soporte01,Soporte TI,ee806a8125f088ace7d531afd280206c,f875922efdf83565f21819b448bee627b59e59df61c6c30c583eb12561cbce56,no,,Soporte técnico: configura el asistente pero no consulta datos de alumnos
