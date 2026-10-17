@@ -79,14 +79,19 @@ def presentacion() -> str:
             "- Resolver dudas sobre cursos, talleres, sedes, procedimientos y canales de atención (con la fuente).\n"
             "- Ver los horarios y vacantes de los cursos.\n"
             "- Inscribirte en un curso (pre-inscripción y código de pago de demostración).\n\n"
-            "Si eres **personal del MALI**, escribe «iniciar sesión <usuario>» para acceder a las opciones de tu perfil.\n\n"
-            f"{AVISO_PRIVACIDAD}\n\n¿En qué te puedo ayudar?")
+            f"{AVISO_PRIVACIDAD}\n\n"
+            "Para atenderte mejor, **¿eres estudiante o personal del MALI?** Responde «estudiante» o «personal». "
+            "(Si eres estudiante también puedes preguntarme directamente.)")
     return (
         f"¡Hola, {acceso.sesion['usuario']}! Soy **MALI Asistente** 🎨. {acceso.describir_sesion()}\n\n"
         "Respondo con la fuente de cada dato y, si no tengo la información, te derivo al canal oficial.\n\n"
         f"{AVISO_PRIVACIDAD}\n\n¿En qué te puedo ayudar?")
 
 
+_ES_ESTUDIANTE = {"estudiante", "soy estudiante", "alumno", "alumna", "soy alumno", "soy alumna", "soy estudiante del mali"}
+_ES_PERSONAL = {"personal", "soy personal", "personal del mali", "soy personal del mali", "soy del personal",
+                "docente", "soy docente", "profesor", "soy profesor", "coordinacion", "soy de coordinacion",
+                "coordinacion academica", "soporte", "soporte ti", "soy de soporte", "trabajador", "soy trabajador"}
 _MENSAJES_SENSIBLES: set[str] = set()     # huellas de mensajes con contraseña (para ocultarlos al modelo)
 
 
@@ -185,13 +190,31 @@ def _ficha_curso(curso: str) -> Respuesta:
 # ------------------------------------------------------------------ orquestación
 def _decidir(pregunta: str) -> Respuesta:
     texto = pregunta.strip()
-    if acceso.pendiente:                 # el mensaje es la contraseña del usuario que inició sesión
+    if acceso.pendiente.get("usuario"):  # el mensaje es la contraseña del usuario que inició sesión
         usuario = acceso.pendiente["usuario"]
         if v._normalizar(texto).strip() in ("cancelar", "salir"):
             acceso.pendiente.clear()
             return Respuesta("sesion", "Inicio de sesión cancelado.")
         registrar_mensaje_sensible(texto)
         return Respuesta("sesion", acceso.iniciar_sesion(usuario, texto), fuentes=["usuarios.csv"])
+    n0 = v._normalizar(texto).strip(" !.")
+    if acceso.pendiente.get("esperando_usuario"):        # personal: el mensaje es su usuario
+        acceso.pendiente.clear()
+        if n0 in ("cancelar", "salir", "estudiante", "soy estudiante"):
+            return Respuesta("perfil", "De acuerdo, te atiendo como **estudiante**. ¿En qué te puedo ayudar?")
+        return Respuesta("sesion", acceso.iniciar_sesion(texto.split()[0]), fuentes=["usuarios.csv"])
+    if n0 in _ES_ESTUDIANTE:
+        if acceso.autenticado():
+            acceso.cerrar_sesion()
+        return Respuesta("perfil", "Perfecto, te atiendo como **estudiante** (no necesitas iniciar sesión). Puedo "
+                                   "ayudarte con cursos, procedimientos, horarios y vacantes, e inscribirte en un curso. "
+                                   "¿Qué te gustaría saber?")
+    if n0 in _ES_PERSONAL:
+        if acceso.autenticado():
+            return Respuesta("perfil", acceso.describir_sesion())
+        acceso.pendiente.update(esperando_usuario=True)
+        return Respuesta("perfil", "Para el personal del MALI necesito verificar tu perfil. 🔐 Escribe tu **usuario** "
+                                   "(por ejemplo, coord01).")
     if es_login(texto):                  # antes de los filtros: la contraseña no es un dato a descartar
         registrar_mensaje_sensible(texto)
         return Respuesta("sesion", _comando_sesion(texto), fuentes=["usuarios.csv"])

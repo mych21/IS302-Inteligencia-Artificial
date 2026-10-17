@@ -98,6 +98,13 @@ class AsistenteTests(unittest.TestCase):
         self.assertEqual(asistente.ocultar_si_sensible("12345"), "[mensaje de inicio de sesión oculto]")
         self.assertNotIn("12345", (self.tmp / "consultas.csv").read_text(encoding="utf-8"))
 
+    def test_pregunta_si_es_estudiante_o_personal(self):
+        self.assertIn("¿eres estudiante o personal", asistente.responder("hola").texto)
+        self.assertIn("estudiante", asistente.responder("estudiante").texto)
+        self.assertIn("usuario", asistente.responder("personal").texto)
+        self.assertIn("Ingresa la contraseña", asistente.responder("coord01").texto)
+        self.assertIn("Sesión iniciada", asistente.responder("12345").texto)
+
     def test_contrasenas_cifradas(self):
         contenido = acceso.USUARIOS.read_text(encoding="utf-8")
         self.assertNotIn("12345", contenido)

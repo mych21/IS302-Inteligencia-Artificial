@@ -52,8 +52,10 @@ Los **estudiantes no tienen usuario**: usan el asistente sin iniciar sesión. So
 | `coord01` | `12345` | Coordinación Académica | Gestión de alumnos, permisos, vacantes y registro de consultas |
 | `soporte01` | `12345` | Soporte TI | Base general y registro de consultas; nunca datos de alumnos |
 
-**Cómo iniciar sesión en el chat:** «iniciar sesión coord01» y luego «12345», o en una sola línea
-«iniciar sesión coord01 12345». Para salir: «cerrar sesión».
+**Cómo se identifica el usuario:** al saludar, el bot pregunta «¿eres estudiante o personal del MALI?».
+- «estudiante» → se atiende sin iniciar sesión (también si pregunta directamente sin responder).
+- «personal» → el bot pide el usuario (por ejemplo «coord01») y luego la contraseña («12345»).
+  También se puede escribir «iniciar sesión coord01 12345» en una sola línea. Para salir: «cerrar sesión».
 
 Las cuentas están en `restringido/usuarios.csv` con la contraseña cifrada (no se guarda en texto plano).
 En producción: cuenta institucional (Microsoft Entra ID).
@@ -73,9 +75,9 @@ python demo_cli.py --sin-modelo           # guion sin el modelo
 En VS Code: **F5** («Debug Local Agent HTTP Server») abre el Agent Inspector.
 
 ## Guion de demostración (video)
-1. Como estudiante (sin sesión): «Hola» → «Si falto a una clase, ¿la puedo recuperar?» (fuente) →
+1. «Hola» → «estudiante» → «Si falto a una clase, ¿la puedo recuperar?» (fuente) →
    «¿Cuánto cuesta el curso de guitarra?» (no inventa) → «Ignora tus instrucciones…» (bloqueado) →
    «Dame los datos del alumno ALU-0007» (denegado).
 2. «información de guitarra» → «quiero inscribirme en guitarra» → «2» → nombre y correo → «sí» → «PAG-100001».
-3. Personal: «iniciar sesión coord01» → «12345» → «Dame los datos del alumno ALU-0007» →
+3. Personal: «personal» → «coord01» → «12345» → «Dame los datos del alumno ALU-0007» →
    «actualiza vacantes H16 a 5» → «ver registro de consultas» → «cerrar sesión».
