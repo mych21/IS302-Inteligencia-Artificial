@@ -129,6 +129,21 @@ class MatriculaTests(unittest.TestCase):
         self.assertNotIn("Ana Torres", r)                 # pago posterior: no se muestra el nombre
         self.assertIn("ya tiene un pago", matricula.procesar_mensaje("pago MAT-0001 PAG-100003"))
 
+    def test_pago_no_conciliado_queda_por_confirmar(self):
+        for paso in ("inscribirme en H18", "Julio Quispe, DNI 45678912, teléfono 987654321, julio@correo.com", "sí"):
+            matricula.procesar_mensaje(paso)
+        r = matricula.procesar_mensaje("PAG-000134")
+        self.assertIn("por confirmar", r)
+        self.assertIn("Pago por confirmar (MALI),PAG-000134", (self.tmp / "matriculas.csv").read_text(encoding="utf-8"))
+        self.assertIn("en revisión", matricula.procesar_mensaje("pago MAT-0001 PAG-100001"))
+        self.assertIn("Pago por confirmar", matricula.procesar_mensaje("estado MAT-0001"))
+        self.assertIn("rechazado", matricula.resolver_pago("MAT-0001", False, "coord01"))
+        self.assertIn("pendiente de pago", matricula.estado_inscripcion("MAT-0001"))
+        matricula.procesar_mensaje("pago MAT-0001 PAG-000135")
+        self.assertIn("**Matriculado**", matricula.resolver_pago("MAT-0001", True, "coord01"))
+        self.assertIn("PAG-000135,usado,MAT-0001", (self.tmp / "pagos.csv").read_text(encoding="utf-8"))
+        self.assertIn("No hay pagos por confirmar", matricula.pagos_por_confirmar())
+
     def test_inscripcion_por_codigo_de_horario(self):
         r = matricula.procesar_mensaje("inscribirme en H16")
         self.assertIn("Elegiste **H16**", r)

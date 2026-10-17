@@ -34,6 +34,15 @@ class AsistenteTests(unittest.TestCase):
         acceso.sesion.update(acceso.PUBLICO)
         matricula.reiniciar()
 
+    def test_solo_personal_revisa_pagos(self):
+        r = asistente.responder("pagos por confirmar")
+        self.assertEqual(r.tipo, "permiso_denegado")
+        r = asistente.responder("aprobar pago MAT-0001")
+        self.assertEqual(r.tipo, "permiso_denegado")
+        acceso.iniciar_sesion("coord01", "12345")
+        with patch.object(matricula, "ARCHIVO_MATRICULAS", self.tmp / "matriculas.csv"):
+            self.assertEqual(asistente.responder("pagos por confirmar").tipo, "administracion")
+
     def test_saludo_con_aviso_de_privacidad(self):
         r = asistente.responder("hola")
         self.assertEqual(r.tipo, "saludo")

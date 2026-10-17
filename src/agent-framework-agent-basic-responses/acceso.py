@@ -133,7 +133,8 @@ def describir_sesion() -> str:
         return "Estás usando el asistente como estudiante (no necesitas iniciar sesión)."
     return (f"Estás como **{sesion['usuario']}** (perfil: {sesion['perfil']}). Puedes consultar: "
             f"{DESCRIPCION_PERMISOS.get(sesion['perfil'], 'información general')}. Gestión de alumnos: "
-            + ("habilitada." if puede_gestionar() else "no habilitada."))
+            + ("habilitada (también puedes revisar los «pagos por confirmar» y aprobarlos o rechazarlos)."
+               if puede_gestionar() else "no habilitada."))
 
 
 def cambiar_habilitacion(usuario: str, habilitar: bool) -> str:
@@ -247,7 +248,7 @@ def _resumen_matricula(matriculas: list[dict], norm: str) -> str:
     if "retirad" in norm:
         filas = [x for x in filas if x["estado"] == "Retirado"]
     elif "pendiente" in norm or "pre inscrit" in norm or "preinscrit" in norm:
-        filas = [x for x in filas if x["estado"].startswith(("Pendiente", "Pre-inscrito"))]
+        filas = [x for x in filas if x["estado"].startswith(("Pendiente", "Pre-inscrito", "Pago por confirmar"))]
     matriculados = [x for x in filas if x["estado"] == "Matriculado"]
     estados, periodos = {}, {}
     for x in filas:

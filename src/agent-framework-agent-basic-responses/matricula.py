@@ -22,7 +22,9 @@ PAGO = re.compile(r"\bPAG[-\s]?(\d{6})\b", re.I)
 MATRICULA = re.compile(r"\bMAT[-\s]?(\d{1,4})\b", re.I)
 CAMPOS_MATRICULA = ["codigo_matricula", "id_alumno", "nombre", "numero_documento", "telefono", "correo", "curso",
                     "codigo_horario", "sede", "modalidad", "horario", "periodo", "fecha_inicio", "fecha_fin",
-                    "estado", "codigo_pago", "fecha_registro", "origen"]
+                    "estado", "codigo_pago", "fecha_registro", "origen", "validado_por", "fecha_validacion"]
+POR_CONFIRMAR = "Pago por confirmar (MALI)"
+PENDIENTE = "Pre-inscrito (pendiente de pago)"
 DATOS_REQUERIDOS = [("nombre", "tu nombre completo"), ("numero_documento", "tu número de documento (DNI o CE)"),
                     ("telefono", "un teléfono de contacto"),
                     ("correo", "un correo electrónico válido (por ejemplo, nombre@gmail.com)")]
@@ -279,7 +281,7 @@ def registrar_matricula(codigo_horario: str, nombre: str, correo: str, numero_do
                        "fecha_inicio": fila["fecha_inicio"], "fecha_fin": fila.get("fecha_fin", ""),
                        "nombre": nombre.strip(), "numero_documento": numero_documento, "telefono": telefono,
                        "correo": correo.strip(),
-                       "estado": "Pre-inscrito (pendiente de pago)", "codigo_pago": ""})
+                       "estado": PENDIENTE, "codigo_pago": ""})
     _guardar_matriculas(matriculas)
     return (f"OK {codigo}: {nombre.strip()} quedó pre-inscrito(a) en {fila['curso']} – {fila['sede']} – "
             f"{fila['horario']}, del {fila['fecha_inicio']} al {fila.get('fecha_fin', '-')}. Vacantes restantes en ese horario: "
@@ -292,41 +294,122 @@ def _leer_pagos() -> list[dict]:
         return list(csv.DictReader(f))
 
 
+def _guardar_pagos(pagos: list[dict]) -> None:
+    with open(ARCHIVO_PAGOS, "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=["codigo_pago", "estado", "codigo_matricula", "fecha_uso"],
+                           extrasaction="ignore")
+        w.writeheader()
+        w.writerows(pagos)
+
+
+def _ahora() -> str:
+    return datetime.now().strftime("%d/%m/%Y %H:%M")
+
+
 def validar_pago(codigo_matricula: str, codigo_pago: str) -> str:
-    """Valida un código de pago de demostración (datos/pagos_demo.csv) y completa la inscripción."""
+    """Registra el código de pago de una pre-inscripción.
+
+    - Si el código figura como disponible en datos/pagos_demo.csv (pagos ya conciliados), la matrícula se completa.
+    - Si no figura, la vacante queda separada con estado «Pago por confirmar (MALI)» hasta que el personal del MALI
+      lo apruebe o lo rechace («aprobar pago MAT-0005» / «rechazar pago MAT-0005»).
+    Devuelve "OK", "POR_CONFIRMAR" o un mensaje que empieza con "ERROR".
+    """
     matriculas = _leer_matriculas()
     mat = next((m for m in matriculas if m["codigo_matricula"].upper() == codigo_matricula.upper()), None)
     if mat is None:
         return f"ERROR: no encontré la pre-inscripción {codigo_matricula}."
-    if mat.get("codigo_pago"):
-        return f"ERROR: la inscripción {codigo_matricula} ya tiene un pago validado ({mat['codigo_pago']})."
+    if mat["estado"] == POR_CONFIRMAR:
+        return (f"ERROR: la inscripción {codigo_matricula} ya tiene el pago {mat['codigo_pago']} en revisión por el "
+                "personal del MALI.")
+    if mat.get("codigo_pago") or mat["estado"] != PENDIENTE:
+        return f"ERROR: la inscripción {codigo_matricula} ya tiene un pago validado ({mat['codigo_pago'] or mat['estado']})."
+    codigo_pago = codigo_pago.upper()
+    if any(m.get("codigo_pago", "").upper() == codigo_pago for m in matriculas):
+        return f"ERROR: el código de pago {codigo_pago} ya fue registrado en otra inscripción."
     pagos = _leer_pagos()
-    pago = next((p for p in pagos if p["codigo_pago"].upper() == codigo_pago.upper()), None)
-    if pago is None:
-        return f"ERROR: el código de pago {codigo_pago} no existe."
-    if pago["estado"] != "disponible":
+    pago = next((p for p in pagos if p["codigo_pago"].upper() == codigo_pago), None)
+    if pago is not None and pago["estado"] != "disponible":
         return f"ERROR: el código de pago {codigo_pago} ya fue usado."
-    pago.update(estado="usado", codigo_matricula=mat["codigo_matricula"],
-                fecha_uso=datetime.now().strftime("%d/%m/%Y %H:%M"))
-    with open(ARCHIVO_PAGOS, "w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(pagos[0]))
-        w.writeheader()
-        w.writerows(pagos)
-    mat.update(estado="Matriculado", codigo_pago=pago["codigo_pago"])
+    if pago is None:                                   # no conciliado: lo revisa el personal del MALI
+        mat.update(estado=POR_CONFIRMAR, codigo_pago=codigo_pago)
+        _guardar_matriculas(matriculas)
+        return "POR_CONFIRMAR"
+    pago.update(estado="usado", codigo_matricula=mat["codigo_matricula"], fecha_uso=_ahora())
+    _guardar_pagos(pagos)
+    mat.update(estado="Matriculado", codigo_pago=pago["codigo_pago"], validado_por="automático (pago conciliado)",
+               fecha_validacion=_ahora())
     _guardar_matriculas(matriculas)
     import acceso
     acceso.marcar_alumno_activo(mat.get("id_alumno", ""))
     return "OK"
 
 
-def ficha_inscripcion(codigo_matricula: str, mostrar_nombre: bool = True) -> str:
+# ------------------------------------------------------------------ revisión de pagos (personal del MALI)
+def pagos_por_confirmar() -> str:
+    filas = [m for m in _leer_matriculas() if m["estado"] == POR_CONFIRMAR]
+    if not filas:
+        return "No hay pagos por confirmar. Fuente: base restringida matricula.csv."
+    lineas = [f"**Pagos por confirmar: {len(filas)}**"]
+    lineas += [f"- {m['codigo_matricula']} · pago **{m['codigo_pago']}** · {m['id_alumno']} ({m['nombre']}) · "
+               f"{m['curso']} · {m['codigo_horario']} {m['sede']} · {m['horario']} · registrado {m['fecha_registro']}"
+               for m in filas]
+    ej = filas[0]["codigo_matricula"]
+    lineas += ["", f"Para resolver: «aprobar pago {ej}» o «rechazar pago {ej}».",
+               "Fuente: base restringida matricula.csv."]
+    return "\n".join(lineas)
+
+
+def resolver_pago(codigo_matricula: str, aprobar: bool, usuario: str) -> str:
+    """El personal del MALI aprueba (matrícula completa) o rechaza (vuelve a pendiente de pago) un pago en revisión."""
+    matriculas = _leer_matriculas()
+    mat = next((m for m in matriculas if m["codigo_matricula"].upper() == codigo_matricula.upper()), None)
+    if mat is None:
+        return f"No encontré la inscripción {codigo_matricula}."
+    if mat["estado"] != POR_CONFIRMAR:
+        return f"La inscripción {codigo_matricula} no tiene un pago por confirmar (estado actual: {mat['estado']})."
+    codigo_pago = mat["codigo_pago"]
+    if aprobar:
+        pagos = _leer_pagos()
+        pagos.append({"codigo_pago": codigo_pago, "estado": "usado", "codigo_matricula": mat["codigo_matricula"],
+                      "fecha_uso": _ahora()})
+        _guardar_pagos(pagos)
+        mat.update(estado="Matriculado", validado_por=usuario, fecha_validacion=_ahora())
+        _guardar_matriculas(matriculas)
+        import acceso
+        acceso.marcar_alumno_activo(mat.get("id_alumno", ""))
+        return (f"Listo: pago **{codigo_pago}** aprobado. {mat['codigo_matricula']} ({mat['id_alumno']}) queda "
+                f"**Matriculado** en {mat['curso']} – {mat['sede']} – {mat['horario']}.\n"
+                "Fuente: base restringida matricula.csv.")
+    mat.update(estado=PENDIENTE, codigo_pago="", validado_por=f"rechazado por {usuario} ({codigo_pago})",
+               fecha_validacion=_ahora())
+    _guardar_matriculas(matriculas)
+    return (f"Listo: pago **{codigo_pago}** rechazado. {mat['codigo_matricula']} vuelve a «{PENDIENTE}»; la vacante "
+            "sigue separada y el alumno puede enviar otro código de pago.\nFuente: base restringida matricula.csv.")
+
+
+def estado_inscripcion(codigo_matricula: str) -> str:
+    """Estado de una inscripción para el estudiante (sin datos personales)."""
+    mat = next((m for m in _leer_matriculas() if m["codigo_matricula"].upper() == codigo_matricula.upper()), None)
+    if mat is None or mat.get("origen") != "asistente":
+        return f"No encontré la inscripción {codigo_matricula}. Revisa el código."
+    extra = {POR_CONFIRMAR: f" El pago {mat['codigo_pago']} está en revisión por el personal del MALI.",
+             PENDIENTE: f" Cuando tengas el código de pago escríbeme: «pago {mat['codigo_matricula']} PAG-000000»."}
+    return (f"Inscripción **{mat['codigo_matricula']}** · {mat['curso']} – {mat['sede']} – {mat['horario']}: "
+            f"**{mat['estado']}**." + extra.get(mat["estado"], ""))
+
+
+def ficha_inscripcion(codigo_matricula: str, mostrar_nombre: bool = True, por_confirmar: bool = False) -> str:
     """Resumen final con el horario, la información del curso y recordatorios tomados de las fuentes."""
     import conocimiento
     mat = next(m for m in _leer_matriculas() if m["codigo_matricula"] == codigo_matricula)
     filas, _, _ = _leer_tabla()
     hor = next((f for f in filas if f["codigo"] == mat["codigo_horario"]), {})
     doc = conocimiento.documento_que_menciona(mat["curso"])
-    lineas = [f"🎉 ¡Matrícula completada! Código de matrícula **{mat['codigo_matricula']}** · pago **{mat['codigo_pago']}** validado.",
+    titulo = (f"📝 Recibí tu código de pago **{mat['codigo_pago']}**. Tu inscripción **{mat['codigo_matricula']}** queda "
+              "**por confirmar**: tu vacante está separada y el personal del MALI validará el pago. Puedes consultar "
+              f"el estado escribiendo «estado {mat['codigo_matricula']}»." if por_confirmar else
+              f"🎉 ¡Matrícula completada! Código de matrícula **{mat['codigo_matricula']}** · pago **{mat['codigo_pago']}** validado.")
+    lineas = [titulo,
               f"Tu **código de alumno** es **{mat.get('id_alumno', '')}**.",
               "", f"**{mat['curso']}**" + (f" — {doc.titulo.lower()} de MALI Educación" if doc else ""),
               *([f"- Alumno(a): {mat['nombre']}"] if mostrar_nombre else []),
@@ -385,9 +468,12 @@ def procesar_pago(texto: str, codigo_matricula: str | None = None) -> str:
                 "escribe «después» para completarlo más tarde. No compartas números de tarjeta.")
     r = validar_pago(codigo_matricula, f"PAG-{m.group(1)}")
     if r.startswith("ERROR"):
-        return r.replace("ERROR: ", "No pude validar el pago: ") + " Revisa el código e inténtalo de nuevo."
+        if "en revisión" in r:
+            reiniciar()
+            return r.replace("ERROR: ", "")
+        return r.replace("ERROR: ", "No pude registrar el pago: ") + " Revisa el código e inténtalo de nuevo."
     reiniciar()
-    return ficha_inscripcion(codigo_matricula, mostrar_nombre=en_flujo)
+    return ficha_inscripcion(codigo_matricula, mostrar_nombre=en_flujo, por_confirmar=r == "POR_CONFIRMAR")
 
 
 # ------------------------------------------------------------------ conversación
@@ -417,6 +503,7 @@ _INTENCION = re.compile(
 def quiere_inscribirse(texto: str) -> bool:
     """Intención explícita de inscribirse («quiero inscribirme», «inscríbeme», «agéndame una vacante»…)."""
     return bool(_INTENCION.search(v._normalizar(texto))) or bool(MATRICULA.search(texto) and PAGO.search(texto)) \
+        or bool(MATRICULA.search(texto) and re.search(r"\bestado\b", v._normalizar(texto))) \
         or bool(CODIGO_HORARIO.search(texto) and (_horario_por_codigo(texto) or len(texto.split()) <= 4))
 
 
@@ -503,6 +590,9 @@ def procesar_mensaje(texto: str) -> str:
             return (f"De acuerdo. Tu pre-inscripción **{codigo}** queda pendiente de pago. Cuando tengas el código, "
                     f"escríbeme por ejemplo: «pago {codigo} PAG-100001».")
         return procesar_pago(texto)
+    if MATRICULA.search(texto) and re.search(r"\bestado\b", v._normalizar(texto)) and not PAGO.search(texto):
+        reiniciar()
+        return estado_inscripcion(f"MAT-{int(MATRICULA.search(texto).group(1)):04d}")
     if MATRICULA.search(texto) and PAGO.search(texto):      # pago posterior: «pago MAT-0004 PAG-100003»
         mat = f"MAT-{int(MATRICULA.search(texto).group(1)):04d}"
         return procesar_pago(texto, mat)

@@ -275,6 +275,27 @@ def _decidir(pregunta: str) -> Respuesta:
         return Respuesta("administracion", acceso.actualizar_vacantes(codigo, int(m.group(7))),
                          fuentes=["vacantes.csv"])
 
+    m = re.search(r"\b(aprob|rechaz)\w*\s+(el\s+)?pago\s+(de\s+)?(la\s+)?(inscripcion\s+|matricula\s+)?mat[-\s]?(\d{1,4})\b", norm0)
+    revisar = re.search(r"pagos?\s+(por|pendientes?\s+de)\s+(confirmar|validar|aprobar|revision)|"
+                        r"(confirmar|validar|aprobar|revisar)\s+(los\s+)?pagos", norm0)
+    est = matricula.MATRICULA.search(texto)
+    if est and re.search(r"\bestado\b", norm0) and not matricula.PAGO.search(texto) and not m:
+        matricula.reiniciar()
+        acceso.registrar("estado_inscripcion", "matricula.csv", "atendida")
+        return Respuesta("matricula", matricula.estado_inscripcion("MAT-{:04d}".format(int(est.group(1)))),
+                         fuentes=["matricula.csv"])
+    if m or revisar:
+        if not acceso.autorizar("gestion"):
+            return _denegado("revision_pagos", "revisar o aprobar pagos (solo personal del MALI habilitado y la "
+                                               "Coordinación Académica)")
+        acceso.registrar("revision_pagos", "matricula.csv", "permitido")
+        if m:
+            codigo = "MAT-{:04d}".format(int(m.group(6)))
+            r = matricula.resolver_pago(codigo, m.group(1) == "aprob", acceso.sesion["usuario"])
+        else:
+            r = matricula.pagos_por_confirmar()
+        return Respuesta("administracion", r, fuentes=["matricula.csv"])
+
     if matricula.flujo_activo() and (matricula.fuera_del_flujo(texto)
                                      or v._normalizar(texto).strip(" !.") in _GRACIAS):
         matricula.reiniciar()            # cambió de tema: se deja la pre-inscripción y se atiende la pregunta

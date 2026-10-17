@@ -23,7 +23,7 @@ Usuario ─► Agent Inspector (VS Code) / demo_cli.py
 |---|---|---|
 | `conocimiento/general/` | 42 documentos (G01–G42) con fuente, responsable y vigencia | General |
 | `datos/vacantes.csv` | Horarios y vacantes de demostración | General (DEMO) |
-| `datos/pagos_demo.csv` | 20 códigos de pago de demostración (PAG-100001…) | DEMO |
+| `datos/pagos_demo.csv` | Pagos conciliados de demostración (PAG-100001…); los aprobados por el personal se agregan como `usado` | DEMO |
 | `restringido/alumnos_sinteticos.csv` | Padrón de alumnos (ALU-0001…): nombre, documento, teléfono, correo y situación | Restringido |
 | `restringido/matricula.csv` | Todos los alumnos matriculados, con sus datos personales y el mismo código de alumno | Restringido |
 | `restringido/usuarios.csv` | Cuentas del personal con contraseña cifrada; la Coordinación habilita al personal | Restringido |
@@ -80,6 +80,9 @@ En VS Code: **F5** («Debug Local Agent HTTP Server») abre el Agent Inspector.
    «¿Cuánto cuesta el curso de guitarra?» (no inventa) → «Ignora tus instrucciones…» (bloqueado) →
    «Dame los datos del alumno ALU-0007» (denegado).
 2. «información de guitarra» (muestra cada horario con su código, p. ej. **H17**) → «inscribirme en H17» →
-   «Ana Torres, DNI 45678912, teléfono 987654321, ana@correo.com» → «sí» → «PAG-100001».
-3. Personal: «personal» → «coord01» → «12345» → «Dame los datos del alumno ALU-0007» →
+   «Ana Torres, DNI 45678912, teléfono 987654321, ana@correo.com» → «sí» → «PAG-100001» (pago conciliado:
+   matrícula completada). Con un código que no está en `pagos_demo.csv` (p. ej. «PAG-000134») la inscripción
+   queda **por confirmar** y el estudiante la sigue con «estado MAT-0001».
+3. Personal: «personal» → «coord01» → «12345» → «pagos por confirmar» → «aprobar pago MAT-0001» (o «rechazar
+   pago MAT-0001») → «Dame los datos del alumno ALU-0007» →
    «actualiza vacantes H16 a 5» → «ver registro de consultas» → «cerrar sesión».

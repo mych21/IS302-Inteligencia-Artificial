@@ -25,7 +25,11 @@ Al confirmar una inscripción, el agente descuenta 1 en `vacantes_disponibles`, 
 "Pre-inscrito (pendiente de pago)").
 Luego pide el código de pago: `datos/pagos_demo.csv` tiene 20 códigos de demostración (PAG-100001 a PAG-100020).
 Al validar uno, se marca como `usado`, la matrícula pasa a "Matriculado" y el asistente muestra el
-horario y la información del curso. Para reiniciar la demo, restaura las vacantes, pon los pagos en `disponible`
+horario y la información del curso. Si el código **no** figura en `pagos_demo.csv` (por ejemplo PAG-000134), la
+matrícula queda "Pago por confirmar (MALI)": la vacante sigue separada y el personal habilitado o la Coordinación
+escribe «pagos por confirmar» para verlos y «aprobar pago MAT-0005» o «rechazar pago MAT-0005» para resolverlos
+(al aprobar, el código se agrega a `pagos_demo.csv` como `usado`; al rechazar, la matrícula vuelve a pendiente de
+pago). El estudiante consulta el estado con «estado MAT-0005». Para reiniciar la demo, restaura las vacantes, pon los pagos en `disponible`
 y ejecuta `python restringido/generar_matricula.py` (deja solo las 200 matrículas sintéticas… y las del
 asistente; para quitarlas también, borra sus filas con origen «asistente»).
 
