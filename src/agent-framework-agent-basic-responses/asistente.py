@@ -168,7 +168,8 @@ def _indicacion_rag(pregunta: str, resultados) -> str:
     return ("Responde la pregunta usando SOLO estos fragmentos de la base de conocimiento del MALI. No agregues "
             "datos que no estén en ellos (cursos, horarios, precios, fechas, requisitos) ni explicaciones generales que "
             "no figuren en el texto, y no repitas párrafos. Si los fragmentos no "
-            f"responden exactamente lo que se pregunta, dilo y sugiere {CANAL}. Responde en máximo 6 líneas y "
+            f"responden exactamente lo que se pregunta, dilo y sugiere {CANAL}. Responde en máximo 3 oraciones, sin repetir "
+            "ideas, y "
             "termina con la línea «Fuente:» copiando la fuente del fragmento usado.\n\n"
             + conocimiento.como_texto(resultados))
 

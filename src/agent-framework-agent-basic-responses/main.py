@@ -11,6 +11,7 @@
 import asyncio
 import uuid
 import json
+import re
 import os
 import shutil
 import subprocess
@@ -108,12 +109,79 @@ async def orquestar(context, call_next):
         _fijar_respuesta(context, r.texto)
         return
     msgs[idx] = Message(role="user", contents=[f"{pregunta}\n\n{MARCA_CONTEXTO}\n{r.contexto}"])
+    if context.stream:
+        context.stream_transform_hooks.append(_hook_anti_repeticion())
     await call_next()
+    if not context.stream and context.result is not None:
+        for m in context.result.messages:
+            for c in m.contents:
+                if c.type == "text" and c.text:
+                    c.text = recortar_repeticiones(c.text)
+
+
+_FRASE = re.compile(r"(?<=[.!?:])\s+|\n+")
+
+
+def _clave(frase: str) -> str:
+    return re.sub(r"\W+", " ", frase.lower()).strip()
+
+
+def texto_permitido(texto: str) -> tuple[str, bool]:
+    """Parte del texto que se puede mostrar. Corta donde el modelo empieza a repetir una frase ya escrita
+    (bucle de repetición) y retiene la frase en curso si empieza igual que una anterior. Devuelve (texto, cortado)."""
+    vistas, inicio = set(), 0
+    cortes = [m.end() for m in _FRASE.finditer(texto)]
+    for fin in cortes:
+        clave = _clave(texto[inicio:fin])
+        if len(clave) >= 25 and clave in vistas:
+            return texto[:inicio].rstrip(), True
+        if clave:
+            vistas.add(clave)
+        inicio = fin
+    resto = _clave(texto[inicio:])
+    if resto and any(v.startswith(resto) or resto.startswith(v) for v in vistas if len(v) >= 25):
+        if any(resto.startswith(v) for v in vistas if len(v) >= 25) or len(resto) >= 40:
+            return texto[:inicio].rstrip(), True
+        return texto[:inicio], False                 # se retiene hasta saber si es una repetición
+    return texto, False
+
+
+def recortar_repeticiones(texto: str) -> str:
+    permitido, cortado = texto_permitido(texto)
+    return permitido if cortado else texto
+
+
+def _hook_anti_repeticion():
+    """Transformación del streaming: muestra el texto a medida que llega, pero deja de mostrarlo en cuanto el
+    modelo empieza a repetir una frase."""
+    estado = {"recibido": "", "emitido": "", "cortado": False}
+
+    def hook(update):
+        if estado["cortado"] and getattr(update, "finish_reason", None) is not None:
+            update.finish_reason = "stop"          # se cortó a propósito: la respuesta no queda «incompleta»
+        textos = [c for c in update.contents if c.type == "text"]
+        if not textos:
+            return update
+        otros = [c for c in update.contents if c.type != "text"]
+        if estado["cortado"]:
+            update.contents[:] = otros
+            return update
+        estado["recibido"] += "".join(c.text or "" for c in textos)
+        permitido, cortado = texto_permitido(estado["recibido"])
+        estado["cortado"] = cortado
+        nuevo = permitido[len(estado["emitido"]):] if permitido.startswith(estado["emitido"]) else ""
+        estado["emitido"] += nuevo
+        textos[0].text = nuevo
+        update.contents[:] = otros + [textos[0]]
+        return update
+
+    return hook
 
 
 def create_agent(client: OpenAIChatCompletionClient, mali_mcp: MCPStdioTool, store: bool | None = False) -> Agent:
-    # Temperatura baja y respuestas cortas: el modelo pequeño se ciñe más a los fragmentos y no repite párrafos.
-    opciones = {"temperature": 0.1, "max_tokens": 350}
+    # Temperatura moderada y respuestas cortas: reduce que el modelo pequeño entre en
+    # bucles repitiendo párrafos (además, orquestar() corta cualquier repetición que llegue a producirse).
+    opciones = {"temperature": 0.3, "max_tokens": 300}
     if store is not None:
         opciones["store"] = store
     return Agent(client=client, name=NOMBRE_AGENTE, instructions=INSTRUCCIONES_MALI, tools=[mali_mcp],
