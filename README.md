@@ -60,9 +60,10 @@ un menú está abierto, **solo acepta esos números** (cualquier otro texto vuel
   alumno + documento) · «4» otra consulta (pregunta libre).
 - Personal: «2» → usuario (por ejemplo «coord01») → contraseña («12345») → menú según los permisos del perfil
   (pagos por confirmar, consultar un alumno, resumen de matrícula, asistencia baja, vacantes, registro de
-  consultas, permisos, otra consulta, cerrar sesión).
-- «menú» vuelve a mostrar las opciones de tu perfil en cualquier momento; «menú principal» (o «0» en el menú
-  del estudiante) vuelve al menú inicial. El personal con sesión vuelve a su menú; para cambiar de perfil, cierra sesión. También se puede escribir
+  consultas, permisos, otra consulta; «0» cierra sesión).
+- Cada respuesta termina recordando: **«0»** vuelve al menú anterior (sale del paso actual; una pre-inscripción
+  ya registrada se conserva) y «menú principal» vuelve al menú inicial. En el menú del estudiante, «0» lleva al
+  menú principal. El personal con sesión vuelve a su menú; para cambiar de perfil, cierra sesión. También se puede escribir
   «iniciar sesión coord01 12345» en una sola línea.
 
 Las cuentas están en `restringido/usuarios.csv` con la contraseña cifrada (no se guarda en texto plano).
@@ -92,5 +93,5 @@ En VS Code: **F5** («Debug Local Agent HTTP Server») abre el Agent Inspector.
    queda **por confirmar**.
 3. Estado: «menú» → «3» → código de alumno (p. ej. «ALU-0201») → número de documento dado al inscribirse.
 4. Personal: «hola» → «2» → «coord01» → «12345» → «1» (pagos por confirmar) → «aprobar pago MAT-0001» →
-   «menú» → «2» (consultar un alumno) → «alumno ALU-0007» → «actualiza vacantes H16 a 5» → «menú» → última
-   opción (cerrar sesión).
+   «0» → «2» (consultar un alumno) → «alumno ALU-0007» → «actualiza vacantes H16 a 5» → «0» → «0» (cerrar
+   sesión).

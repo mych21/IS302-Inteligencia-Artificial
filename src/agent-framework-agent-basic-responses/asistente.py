@@ -37,6 +37,7 @@ class Respuesta:
     respaldo: str = ""            # respuesta extractiva si no se usa el modelo (evaluación sin modelo)
     fuentes: list[str] = field(default_factory=list)
     ms: float = 0.0
+    pie: str = ""                 # recordatorio de navegación (se agrega también a lo que redacta el modelo)
 
 
 # ------------------------------------------------------------------ detectores
@@ -202,7 +203,7 @@ def _ficha_curso(curso: str) -> Respuesta:
 
 
 # ------------------------------------------------------------------ estado de matrícula (estudiantes)
-PIE_MENU = "\n\n_Escribe «menú» para volver a las opciones o «menú principal» para empezar de nuevo._"
+PIE_MENU = "\n\n_Escribe **0** para volver al menú anterior o «menú principal» para empezar de nuevo._"
 consulta_estado: dict = {}          # {"paso": "codigo" | "documento", "codigo": "ALU-0205"}
 _PIDE_ESTADO = re.compile(r"\bestado\b.*\b(matricula|inscripcion|preinscripcion|pago)|"
                           r"\b(mi|mis) (matricula|inscripcion|preinscripcion)\b.*\b(como|va|esta|consult|ver)|"
@@ -224,7 +225,7 @@ def _verificar_estado(codigo: str, texto_doc: str) -> Respuesta:
                                          "puedo mostrar el estado. Revisa tu código de alumno y tu documento, o "
                                          f"escribe a {CANAL}.")
     acceso.registrar("estado_matricula", "matricula.csv", "permitido")
-    return Respuesta("estado_matricula", matricula.estado_por_alumno(ident) + PIE_MENU, fuentes=["matricula.csv"])
+    return Respuesta("estado_matricula", matricula.estado_por_alumno(ident), fuentes=["matricula.csv"])
 
 
 def _pedir_documento(codigo: str) -> Respuesta:
@@ -295,7 +296,7 @@ def _opciones(tipo: str) -> list[tuple[str, str]]:
         ops.append(("**Registro de consultas** (auditoría)", "registro"))
     if acceso.autorizar("administracion"):
         ops.append(("**Permisos de los usuarios**", "permisos"))
-    ops += [("**Otra consulta** sobre cursos, sedes o procedimientos", "consulta"), ("**Cerrar sesión**", "cerrar")]
+    ops.append(("**Otra consulta** sobre cursos, sedes o procedimientos", "consulta"))
     return ops
 
 
@@ -306,10 +307,13 @@ def abrir_menu(tipo: str) -> str:
     titulo = {"rol": "Para atenderte mejor, **¿quién eres?**",
               "estudiante": "¿Qué necesitas?",
               "personal": "¿Qué deseas hacer?"}[tipo]
-    lineas = [titulo] + [f"{i}. {texto}" for i, (texto, _) in enumerate(ops, 1)]
+    # viñetas con el número en negrita: así el chat no renumera la lista (un «0.» se mostraba como «5.»)
+    lineas = [titulo, ""] + [f"- **{i}** · {texto}" for i, (texto, _) in enumerate(ops, 1)]
     if tipo == "estudiante":
-        lineas.append("0. Volver al **menú principal**")
-    rango = f"0–{len(ops)}" if tipo == "estudiante" else f"1–{len(ops)}"
+        lineas.append("- **0** · Volver al menú anterior (menú principal)")
+    elif tipo == "personal":
+        lineas.append("- **0** · Cerrar sesión y volver al menú principal")
+    rango = f"1–{len(ops)}" if tipo == "rol" else f"0–{len(ops)}"
     lineas.append(f"\nResponde **solo con el número** ({rango}).")
     if tipo == "personal" and acceso.autorizar("administracion"):
         lineas.append("También puedes escribir «aprobar pago MAT-0005», «rechazar pago MAT-0005» o "
@@ -323,8 +327,11 @@ def _pide_menu(n: str) -> bool:
     return n in ("menu", "volver al menu", "ver menu", "opciones", "ver opciones")
 
 
+_VOLVER = {"0", "volver", "atras", "regresar", "menu anterior", "volver al menu anterior", "volver atras"}
+
+
 def _pide_menu_principal(n: str) -> bool:
-    return n in ("0", "menu principal", "volver al menu principal", "inicio", "volver al inicio", "empezar de nuevo")
+    return n in ("menu principal", "volver al menu principal", "inicio", "volver al inicio", "empezar de nuevo")
 
 
 def _menu_principal() -> str:
@@ -346,7 +353,10 @@ def _menu_actual() -> str:
 def _elegir_opcion(texto: str) -> Respuesta:
     """Con un menú abierto solo se aceptan sus números."""
     n = v._normalizar(texto).strip(" .!)-")
-    if _pide_menu_principal(n) and (menu["tipo"] == "estudiante" or n != "0"):
+    if n in _VOLVER and menu["tipo"] == "personal":
+        menu.clear()
+        return _ejecutar("cerrar")
+    if (n in _VOLVER and menu["tipo"] == "estudiante") or (_pide_menu_principal(n) and n != "0"):
         return Respuesta("menu", _menu_principal())
     if _pide_menu(n):
         return Respuesta("menu", abrir_menu(menu["tipo"]))
@@ -373,7 +383,7 @@ def _ejecutar(accion: str) -> Respuesta:
         acceso.pendiente.update(esperando_usuario=True)
         return Respuesta("perfil", "Para el personal del MALI necesito verificar tu perfil. 🔐 Escribe tu **usuario** "
                                    "(por ejemplo, coord01).")
-    pie = PIE_MENU
+    pie = ""                              # el recordatorio lo agrega responder()
     if accion == "matricular":
         r = _decidir("quiero inscribirme en un curso")
     elif accion == "vacantes":
@@ -424,14 +434,17 @@ def _decidir(pregunta: str) -> Respuesta:
     n0 = v._normalizar(texto).strip(" !.")
     if acceso.pendiente.get("esperando_usuario"):        # personal: el mensaje es su usuario
         acceso.pendiente.clear()
-        if n0 in ("cancelar", "salir", "estudiante", "soy estudiante"):
-            return Respuesta("perfil", "De acuerdo, te atiendo como **estudiante**. ¿En qué te puedo ayudar?")
+        if n0 in _VOLVER or _pide_menu_principal(n0) or n0 in ("cancelar", "salir"):
+            perfil_elegido.clear()
+            return Respuesta("menu", abrir_menu("rol"))
+        if n0 in ("estudiante", "soy estudiante"):
+            return _ejecutar("estudiante")
         return Respuesta("sesion", acceso.iniciar_sesion(texto.split()[0]), fuentes=["usuarios.csv"])
     if menu:                              # menú abierto: solo números
         return _elegir_opcion(texto)
-    if _pide_menu_principal(n0) and n0 != "0":
+    if _pide_menu_principal(n0):
         return Respuesta("menu", _menu_principal())
-    if _pide_menu(n0):                   # «menú» deja cualquier paso (una pre-inscripción ya registrada se conserva)
+    if _pide_menu(n0) or n0 in _VOLVER:  # «0» / «volver»: sale del paso actual y vuelve al menú de su perfil                   # «menú» deja cualquier paso (una pre-inscripción ya registrada se conserva)
         consulta_estado.clear()
         matricula.reiniciar()
         return Respuesta("menu", _menu_actual())
@@ -570,5 +583,10 @@ def _decidir(pregunta: str) -> Respuesta:
 def responder(pregunta: str) -> Respuesta:
     inicio = time.perf_counter()
     r = _decidir(pregunta)
+    if (perfil_elegido or acceso.autenticado()) and not menu and not acceso.pendiente \
+            and r.tipo not in ("menu", "saludo", "perfil"):
+        r.pie = PIE_MENU                   # siempre visible: cómo volver al menú anterior
+        if r.texto:
+            r.texto += PIE_MENU
     r.ms = (time.perf_counter() - inicio) * 1000
     return r

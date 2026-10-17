@@ -110,7 +110,7 @@ async def orquestar(context, call_next):
     if r.texto is not None:
         _fijar_respuesta(context, r.texto)
         return
-    _fijar_respuesta(context, await redactar_con_modelo(pregunta, r))
+    _fijar_respuesta(context, await redactar_con_modelo(pregunta, r) + r.pie)
 
 
 async def redactar_con_modelo(pregunta: str, r) -> str:

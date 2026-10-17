@@ -129,19 +129,26 @@ class AsistenteTests(unittest.TestCase):
     def test_menu_inicial_solo_acepta_numeros(self):
         r = asistente.responder("hola")
         self.assertIn("**¿quién eres?**", r.texto)
-        self.assertIn("1. Soy **estudiante**", r.texto)
+        self.assertIn("- **1** · Soy **estudiante**", r.texto)
         self.assertIn("No es una opción válida", asistente.responder("quiero inscribirme en guitarra").texto)
         self.assertIn("No es una opción válida", asistente.responder("5").texto)
         r = asistente.responder("1")
-        self.assertIn("2. **Ver vacantes**", r.texto)
+        self.assertIn("- **2** · **Ver vacantes**", r.texto)
         self.assertIn("No es una opción válida", asistente.responder("estado de mi matrícula").texto)
         self.assertIn("Cursos con vacantes", asistente.responder("1").texto)       # matricularme → pide el curso
-        self.assertIn("1. **Matricularme**", asistente.responder("menú").texto)
-        self.assertIn("0. Volver al **menú principal**", asistente.responder("menú").texto)
+        self.assertIn("- **1** · **Matricularme**", asistente.responder("menú").texto)
+        self.assertIn("- **0** · Volver al menú anterior", asistente.responder("menú").texto)
         self.assertIn("**¿quién eres?**", asistente.responder("0").texto)
         asistente.responder("1")
         asistente.responder("2")
         self.assertIn("**¿quién eres?**", asistente.responder("menú principal").texto)
+        asistente.responder("1")
+        asistente.responder("1")                                     # matricularme → pide el curso
+        r = asistente.responder("kpop")
+        self.assertIn("Escribe **0** para volver al menú anterior", r.texto)
+        r = asistente.responder("0")                                 # vuelve al menú del estudiante
+        self.assertIn("- **1** · **Matricularme**", r.texto)
+        self.assertFalse(matricula.flujo_activo())
 
     def test_menu_del_personal(self):
         asistente.responder("hola")
@@ -149,12 +156,11 @@ class AsistenteTests(unittest.TestCase):
         self.assertIn("Ingresa la contraseña", asistente.responder("coord01").texto)
         r = asistente.responder("12345")
         self.assertIn("Sesión iniciada", r.texto)
-        self.assertIn("1. **Pagos por confirmar**", r.texto)
+        self.assertIn("- **1** · **Pagos por confirmar**", r.texto)
         with patch.object(matricula, "ARCHIVO_MATRICULAS", self.tmp / "matriculas.csv"):
             self.assertEqual(asistente.responder("1").tipo, "administracion")
         asistente.responder("menú")
-        ultimo = len(asistente.menu["opciones"])
-        self.assertIn("Sesión cerrada", asistente.responder(str(ultimo)).texto)
+        self.assertIn("Sesión cerrada", asistente.responder("0").texto)
         self.assertFalse(acceso.autenticado())
 
     def test_coordinacion_consulta_matriculados(self):
