@@ -5,4 +5,4 @@ Nivel de acceso: general
 Responsable: Coordinación Académica (prototipo)
 Vigente hasta: 31/12/2026
 
-Para ver vacantes escribe, por ejemplo, «ver vacantes», «vacantes de guitarra» o «vacantes en San Miguel». El asistente muestra los horarios del archivo de vacantes de demostración (vacantes.csv) agrupados por curso, con sede, horario, fecha de inicio y vacantes disponibles. Los horarios llenos se indican aparte. La vacante solo se asegura al completar la inscripción por el canal oficial cursosdearte@mali.pe.
+Para ver vacantes escribe, por ejemplo, «ver vacantes», «vacantes de guitarra» o «vacantes en San Miguel». El asistente muestra los horarios del archivo de vacantes de demostración (vacantes.csv) agrupados por curso, con sede, horario, fechas de inicio y fin del curso y vacantes disponibles. Los horarios llenos se indican aparte. La vacante solo se asegura al completar la inscripción por el canal oficial cursosdearte@mali.pe.

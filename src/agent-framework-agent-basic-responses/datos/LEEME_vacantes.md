@@ -14,7 +14,8 @@ las mismas columnas, o apunta a otro archivo con la variable `VACANTES_ARCHIVO` 
 | modalidad | Presencial / Virtual (Zoom) |
 | publico | Jóvenes y adultos |
 | horario | Sáb 15:00–17:00 |
-| fecha_inicio | 09/01/2027 |
+| fecha_inicio | 09/01/2027 (primer día de clase) |
+| fecha_fin | 27/02/2027 (último día de clase) |
 | vacantes_totales | 12 |
 | vacantes_disponibles | 1 |
 | actualizado_al | 10/10/2026 |

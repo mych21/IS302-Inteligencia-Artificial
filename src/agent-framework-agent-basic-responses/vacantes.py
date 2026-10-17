@@ -237,7 +237,7 @@ def consultar_vacantes(curso: str = "", sede: str = "", periodo: str = "", modal
     lineas += [f"Vacantes ({r['filtro_txt'] or 'todos los periodos'}): {len(con)} horario(s) con vacantes, "
                f"{len(llenos)} lleno(s)."]
     for f in con[:MAX_FILAS]:
-        lineas.append(f"- {f['curso']} | {f['sede']} | {f['horario']} | inicio {f.get('fecha_inicio', '-')} | "
+        lineas.append(f"- {f['curso']} | {f['sede']} | {f['horario']} | del {f.get('fecha_inicio', '-')} al {f.get('fecha_fin', '-')} | "
                       f"{f.get('publico', '')} | {f['vacantes_disponibles']} vacante(s) [{f['periodo']}]")
     if len(con) > MAX_FILAS:
         lineas.append(f"- … y {len(con) - MAX_FILAS} horario(s) más: pide filtrar por curso o sede.")
@@ -269,7 +269,7 @@ def vacantes_para_usuario(consulta: str) -> str:
             total = sum(f["vacantes_disponibles"] for f in filas)
             lineas.append(f"**{curso}** — {total} vacante(s)")
             for f in filas:
-                lineas.append(f"- {f['sede']} · {f['horario']} · inicia {f.get('fecha_inicio', '-')} "
+                lineas.append(f"- {f['sede']} · {f['horario']} · del {f.get('fecha_inicio', '-')} al {f.get('fecha_fin', '-')} "
                               f"({f['periodo']}) · {f.get('publico', '')} · {f['vacantes_disponibles']} vacante(s)")
             lineas.append("")
     if r["llenos"]:

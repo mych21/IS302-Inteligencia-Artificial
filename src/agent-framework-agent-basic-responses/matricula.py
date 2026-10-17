@@ -21,7 +21,7 @@ ARCHIVO_PAGOS = v.AQUI / "datos" / "pagos_demo.csv"
 PAGO = re.compile(r"\bPAG[-\s]?(\d{6})\b", re.I)
 MATRICULA = re.compile(r"\bMAT[-\s]?(\d{1,4})\b", re.I)
 CAMPOS_MATRICULA = ["codigo_matricula", "fecha_registro", "codigo_horario", "curso", "sede", "modalidad", "horario",
-                    "periodo", "fecha_inicio", "nombre", "correo", "estado", "codigo_pago"]
+                    "periodo", "fecha_inicio", "fecha_fin", "nombre", "correo", "estado", "codigo_pago"]
 
 PALABRAS_INSCRIBIR = ("inscrib", "inscripc", "matricul", "agend", "reserv", "separ", "apunt", "registr")
 PALABRAS_SALUDO = {"hola", "buenas", "buenos", "hey", "saludos", "holi", "eres", "ayudar", "ayudarme", "ayudame",
@@ -115,7 +115,8 @@ def _opciones(curso: str, sede_texto: str = "") -> list[dict]:
 
 
 def _linea(n: int, f: dict) -> str:
-    return (f"{n}. {f['sede']} – {f['horario']} – inicia {f['fecha_inicio']} ({f['periodo']}) – "
+    return (f"{n}. {f['sede']} – {f['horario']} – del {f['fecha_inicio']} al {f.get('fecha_fin', '-')} "
+            f"({f['periodo']}) – "
             f"{f['publico']} – {_vac(f)} vacante(s) [código {f['codigo']}]")
 
 
@@ -197,11 +198,12 @@ def registrar_matricula(codigo_horario: str, nombre: str, correo: str) -> str:
     matriculas.append({"codigo_matricula": codigo, "fecha_registro": datetime.now().strftime("%d/%m/%Y %H:%M"),
                        "codigo_horario": fila["codigo"], "curso": fila["curso"], "sede": fila["sede"],
                        "modalidad": fila.get("modalidad", ""), "horario": fila["horario"], "periodo": fila["periodo"],
-                       "fecha_inicio": fila["fecha_inicio"], "nombre": nombre.strip(), "correo": correo.strip(),
+                       "fecha_inicio": fila["fecha_inicio"], "fecha_fin": fila.get("fecha_fin", ""),
+                       "nombre": nombre.strip(), "correo": correo.strip(),
                        "estado": "Pre-inscrito DEMO (pendiente de pago)", "codigo_pago": ""})
     _guardar_matriculas(matriculas)
     return (f"OK {codigo}: {nombre.strip()} quedó pre-inscrito(a) en {fila['curso']} – {fila['sede']} – "
-            f"{fila['horario']}, inicia {fila['fecha_inicio']}. Vacantes restantes en ese horario: "
+            f"{fila['horario']}, del {fila['fecha_inicio']} al {fila.get('fecha_fin', '-')}. Vacantes restantes en ese horario: "
             f"{fila['vacantes_disponibles']}.")
 
 
@@ -249,7 +251,8 @@ def ficha_inscripcion(codigo_matricula: str, mostrar_nombre: bool = True) -> str
               f"- Sede: {mat['sede']}" + ("" if mat["sede"].lower() == "virtual" else f" ({mat['modalidad']})")
               + (" – clases en vivo por Zoom" if "zoom" in mat["modalidad"].lower() else ""),
               f"- Horario: {mat['horario']}",
-              f"- Inicio: {mat['fecha_inicio']} ({mat['periodo']})"]
+              f"- Duración: del {hor.get('fecha_inicio') or mat['fecha_inicio']} al "
+              f"{hor.get('fecha_fin') or mat.get('fecha_fin') or '-'} ({mat['periodo']})"]
     if hor.get("publico"):
         lineas.append(f"- Público: {hor['publico']}")
     recordatorios = []
@@ -387,7 +390,7 @@ def _resumen() -> str:
     f = next(x for x in filas if x["codigo"] == estado["codigo"])
     estado["paso"] = "confirmar"
     return (f"Revisa tu pre-inscripción:\n- Curso: {f['curso']}\n- Sede: {f['sede']} ({f['modalidad']})\n"
-            f"- Horario: {f['horario']}, inicia {f['fecha_inicio']} ({f['periodo']})\n"
+            f"- Horario: {f['horario']}\n- Duración: del {f['fecha_inicio']} al {f.get('fecha_fin', '-')} ({f['periodo']})\n"
             f"- Alumno(a): {estado['nombre']} – {estado['correo']}\n\n"
             "¿Confirmas la pre-inscripción? Responde **sí** para registrarla o **no** para cancelar.")
 

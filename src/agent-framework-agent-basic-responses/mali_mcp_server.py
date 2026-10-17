@@ -25,7 +25,7 @@ def buscar_informacion_mali(consulta: str) -> str:
 @mcp.tool()
 def consultar_vacantes(curso: str = "", sede: str = "", periodo: str = "", modalidad: str = "",
                        consulta: str = "") -> str:
-    """Vacantes de demostración (archivo vacantes.csv): curso, sede, horario, fecha de inicio y vacantes.
+    """Vacantes de demostración (archivo vacantes.csv): curso, sede, horario, fechas de inicio y fin, y vacantes.
     Filtros opcionales o la pregunta completa en consulta."""
     return vacantes.consultar_vacantes(curso=curso, sede=sede, periodo=periodo, modalidad=modalidad,
                                        consulta=consulta)
