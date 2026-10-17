@@ -71,14 +71,27 @@ AVISO_PRIVACIDAD = (
 
 
 def presentacion() -> str:
+    if not acceso.autenticado():
+        return (
+            "¡Hola! Soy **MALI Asistente** 🎨, un prototipo académico de chatbot con IA para orientar a la comunidad "
+            "educativa del Museo de Arte de Lima.\n\n"
+            "🔐 Antes de atenderte necesito verificar tu perfil con tu **cuenta institucional**. Escribe "
+            "«iniciar sesión <usuario>». Cuentas de prueba del prototipo:\n"
+            f"{acceso.cuentas_de_prueba()}\n\n{AVISO_PRIVACIDAD}")
     return (
-        "¡Hola! Soy **MALI Asistente** 🎨, un prototipo académico de chatbot con IA para orientar a la comunidad "
-        "educativa del Museo de Arte de Lima. Puedo ayudarte a:\n"
-        "- Resolver dudas sobre cursos, talleres, sedes, procedimientos y canales de atención (con la fuente).\n"
-        "- Ver las vacantes disponibles y hacer una pre-inscripción de demostración.\n"
-        "- Si eres de la Coordinación Académica (o personal habilitado): consultar la gestión de alumnos.\n\n"
-        f"{acceso.describir_sesion()} Para cambiar de perfil escribe «iniciar sesión <usuario>».\n\n"
+        f"¡Hola, {acceso.sesion['usuario']}! Soy **MALI Asistente** 🎨. {acceso.describir_sesion()}\n\n"
+        "Respondo con la fuente de cada dato y, si no tengo la información, te derivo al canal oficial.\n\n"
         f"{AVISO_PRIVACIDAD}\n\n¿En qué te puedo ayudar?")
+
+
+PIDE_SESION = ("🔐 Para atender tu consulta primero necesito verificar tu perfil. Inicia sesión con tu cuenta "
+               "institucional escribiendo «iniciar sesión <usuario>» (por ejemplo «iniciar sesión estudiante01»).")
+
+
+def _denegado(tipo: str, que: str) -> "Respuesta":
+    acceso.registrar(tipo, "-", "denegado")
+    return Respuesta("permiso_denegado", f"Con tu perfil ({acceso.sesion['perfil']}) no puedes {que}. "
+                                         f"Puedes consultar: {acceso.DESCRIPCION_PERMISOS.get(acceso.sesion['perfil'], '')}.")
 
 
 def es_inyeccion(texto: str) -> bool:
@@ -170,11 +183,32 @@ def _decidir(pregunta: str) -> Respuesta:
     if cmd:
         return Respuesta("sesion", cmd, fuentes=["permisos.csv"])
 
+    # Autenticación y perfil: nadie consulta sin identificarse
+    if not acceso.autenticado():
+        if matricula.es_saludo(texto):
+            return Respuesta("saludo", presentacion())
+        acceso.registrar("consulta_sin_sesion", "-", "denegado")
+        return Respuesta("sin_sesion", PIDE_SESION)
+
+    norm0 = v._normalizar(texto)
+    if re.search(r"registro de consultas|\bauditoria\b|ver (el )?registro", norm0):
+        return Respuesta("administracion", acceso.ver_registro(), fuentes=["consultas.csv"])
+    if re.search(r"(ver|revisar|lista\w*) (los )?permisos|quien(es)? tiene(n)? acceso", norm0):
+        return Respuesta("administracion", acceso.ver_permisos(), fuentes=["permisos.csv"])
+    m = re.search(r"(actualiza\w*|cambia\w*|modifica\w*)\s+(las\s+)?vacantes\s+(de(l)?\s+)?(h\s?\d{1,2})\s+(a\s+)?(\d{1,3})", norm0)
+    if m:
+        codigo = "H{:02d}".format(int(re.sub(r"\D", "", m.group(5))))
+        return Respuesta("administracion", acceso.actualizar_vacantes(codigo, int(m.group(7))),
+                         fuentes=["vacantes.csv"])
+
     if matricula.flujo_activo() and (matricula.fuera_del_flujo(texto)
                                      or v._normalizar(texto).strip(" !.") in _GRACIAS):
         matricula.reiniciar()            # cambió de tema: se deja la pre-inscripción y se atiende la pregunta
     consulta_de_politica = bool(_POLITICA.search(v._normalizar(texto)))
     if matricula.flujo_activo() or (matricula.quiere_inscribirse(texto) and not consulta_de_politica):
+        if not acceso.autorizar("inscripcion"):
+            matricula.reiniciar()
+            return _denegado("pre_inscripcion", "hacer pre-inscripciones (están disponibles para estudiantes)")
         acceso.registrar("pre_inscripcion", "vacantes.csv", "atendida")
         return Respuesta("matricula", matricula.procesar_mensaje(texto), fuentes=["vacantes.csv"])
 
@@ -199,8 +233,12 @@ def _decidir(pregunta: str) -> Respuesta:
             and (seguimiento or pide_horario or v._pide_vacantes(texto)
                  or re.search(r"informacion|info|detalle|sobre|ensenan|tienen|hay|ofrecen|dictan|curso de|taller de",
                               norm) or len(norm.split()) <= 3):
+        if not acceso.autorizar("vacantes"):
+            return _denegado("vacantes", "consultar vacantes")
         return _ficha_curso(cursos[0])
     if v._pide_vacantes(texto) and not consulta_de_politica:
+        if not acceso.autorizar("vacantes"):
+            return _denegado("vacantes", "consultar vacantes")
         acceso.registrar("vacantes", "vacantes.csv", "atendida")
         return Respuesta("vacantes", v.vacantes_para_usuario(texto), fuentes=["vacantes.csv"])
 
@@ -214,6 +252,8 @@ def _decidir(pregunta: str) -> Respuesta:
     if v._normalizar(texto).strip(" !.") in _GRACIAS:
         return Respuesta("cortesia", "¡Con gusto! Si necesitas algo más sobre los cursos del MALI, aquí estaré. 😊")
 
+    if not acceso.autorizar("general"):
+        return _denegado("base_general", "consultar la base general")
     resultados = conocimiento.buscar(texto)
     if resultados:
         d = resultados[0][0]

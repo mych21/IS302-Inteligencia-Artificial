@@ -22,16 +22,18 @@ class AsistenteTests(unittest.TestCase):
                         patch.object(acceso, "REGISTRO", self.tmp / "consultas.csv")]
         for p in self.parches:
             p.start()
-        acceso.sesion.update(usuario="invitado", perfil="Estudiante")
+        acceso.sesion.update(acceso.SIN_SESION)
+        acceso.iniciar_sesion("estudiante01")
         matricula.reiniciar()
 
     def tearDown(self):
         for p in self.parches:
             p.stop()
-        acceso.sesion.update(usuario="invitado", perfil="Estudiante")
+        acceso.sesion.update(acceso.SIN_SESION)
         matricula.reiniciar()
 
     def test_saludo_con_aviso_de_privacidad(self):
+        acceso.cerrar_sesion()
         r = asistente.responder("hola")
         self.assertEqual(r.tipo, "saludo")
         self.assertIn("Aviso de privacidad", r.texto)
@@ -82,6 +84,29 @@ class AsistenteTests(unittest.TestCase):
         self.assertIn("gestion_alumnos", registro)
         self.assertIn("denegado", registro)
         self.assertNotIn("Dame los datos", registro)
+
+    def test_sin_sesion_no_se_atiende(self):
+        acceso.cerrar_sesion()
+        self.assertEqual(asistente.responder("¿Desde qué edad pueden inscribirse los niños?").tipo, "sin_sesion")
+        self.assertIn("Sesión iniciada", asistente.responder("iniciar sesión estudiante01").texto)
+        self.assertEqual(asistente.responder("¿Desde qué edad pueden inscribirse los niños?").tipo, "rag")
+
+    def test_permisos_por_perfil(self):
+        acceso.iniciar_sesion("docente01")
+        self.assertEqual(asistente.responder("quiero inscribirme en guitarra").tipo, "permiso_denegado")
+        acceso.iniciar_sesion("soporte01")
+        self.assertIn("Registro de consultas", asistente.responder("ver registro de consultas").texto)
+        acceso.iniciar_sesion("estudiante01")
+        self.assertIn("Solo la Coordinación", asistente.responder("ver registro de consultas").texto)
+
+    def test_coordinacion_actualiza_vacantes(self):
+        shutil.copy(asistente.v.ARCHIVO_VACANTES_DEFECTO, self.tmp / "vacantes.csv")
+        with patch.dict("os.environ", {"VACANTES_ARCHIVO": str(self.tmp / "vacantes.csv")}):
+            acceso.iniciar_sesion("estudiante01")
+            self.assertIn("Solo la Coordinación", asistente.responder("actualiza vacantes H16 a 5").texto)
+            acceso.iniciar_sesion("coord01")
+            self.assertIn("a 5 vacante", asistente.responder("actualiza vacantes H16 a 5").texto)
+            self.assertIn("5 vacante(s)", asistente.responder("vacantes de guitarra").texto)
 
     def test_base_general_tiene_al_menos_30_documentos(self):
         self.assertGreaterEqual(len(conocimiento.documentos()), 30)

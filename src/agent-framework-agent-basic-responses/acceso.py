@@ -1,8 +1,9 @@
 """
 Perfiles, control de acceso, base restringida de gestión de alumnos y registro de consultas.
 
-- La sesión empieza como Estudiante. En el prototipo se cambia con «iniciar sesión <usuario>» usando las cuentas de
-  prueba de restringido/permisos.csv (en producción: cuenta institucional, p. ej. Microsoft Entra ID).
+- Nadie consulta sin autenticarse: primero «iniciar sesión <usuario>» con una cuenta de prueba de
+  restringido/permisos.csv (simula la cuenta institucional; en producción, p. ej. Microsoft Entra ID).
+- Antes de cada consulta se verifica el rol y sus permisos (PERMISOS_POR_PERFIL).
 - Solo la Coordinación Académica y el personal que esta habilite consultan la gestión de alumnos.
 - Los datos de alumnos (sintéticos) se leen aquí y se devuelven al usuario sin pasar por el modelo de lenguaje.
 - Cada consulta queda en registros/consultas.csv con fecha, usuario de prueba, perfil, tipo, fuente y resultado,
@@ -22,7 +23,22 @@ REGISTRO = AQUI / "registros" / "consultas.csv"
 CAMPOS_REGISTRO = ["fecha", "usuario", "perfil", "tipo_consulta", "fuente", "resultado"]
 
 ID_ALUMNO = re.compile(r"\bALU[-\s]?(\d{1,4})\b", re.I)
-sesion: dict = {"usuario": "invitado", "perfil": "Estudiante"}
+SIN_SESION = {"usuario": "sin_sesion", "perfil": "Sin autenticar"}
+sesion: dict = dict(SIN_SESION)
+
+# Qué tipo de consulta puede hacer cada perfil (la gestión de alumnos además exige estar habilitado).
+PERMISOS_POR_PERFIL = {
+    "Estudiante": {"general", "vacantes", "inscripcion"},
+    "Personal": {"general", "vacantes", "gestion"},
+    "Coordinación Académica": {"general", "vacantes", "gestion", "administracion", "registro"},
+    "Soporte TI": {"general", "registro"},
+}
+DESCRIPCION_PERMISOS = {
+    "Estudiante": "cursos, procedimientos, vacantes y tu pre-inscripción",
+    "Personal": "información general y vacantes (gestión de alumnos solo si la Coordinación te habilita)",
+    "Coordinación Académica": "información general, gestión de alumnos, permisos, vacantes y registro de consultas",
+    "Soporte TI": "información general y registro de consultas (sin datos de alumnos)",
+}
 
 
 # ------------------------------------------------------------------ permisos y sesión
@@ -50,15 +66,31 @@ def iniciar_sesion(usuario: str) -> str:
                 + ", ".join(p["usuario"] for p in _leer_permisos()) + ".")
     sesion.update(usuario=cuenta["usuario"], perfil=cuenta["perfil"])
     registrar("inicio_sesion", "permisos.csv", "permitido")
-    extra = (" Tienes habilitada la gestión de alumnos." if puede_gestionar()
-             else " No tienes habilitada la gestión de alumnos.")
-    return f"Sesión iniciada como **{cuenta['usuario']}** (perfil: {cuenta['perfil']}).{extra}"
+    return (f"✅ Sesión iniciada como **{cuenta['usuario']}** (perfil: {cuenta['perfil']}).\n"
+            f"Con este perfil puedes consultar: {DESCRIPCION_PERMISOS.get(cuenta['perfil'], 'información general')}.\n"
+            "¿En qué te puedo ayudar?")
 
 
 def cerrar_sesion() -> str:
     registrar("cierre_sesion", "-", "permitido")
-    sesion.update(usuario="invitado", perfil="Estudiante")
-    return "Sesión cerrada. Ahora estás como invitado (perfil: Estudiante)."
+    sesion.update(SIN_SESION)
+    return "Sesión cerrada. Para volver a consultar, inicia sesión con tu cuenta institucional."
+
+
+def autenticado() -> bool:
+    return sesion["usuario"] != SIN_SESION["usuario"]
+
+
+def autorizar(tipo: str) -> bool:
+    """Verifica, antes de cada consulta, si el perfil de la sesión puede hacer ese tipo de consulta."""
+    if not autenticado():
+        return False
+    permitido = tipo in PERMISOS_POR_PERFIL.get(sesion["perfil"], set())
+    return permitido and (tipo != "gestion" or puede_gestionar())
+
+
+def cuentas_de_prueba() -> str:
+    return "\n".join(f"- `{p['usuario']}` – {p['perfil']}" for p in _leer_permisos())
 
 
 def puede_gestionar() -> bool:
@@ -68,7 +100,10 @@ def puede_gestionar() -> bool:
 
 
 def describir_sesion() -> str:
-    return (f"Estás como **{sesion['usuario']}** (perfil: {sesion['perfil']}). Gestión de alumnos: "
+    if not autenticado():
+        return "Aún no has iniciado sesión."
+    return (f"Estás como **{sesion['usuario']}** (perfil: {sesion['perfil']}). Puedes consultar: "
+            f"{DESCRIPCION_PERMISOS.get(sesion['perfil'], 'información general')}. Gestión de alumnos: "
             + ("habilitada." if puede_gestionar() else "no habilitada."))
 
 
@@ -120,7 +155,7 @@ DENEGADO = ("Lo siento, la gestión de alumnos solo está disponible para la Coo
 
 def consultar_gestion(texto: str) -> str:
     """Consulta la base restringida si el perfil está autorizado; si no, la deniega y lo registra."""
-    if not puede_gestionar():
+    if not autorizar("gestion"):
         registrar("gestion_alumnos", "alumnos_sinteticos.csv", "denegado")
         return DENEGADO
     alumnos = _alumnos()
@@ -157,3 +192,49 @@ def consultar_gestion(texto: str) -> str:
             "Puedes consultar un alumno por su código (por ejemplo «alumno ALU-0007»), los alumnos con "
             "asistencia baja o los que tienen pagos pendientes.\n"
             "Fuente: base restringida alumnos_sinteticos.csv (datos sintéticos).")
+
+
+# ------------------------------------------------------------------ administración (Coordinación Académica)
+def ver_registro(n: int = 10) -> str:
+    if not autorizar("registro"):
+        registrar("registro_consultas", "consultas.csv", "denegado")
+        return "Solo la Coordinación Académica y Soporte de TI pueden revisar el registro de consultas."
+    registrar("registro_consultas", "consultas.csv", "permitido")
+    filas = list(csv.DictReader(REGISTRO.open(encoding="utf-8"))) if REGISTRO.exists() else []
+    resumen = {}
+    for f in filas:
+        resumen[f["resultado"]] = resumen.get(f["resultado"], 0) + 1
+    return (f"Registro de consultas: {len(filas)} en total ("
+            + ", ".join(f"{k}: {v}" for k, v in sorted(resumen.items())) + ").\nÚltimas consultas:\n"
+            + "\n".join(f"- {f['fecha']} · {f['usuario']} ({f['perfil']}) · {f['tipo_consulta']} · {f['resultado']}"
+                        for f in filas[-n:])
+            + "\n(El registro no guarda el texto de las conversaciones.)")
+
+
+def ver_permisos() -> str:
+    if not autorizar("administracion"):
+        registrar("permisos", "permisos.csv", "denegado")
+        return "Solo la Coordinación Académica puede revisar los permisos."
+    registrar("permisos", "permisos.csv", "permitido")
+    return "Permisos de gestión de alumnos:\n" + "\n".join(
+        f"- {p['usuario']} ({p['perfil']}): {'sí' if p['gestion_alumnos'] == 'si' else 'no'}"
+        + (f", habilitado por {p['habilitado_por']}" if p['habilitado_por'] else "") for p in _leer_permisos())
+
+
+def actualizar_vacantes(codigo_horario: str, cantidad: int) -> str:
+    """La Coordinación edita el archivo de vacantes; la siguiente consulta ya usa el dato nuevo."""
+    if not autorizar("administracion"):
+        registrar("actualizar_vacantes", "vacantes.csv", "denegado")
+        return "Solo la Coordinación Académica puede actualizar el archivo de vacantes."
+    import matricula
+    filas, campos, delim = matricula._leer_tabla()
+    fila = next((f for f in filas if f["codigo"].upper() == codigo_horario.upper()), None)
+    if not fila:
+        return f"No existe el horario {codigo_horario} en el archivo de vacantes."
+    antes = fila["vacantes_disponibles"]
+    fila["vacantes_disponibles"] = str(max(0, cantidad))
+    fila["actualizado_al"] = datetime.now().strftime("%d/%m/%Y")
+    matricula._guardar_tabla(filas, campos, delim)
+    registrar("actualizar_vacantes", "vacantes.csv", "permitido")
+    return (f"Listo: {fila['codigo']} ({fila['curso']} – {fila['sede']} – {fila['horario']}) pasó de {antes} a "
+            f"{fila['vacantes_disponibles']} vacante(s). Las siguientes consultas ya usan el dato actualizado.")
