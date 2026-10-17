@@ -202,6 +202,7 @@ def _ficha_curso(curso: str) -> Respuesta:
 
 
 # ------------------------------------------------------------------ estado de matrícula (estudiantes)
+PIE_MENU = "\n\n_Escribe «menú» para volver a las opciones o «menú principal» para empezar de nuevo._"
 consulta_estado: dict = {}          # {"paso": "codigo" | "documento", "codigo": "ALU-0205"}
 _PIDE_ESTADO = re.compile(r"\bestado\b.*\b(matricula|inscripcion|preinscripcion|pago)|"
                           r"\b(mi|mis) (matricula|inscripcion|preinscripcion)\b.*\b(como|va|esta|consult|ver)|"
@@ -223,7 +224,7 @@ def _verificar_estado(codigo: str, texto_doc: str) -> Respuesta:
                                          "puedo mostrar el estado. Revisa tu código de alumno y tu documento, o "
                                          f"escribe a {CANAL}.")
     acceso.registrar("estado_matricula", "matricula.csv", "permitido")
-    return Respuesta("estado_matricula", matricula.estado_por_alumno(ident), fuentes=["matricula.csv"])
+    return Respuesta("estado_matricula", matricula.estado_por_alumno(ident) + PIE_MENU, fuentes=["matricula.csv"])
 
 
 def _pedir_documento(codigo: str) -> Respuesta:
@@ -372,7 +373,7 @@ def _ejecutar(accion: str) -> Respuesta:
         acceso.pendiente.update(esperando_usuario=True)
         return Respuesta("perfil", "Para el personal del MALI necesito verificar tu perfil. 🔐 Escribe tu **usuario** "
                                    "(por ejemplo, coord01).")
-    pie = "\n\n_Escribe «menú» para volver a las opciones o «menú principal» para empezar de nuevo._"
+    pie = PIE_MENU
     if accion == "matricular":
         r = _decidir("quiero inscribirme en un curso")
     elif accion == "vacantes":

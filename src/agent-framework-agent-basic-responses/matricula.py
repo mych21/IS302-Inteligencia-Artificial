@@ -424,6 +424,7 @@ def estado_por_alumno(id_alumno: str) -> str:
                                                  con_pago=f" (pago {m['codigo_pago']})" if m.get("codigo_pago") else "")
         lineas.append(f"- {m['codigo_matricula']} · {' – '.join(partes)}{duracion}: **{m['estado']}**"
                       + (f" — {nota}" if nota else ""))
+    lineas.append("")                    # línea en blanco: la fuente no queda dentro de la lista
     lineas.append("Fuente: registro de matrícula del MALI (matricula.csv). Por tu privacidad no muestro tu "
                   "documento, teléfono ni correo.")
     return "\n".join(lineas)
