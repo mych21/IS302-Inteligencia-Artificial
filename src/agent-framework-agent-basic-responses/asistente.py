@@ -306,7 +306,10 @@ def abrir_menu(tipo: str) -> str:
               "estudiante": "¿Qué necesitas?",
               "personal": "¿Qué deseas hacer?"}[tipo]
     lineas = [titulo] + [f"{i}. {texto}" for i, (texto, _) in enumerate(ops, 1)]
-    lineas.append(f"\nResponde **solo con el número** (1–{len(ops)}).")
+    if tipo == "estudiante":
+        lineas.append("0. Volver al **menú principal**")
+    rango = f"0–{len(ops)}" if tipo == "estudiante" else f"1–{len(ops)}"
+    lineas.append(f"\nResponde **solo con el número** ({rango}).")
     if tipo == "personal" and acceso.autorizar("administracion"):
         lineas.append("También puedes escribir «aprobar pago MAT-0005», «rechazar pago MAT-0005» o "
                       "«actualiza vacantes H16 a 5».")
@@ -316,7 +319,21 @@ def abrir_menu(tipo: str) -> str:
 
 
 def _pide_menu(n: str) -> bool:
-    return n in ("menu", "menu principal", "volver al menu", "ver menu", "opciones", "ver opciones", "inicio", "0")
+    return n in ("menu", "volver al menu", "ver menu", "opciones", "ver opciones")
+
+
+def _pide_menu_principal(n: str) -> bool:
+    return n in ("0", "menu principal", "volver al menu principal", "inicio", "volver al inicio", "empezar de nuevo")
+
+
+def _menu_principal() -> str:
+    """Vuelve al menú inicial. El personal con sesión vuelve a su propio menú (para cambiar de perfil, cierra sesión)."""
+    consulta_estado.clear()
+    matricula.reiniciar()
+    if acceso.autenticado():
+        return abrir_menu("personal")
+    perfil_elegido.clear()
+    return abrir_menu("rol")
 
 
 def _menu_actual() -> str:
@@ -328,6 +345,10 @@ def _menu_actual() -> str:
 def _elegir_opcion(texto: str) -> Respuesta:
     """Con un menú abierto solo se aceptan sus números."""
     n = v._normalizar(texto).strip(" .!)-")
+    if _pide_menu_principal(n) and (menu["tipo"] == "estudiante" or n != "0"):
+        return Respuesta("menu", _menu_principal())
+    if _pide_menu(n):
+        return Respuesta("menu", abrir_menu(menu["tipo"]))
     ops = menu["opciones"]
     m = re.fullmatch(r"(opcion\s*)?(\d{1,2})", n)
     if not m or not 1 <= int(m.group(2)) <= len(ops):
@@ -351,7 +372,7 @@ def _ejecutar(accion: str) -> Respuesta:
         acceso.pendiente.update(esperando_usuario=True)
         return Respuesta("perfil", "Para el personal del MALI necesito verificar tu perfil. 🔐 Escribe tu **usuario** "
                                    "(por ejemplo, coord01).")
-    pie = "\n\n_Escribe «menú» para volver a las opciones._"
+    pie = "\n\n_Escribe «menú» para volver a las opciones o «menú principal» para empezar de nuevo._"
     if accion == "matricular":
         r = _decidir("quiero inscribirme en un curso")
     elif accion == "vacantes":
@@ -407,6 +428,8 @@ def _decidir(pregunta: str) -> Respuesta:
         return Respuesta("sesion", acceso.iniciar_sesion(texto.split()[0]), fuentes=["usuarios.csv"])
     if menu:                              # menú abierto: solo números
         return _elegir_opcion(texto)
+    if _pide_menu_principal(n0) and n0 != "0":
+        return Respuesta("menu", _menu_principal())
     if _pide_menu(n0):                   # «menú» deja cualquier paso (una pre-inscripción ya registrada se conserva)
         consulta_estado.clear()
         matricula.reiniciar()

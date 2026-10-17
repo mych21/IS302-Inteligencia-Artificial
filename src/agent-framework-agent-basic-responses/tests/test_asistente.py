@@ -137,6 +137,11 @@ class AsistenteTests(unittest.TestCase):
         self.assertIn("No es una opción válida", asistente.responder("estado de mi matrícula").texto)
         self.assertIn("Cursos con vacantes", asistente.responder("1").texto)       # matricularme → pide el curso
         self.assertIn("1. **Matricularme**", asistente.responder("menú").texto)
+        self.assertIn("0. Volver al **menú principal**", asistente.responder("menú").texto)
+        self.assertIn("**¿quién eres?**", asistente.responder("0").texto)
+        asistente.responder("1")
+        asistente.responder("2")
+        self.assertIn("**¿quién eres?**", asistente.responder("menú principal").texto)
 
     def test_menu_del_personal(self):
         asistente.responder("hola")
