@@ -222,9 +222,11 @@ def quiere_inscribirse(texto: str) -> bool:
 def fuera_del_flujo(texto: str) -> bool:
     """El usuario cambió de tema a mitad de la pre-inscripción (pregunta sin elegir curso u horario)."""
     paso = estado.get("paso")
-    if paso not in ("curso", "horario"):
+    if paso not in ("curso", "horario", "datos"):
         return False
     pregunta = "?" in texto or "¿" in texto
+    if paso == "datos" and EMAIL.search(texto):
+        return False
     eligio = bool(detectar_cursos(texto)) or bool(re.search(r"\b\d{1,2}\b|\bh\d", v._normalizar(texto))) \
         or bool(set(v._normalizar(texto).split()) & set(ORDINALES))
     return pregunta and not eligio
@@ -253,6 +255,8 @@ def _pedir_horario(curso: str, sede_texto: str = "") -> str:
     estado.update(paso="horario", curso=curso, opciones=[f["codigo"] for f in ops])
     if len(ops) == 1:
         estado.update(paso="datos", codigo=ops[0]["codigo"])
+        if estado.get("nombre") and estado.get("correo"):
+            return f"{curso} tiene un solo horario con vacantes.\n\n" + _resumen()
         return (f"{curso} tiene este horario con vacantes:\n" + _linea(1, ops[0])[3:] +
                 "\nSi te acomoda, envíame tu nombre completo y tu correo electrónico para registrar tu pre-inscripción "
                 "(o escribe «cancelar»).")
@@ -290,8 +294,10 @@ def procesar_mensaje(texto: str) -> str:
     cursos = detectar_cursos(texto)
     paso = estado.get("paso")
 
-    # Cambio de curso en cualquier momento antes de confirmar
-    if cursos and paso in (None, "curso", "horario") and (len(cursos) == 1 and cursos[0] != estado.get("curso")):
+    # Cambio de curso en cualquier paso: si nombra otro curso (y no está enviando su correo), se cambia
+    if cursos and len(cursos) == 1 and cursos[0] != estado.get("curso") and not EMAIL.search(texto) \
+            and (paso in (None, "curso", "horario") or paso in ("datos", "confirmar")):
+        estado.pop("codigo", None)
         return _pedir_horario(cursos[0], texto)
     if paso == "curso" and estado.get("candidatos"):
         cand = estado["candidatos"]

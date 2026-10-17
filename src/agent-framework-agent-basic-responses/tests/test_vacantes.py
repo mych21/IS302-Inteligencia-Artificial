@@ -89,6 +89,12 @@ class MatriculaTests(unittest.TestCase):
         self.assertIn("Ana Torres", registro)
         self.assertIn("H20", registro)
 
+    def test_cambiar_de_curso_a_mitad_del_flujo(self):
+        self.assertIn("Taekwondo", matricula.procesar_mensaje("quisiera inscribirme en taekwondo"))
+        r = matricula.procesar_mensaje("marinera norteña?")
+        self.assertIn("horarios de Marinera Norteña", r)
+        self.assertNotIn("nombre completo", r)
+
     def test_cancelar_no_registra(self):
         matricula.procesar_mensaje("inscríbeme en guitarra")
         matricula.procesar_mensaje("cancelar")
