@@ -1,205 +1,205 @@
-id_alumno,nombre,correo,programa,curso,sede,periodo,estado_matricula,porcentaje_asistencia,inasistencias,cursos_inscritos,situacion_administrativa,actualizado_al
-ALU-0001,Fernanda Mendoza Gutiérrez,fernanda.mendoza001@example.com,Curso,Oratoria y Liderazgo,Lima – Principal,Setiembre 2026,Activa,97.6,0,1,Al día,15/10/2026
-ALU-0002,Alessia Flores Rojas,alessia.flores002@example.com,Curso,Dibujo y Pintura,San Miguel 1,Setiembre 2026,Activa,94.8,0,1,Al día,15/10/2026
-ALU-0003,Micaela Vega Huamán,micaela.vega003@example.com,Diplomado,Gestión Cultural,Lima – Principal,Setiembre 2026,Activa,69.7,2,1,Al día,15/10/2026
-ALU-0004,Gabriel Silva Flores,gabriel.silva004@example.com,Curso,Teatro y Actuación,Virtual,Octubre 2026,Activa,65.8,3,1,Al día,15/10/2026
-ALU-0005,Iván Ríos Ramírez,ivan.rios005@example.com,Curso,Fotografía digital,SJL – Arabiscos,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
-ALU-0006,Mateo Rojas Romero,mateo.rojas006@example.com,Curso,Fotografía digital,SJL – Arabiscos,Octubre 2026,Activa,95.5,0,1,Al día,15/10/2026
-ALU-0007,Nicolás Rojas Castillo,nicolas.rojas007@example.com,Diplomado,Gestión Cultural,Virtual,Setiembre 2026,Activa,98.7,0,1,Incidencia de pago,15/10/2026
-ALU-0008,Valeria Vega Romero,valeria.vega008@example.com,Curso,Guitarra,La Molina – Camacho,Octubre 2026,Activa,88.7,1,1,Al día,15/10/2026
-ALU-0009,Mateo Silva Huamán,mateo.silva009@example.com,Taller,Marinera Norteña,San Miguel 1,Setiembre 2026,Activa,73.7,2,1,Al día,15/10/2026
-ALU-0010,Sebastián Silva Flores,sebastian.silva010@example.com,Curso,Fotografía digital,SJL – Arabiscos,Setiembre 2026,Activa,59.7,3,1,Incidencia de pago,15/10/2026
-ALU-0011,Ximena Silva Gutiérrez,ximena.silva011@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,81.6,1,2,Al día,15/10/2026
-ALU-0012,Mateo Castillo Flores,mateo.castillo012@example.com,Taller,Taekwondo,SJL – Arabiscos,Octubre 2026,Pendiente de pago,70.0,2,1,Pago pendiente,15/10/2026
-ALU-0013,Adrián Mendoza Chávez,adrian.mendoza013@example.com,Curso,Oratoria y Liderazgo,La Molina – Camacho,Octubre 2026,Activa,69.4,2,2,Al día,15/10/2026
-ALU-0014,Nicolás Mendoza Vega,nicolas.mendoza014@example.com,Curso,Fotografía digital,Chorrillos – Faisanes,Octubre 2026,Activa,82.8,1,1,Incidencia de pago,15/10/2026
-ALU-0015,Santiago Silva Chávez,santiago.silva015@example.com,Curso,Dibujo y Pintura,San Miguel 1,Setiembre 2026,Activa,85.2,1,1,Al día,15/10/2026
-ALU-0016,Adrián Torres Huamán,adrian.torres016@example.com,Taller,Taekwondo,San Miguel 1,Setiembre 2026,Retirada,73.8,2,1,Sin deuda,15/10/2026
-ALU-0017,Ximena Silva Ramírez,ximena.silva017@example.com,Curso,Pintura al Óleo,Lima – Principal,Octubre 2026,Activa,72.8,2,1,Al día,15/10/2026
-ALU-0018,Gabriel Huamán Vega,gabriel.huaman018@example.com,Curso,Guitarra,SJL – Arabiscos,Octubre 2026,Activa,64.2,3,3,Al día,15/10/2026
-ALU-0019,Antonella Rojas Silva,antonella.rojas019@example.com,Diplomado,Museografía y Diseño de Exhibiciones,San Miguel 1,Setiembre 2026,Pendiente de pago,93.4,1,1,Pago pendiente,15/10/2026
-ALU-0020,Mateo Aguilar Ramírez,mateo.aguilar020@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Lima – Principal,Octubre 2026,Activa,100,0,1,Incidencia de pago,15/10/2026
-ALU-0021,Joaquín Vega Romero,joaquin.vega021@example.com,Curso,Pintura al Óleo,Lima – Principal,Setiembre 2026,Pendiente de pago,100,0,2,Pago pendiente,15/10/2026
-ALU-0022,Luciana Salazar Medina,luciana.salazar022@example.com,Curso,Pintura al Óleo,Lima – Principal,Setiembre 2026,Activa,67.6,3,1,Al día,15/10/2026
-ALU-0023,Ximena Medina Paredes,ximena.medina023@example.com,Curso,Guitarra,Chorrillos – Faisanes,Setiembre 2026,Activa,87.9,1,2,Al día,15/10/2026
-ALU-0024,Andrés Castillo Torres,andres.castillo024@example.com,Curso,Fotografía digital,Los Olivos – Villa Sol,Octubre 2026,Retirada,77.2,2,1,Sin deuda,15/10/2026
-ALU-0025,Antonella Castillo Rojas,antonella.castillo025@example.com,Taller,Kpop,Lima – Principal,Setiembre 2026,Activa,82.7,1,2,Al día,15/10/2026
-ALU-0026,Ximena Chávez Ríos,ximena.chavez026@example.com,Curso,Dibujo y Pintura,Virtual,Octubre 2026,Activa,81.1,2,1,Incidencia de pago,15/10/2026
-ALU-0027,Joaquín Salazar Medina,joaquin.salazar027@example.com,Taller,Kpop,San Miguel 1,Octubre 2026,Activa,77.1,2,1,Al día,15/10/2026
-ALU-0028,Andrés Aguilar Rojas,andres.aguilar028@example.com,Curso,Guitarra,Lima – Principal,Octubre 2026,Activa,95.9,0,1,Al día,15/10/2026
-ALU-0029,Santiago Ríos Romero,santiago.rios029@example.com,Curso,Fotografía digital,Lima – Principal,Setiembre 2026,Activa,57.9,3,1,Incidencia de pago,15/10/2026
-ALU-0030,Diego Salazar Mendoza,diego.salazar030@example.com,Curso,Teatro y Actuación,Chorrillos – Faisanes,Setiembre 2026,Activa,84.7,1,1,Al día,15/10/2026
-ALU-0031,Iván Cárdenas Romero,ivan.cardenas031@example.com,Taller,Ballet,Los Olivos – Villa Sol,Setiembre 2026,Activa,70.0,2,1,Incidencia de pago,15/10/2026
-ALU-0032,Mateo Rojas Vega,mateo.rojas032@example.com,Curso,Violín,Virtual,Setiembre 2026,Pendiente de pago,85.3,1,1,Pago pendiente,15/10/2026
-ALU-0033,Ximena Salazar Salazar,ximena.salazar033@example.com,Curso,Guitarra,Lima – Principal,Octubre 2026,Pendiente de pago,52.2,4,1,Pago pendiente,15/10/2026
-ALU-0034,Antonella Paredes Aguilar,antonella.paredes034@example.com,Diplomado,Museografía y Diseño de Exhibiciones,SJL – Arabiscos,Octubre 2026,Activa,83.3,1,1,Al día,15/10/2026
-ALU-0035,Joaquín Silva Medina,joaquin.silva035@example.com,Taller,Marinera Norteña,La Molina – Camacho,Setiembre 2026,Activa,81.0,2,1,Al día,15/10/2026
-ALU-0036,Valeria Rojas Vargas,valeria.rojas036@example.com,Curso,Guitarra,Chorrillos – Faisanes,Setiembre 2026,Activa,84.8,1,3,Al día,15/10/2026
-ALU-0037,Joaquín Rojas Flores,joaquin.rojas037@example.com,Curso,Pintura al Óleo,Los Olivos – Villa Sol,Setiembre 2026,Activa,83.1,1,3,Al día,15/10/2026
-ALU-0038,Emilio Chávez Silva,emilio.chavez038@example.com,Taller,Taekwondo,San Miguel 1,Setiembre 2026,Activa,75.8,2,1,Al día,15/10/2026
-ALU-0039,Bruno Medina Chávez,bruno.medina039@example.com,Taller,Taekwondo,La Molina – Camacho,Setiembre 2026,Activa,68.8,2,1,Al día,15/10/2026
-ALU-0040,Antonella Gutiérrez Paredes,antonella.gutierrez040@example.com,Taller,Ballet,La Molina – Camacho,Setiembre 2026,Activa,75.1,2,1,Al día,15/10/2026
-ALU-0041,Lucía Medina Paredes,lucia.medina041@example.com,Taller,Taekwondo,La Molina – Camacho,Setiembre 2026,Activa,100,0,2,Al día,15/10/2026
-ALU-0042,Diego Aguilar Huamán,diego.aguilar042@example.com,Curso,Pintura al Óleo,Chorrillos – Faisanes,Octubre 2026,Pendiente de pago,79.5,2,2,Pago pendiente,15/10/2026
-ALU-0043,Joaquín Flores Ramírez,joaquin.flores043@example.com,Diplomado,Gestión Cultural,San Miguel 1,Octubre 2026,Activa,67.0,3,2,Al día,15/10/2026
-ALU-0044,Luciana Chávez Mendoza,luciana.chavez044@example.com,Curso,Pintura al Óleo,Lima – Principal,Setiembre 2026,Pendiente de pago,100,0,2,Pago pendiente,15/10/2026
-ALU-0045,Emilio Castillo Gutiérrez,emilio.castillo045@example.com,Taller,Ballet,SJL – Arabiscos,Octubre 2026,Activa,77.3,2,1,Al día,15/10/2026
-ALU-0046,Mariana Cárdenas Rojas,mariana.cardenas046@example.com,Taller,Marinera Norteña,Lima – Principal,Octubre 2026,Pendiente de pago,98.9,0,2,Pago pendiente,15/10/2026
-ALU-0047,Diego Medina Gutiérrez,diego.medina047@example.com,Curso,Dibujo y Pintura,SJL – Arabiscos,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
-ALU-0048,Adrián Vargas Mendoza,adrian.vargas048@example.com,Curso,Fotografía digital,SJL – Arabiscos,Setiembre 2026,Activa,80.5,2,1,Al día,15/10/2026
-ALU-0049,Micaela Romero Vega,micaela.romero049@example.com,Curso,Teatro y Actuación,Virtual,Setiembre 2026,Activa,73.1,2,2,Al día,15/10/2026
-ALU-0050,Daniela Romero Paredes,daniela.romero050@example.com,Taller,Kpop,La Molina – Camacho,Octubre 2026,Activa,76.1,2,3,Al día,15/10/2026
-ALU-0051,Bruno Gutiérrez Castillo,bruno.gutierrez051@example.com,Diplomado,Gestión Cultural,Los Olivos – Villa Sol,Setiembre 2026,Pendiente de pago,98.2,0,1,Pago pendiente,15/10/2026
-ALU-0052,Camila Rojas Torres,camila.rojas052@example.com,Curso,Teatro y Actuación,SJL – Arabiscos,Setiembre 2026,Activa,100,0,1,Al día,15/10/2026
-ALU-0053,Camila Castillo Castillo,camila.castillo053@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Octubre 2026,Activa,75.9,2,1,Al día,15/10/2026
-ALU-0054,Lucía Cárdenas Silva,lucia.cardenas054@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Los Olivos – Villa Sol,Octubre 2026,Pendiente de pago,66.9,3,1,Pago pendiente,15/10/2026
-ALU-0055,Diego Vargas Chávez,diego.vargas055@example.com,Curso,Pintura al Óleo,Virtual,Octubre 2026,Activa,91.1,1,2,Al día,15/10/2026
-ALU-0056,Lucía Mendoza Romero,lucia.mendoza056@example.com,Curso,Pintura al Óleo,San Miguel 1,Octubre 2026,Pendiente de pago,77.7,2,1,Pago pendiente,15/10/2026
-ALU-0057,Adrián Paredes Aguilar,adrian.paredes057@example.com,Taller,Taekwondo,San Miguel 1,Setiembre 2026,Activa,59.3,3,1,Al día,15/10/2026
-ALU-0058,Ximena Salazar Mendoza,ximena.salazar058@example.com,Taller,Taekwondo,Los Olivos – Villa Sol,Setiembre 2026,Activa,89.0,1,1,Al día,15/10/2026
-ALU-0059,Antonella Ríos Aguilar,antonella.rios059@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,58.3,3,3,Al día,15/10/2026
-ALU-0060,Alessia Flores Medina,alessia.flores060@example.com,Curso,Teatro y Actuación,Lima – Principal,Octubre 2026,Activa,74.7,2,1,Al día,15/10/2026
-ALU-0061,Paula Vega Gutiérrez,paula.vega061@example.com,Curso,Oratoria y Liderazgo,Los Olivos – Villa Sol,Octubre 2026,Activa,68.1,3,1,Al día,15/10/2026
-ALU-0062,Mariana Gutiérrez Gutiérrez,mariana.gutierrez062@example.com,Taller,Ballet,San Miguel 1,Setiembre 2026,Activa,87.7,1,1,Al día,15/10/2026
-ALU-0063,Santiago Cárdenas Gutiérrez,santiago.cardenas063@example.com,Taller,Kpop,Los Olivos – Villa Sol,Setiembre 2026,Activa,63.3,3,1,Al día,15/10/2026
-ALU-0064,Mateo Ramírez Rojas,mateo.ramirez064@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Pendiente de pago,87.9,1,1,Pago pendiente,15/10/2026
-ALU-0065,Sofía Medina Torres,sofia.medina065@example.com,Curso,Oratoria y Liderazgo,SJL – Arabiscos,Octubre 2026,Activa,71.5,2,1,Al día,15/10/2026
-ALU-0066,Santiago Salazar Aguilar,santiago.salazar066@example.com,Taller,Kpop,Los Olivos – Villa Sol,Setiembre 2026,Activa,70.6,2,1,Al día,15/10/2026
-ALU-0067,Mateo Huamán Quispe,mateo.huaman067@example.com,Curso,Oratoria y Liderazgo,Chorrillos – Faisanes,Setiembre 2026,Activa,60.2,3,2,Al día,15/10/2026
-ALU-0068,Ximena Mendoza Vega,ximena.mendoza068@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Octubre 2026,Pendiente de pago,69.8,2,1,Pago pendiente,15/10/2026
-ALU-0069,Santiago Paredes Aguilar,santiago.paredes069@example.com,Taller,Kpop,San Miguel 1,Octubre 2026,Activa,86.2,1,3,Al día,15/10/2026
-ALU-0070,Lucía Rojas Ramírez,lucia.rojas070@example.com,Curso,Guitarra,San Miguel 1,Octubre 2026,Activa,76.5,2,2,Al día,15/10/2026
-ALU-0071,Thiago Gutiérrez Mendoza,thiago.gutierrez071@example.com,Curso,Violín,Virtual,Setiembre 2026,Pendiente de pago,72.2,2,2,Pago pendiente,15/10/2026
-ALU-0072,Alessia Vargas Paredes,alessia.vargas072@example.com,Taller,Marinera Norteña,SJL – Arabiscos,Setiembre 2026,Activa,82.7,1,1,Al día,15/10/2026
-ALU-0073,Thiago Paredes Cárdenas,thiago.paredes073@example.com,Curso,Pintura al Óleo,Lima – Principal,Setiembre 2026,Activa,77.7,2,1,Al día,15/10/2026
-ALU-0074,Santiago Huamán Cárdenas,santiago.huaman074@example.com,Curso,Fotografía digital,Lima – Principal,Octubre 2026,Activa,70.0,2,1,Al día,15/10/2026
-ALU-0075,Isabella Cárdenas Cárdenas,isabella.cardenas075@example.com,Curso,Violín,Virtual,Setiembre 2026,Pendiente de pago,75.1,2,2,Pago pendiente,15/10/2026
-ALU-0076,Andrés Rojas Mendoza,andres.rojas076@example.com,Diplomado,Museografía y Diseño de Exhibiciones,La Molina – Camacho,Octubre 2026,Activa,81.1,2,2,Al día,15/10/2026
-ALU-0077,Santiago Salazar Vargas,santiago.salazar077@example.com,Curso,Fotografía digital,Los Olivos – Villa Sol,Setiembre 2026,Activa,57.8,3,1,Al día,15/10/2026
-ALU-0078,Joaquín Torres Ríos,joaquin.torres078@example.com,Curso,Guitarra,SJL – Arabiscos,Octubre 2026,Activa,74.6,2,2,Al día,15/10/2026
-ALU-0079,Lucía Ramírez Ríos,lucia.ramirez079@example.com,Curso,Guitarra,San Miguel 1,Setiembre 2026,Activa,100,0,1,Incidencia de pago,15/10/2026
-ALU-0080,Gabriel Mendoza Vega,gabriel.mendoza080@example.com,Curso,Fotografía digital,Lima – Principal,Octubre 2026,Activa,60.9,3,1,Al día,15/10/2026
-ALU-0081,Iván Quispe Ríos,ivan.quispe081@example.com,Taller,Kpop,Virtual,Octubre 2026,Pendiente de pago,67.8,3,1,Pago pendiente,15/10/2026
-ALU-0082,Andrés Rojas Vargas,andres.rojas082@example.com,Curso,Pintura al Óleo,Lima – Principal,Octubre 2026,Activa,83.6,1,1,Al día,15/10/2026
-ALU-0083,Renata Paredes Torres,renata.paredes083@example.com,Curso,Pintura al Óleo,Chorrillos – Faisanes,Setiembre 2026,Activa,84.0,1,1,Incidencia de pago,15/10/2026
-ALU-0084,Gabriel Castillo Vega,gabriel.castillo084@example.com,Taller,Kpop,San Miguel 1,Setiembre 2026,Activa,60.1,3,1,Al día,15/10/2026
-ALU-0085,Adrián Ríos Salazar,adrian.rios085@example.com,Taller,Marinera Norteña,Lima – Principal,Setiembre 2026,Activa,80.9,2,3,Al día,15/10/2026
-ALU-0086,Alessia Castillo Aguilar,alessia.castillo086@example.com,Curso,Pintura al Óleo,San Miguel 1,Octubre 2026,Activa,71.6,2,1,Incidencia de pago,15/10/2026
-ALU-0087,Rodrigo Ramírez Castillo,rodrigo.ramirez087@example.com,Diplomado,Gestión Cultural,La Molina – Camacho,Setiembre 2026,Pendiente de pago,86.0,1,2,Pago pendiente,15/10/2026
-ALU-0088,Micaela Gutiérrez Castillo,micaela.gutierrez088@example.com,Taller,Taekwondo,Los Olivos – Villa Sol,Octubre 2026,Activa,97.8,0,1,Al día,15/10/2026
-ALU-0089,Sofía Ríos Cárdenas,sofia.rios089@example.com,Curso,Oratoria y Liderazgo,La Molina – Camacho,Octubre 2026,Pendiente de pago,65.2,3,2,Pago pendiente,15/10/2026
-ALU-0090,Gabriel Quispe Quispe,gabriel.quispe090@example.com,Curso,Fotografía digital,SJL – Arabiscos,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
-ALU-0091,Rodrigo Vargas Cárdenas,rodrigo.vargas091@example.com,Curso,Violín,La Molina – Camacho,Setiembre 2026,Pendiente de pago,82.4,1,2,Pago pendiente,15/10/2026
-ALU-0092,Daniela Ramírez Aguilar,daniela.ramirez092@example.com,Curso,Pintura al Óleo,Virtual,Octubre 2026,Activa,64.5,3,1,Al día,15/10/2026
-ALU-0093,Gabriel Medina Paredes,gabriel.medina093@example.com,Curso,Oratoria y Liderazgo,Chorrillos – Faisanes,Octubre 2026,Pendiente de pago,77.6,2,2,Pago pendiente,15/10/2026
-ALU-0094,Gabriel Rojas Castillo,gabriel.rojas094@example.com,Curso,Teatro y Actuación,La Molina – Camacho,Setiembre 2026,Activa,82.3,1,1,Al día,15/10/2026
-ALU-0095,Santiago Castillo Cárdenas,santiago.castillo095@example.com,Taller,Kpop,SJL – Arabiscos,Octubre 2026,Activa,99.2,0,1,Al día,15/10/2026
-ALU-0096,Sofía Salazar Ramírez,sofia.salazar096@example.com,Curso,Guitarra,La Molina – Camacho,Setiembre 2026,Activa,91.4,1,1,Al día,15/10/2026
-ALU-0097,Joaquín Aguilar Aguilar,joaquin.aguilar097@example.com,Taller,Kpop,Los Olivos – Villa Sol,Octubre 2026,Activa,73.6,2,1,Al día,15/10/2026
-ALU-0098,Micaela Quispe Cárdenas,micaela.quispe098@example.com,Curso,Guitarra,Lima – Principal,Setiembre 2026,Activa,97.3,0,1,Al día,15/10/2026
-ALU-0099,Iván Paredes Rojas,ivan.paredes099@example.com,Diplomado,Gestión Cultural,Virtual,Octubre 2026,Activa,56.9,3,3,Al día,15/10/2026
-ALU-0100,Micaela Huamán Gutiérrez,micaela.huaman100@example.com,Taller,Kpop,La Molina – Camacho,Setiembre 2026,Activa,74.7,2,2,Al día,15/10/2026
-ALU-0101,Rodrigo Ramírez Cárdenas,rodrigo.ramirez101@example.com,Taller,Ballet,Chorrillos – Faisanes,Octubre 2026,Activa,74.2,2,1,Al día,15/10/2026
-ALU-0102,Paula Torres Romero,paula.torres102@example.com,Curso,Dibujo y Pintura,Los Olivos – Villa Sol,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
-ALU-0103,Rodrigo Salazar Rojas,rodrigo.salazar103@example.com,Curso,Dibujo y Pintura,Los Olivos – Villa Sol,Setiembre 2026,Activa,79.6,2,1,Al día,15/10/2026
-ALU-0104,Rodrigo Gutiérrez Medina,rodrigo.gutierrez104@example.com,Curso,Oratoria y Liderazgo,San Miguel 1,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
-ALU-0105,Mariana Rojas Torres,mariana.rojas105@example.com,Taller,Kpop,Chorrillos – Faisanes,Octubre 2026,Activa,97.5,0,1,Al día,15/10/2026
-ALU-0106,Diego Mendoza Quispe,diego.mendoza106@example.com,Curso,Guitarra,Los Olivos – Villa Sol,Octubre 2026,Activa,96.1,0,1,Al día,15/10/2026
-ALU-0107,Camila Silva Medina,camila.silva107@example.com,Curso,Dibujo y Pintura,Chorrillos – Faisanes,Octubre 2026,Retirada,62.3,3,1,Sin deuda,15/10/2026
-ALU-0108,Rodrigo Mendoza Aguilar,rodrigo.mendoza108@example.com,Taller,Ballet,Chorrillos – Faisanes,Setiembre 2026,Activa,65.4,3,1,Al día,15/10/2026
-ALU-0109,Micaela Aguilar Cárdenas,micaela.aguilar109@example.com,Diplomado,Gestión Cultural,Los Olivos – Villa Sol,Setiembre 2026,Activa,70.3,2,1,Al día,15/10/2026
-ALU-0110,Bruno Paredes Mendoza,bruno.paredes110@example.com,Taller,Marinera Norteña,SJL – Arabiscos,Setiembre 2026,Activa,73.5,2,1,Al día,15/10/2026
-ALU-0111,Adrián Vega Mendoza,adrian.vega111@example.com,Curso,Violín,Lima – Principal,Setiembre 2026,Activa,81.3,1,2,Al día,15/10/2026
-ALU-0112,Lucía Quispe Huamán,lucia.quispe112@example.com,Taller,Taekwondo,La Molina – Camacho,Octubre 2026,Activa,87.9,1,1,Al día,15/10/2026
-ALU-0113,Renata Mendoza Romero,renata.mendoza113@example.com,Diplomado,Gestión Cultural,Virtual,Setiembre 2026,Activa,75.3,2,2,Al día,15/10/2026
-ALU-0114,Gonzalo Ramírez Ramírez,gonzalo.ramirez114@example.com,Diplomado,Gestión Cultural,Virtual,Setiembre 2026,Activa,93.4,1,3,Al día,15/10/2026
-ALU-0115,Lucía Vargas Ramírez,lucia.vargas115@example.com,Curso,Oratoria y Liderazgo,San Miguel 1,Octubre 2026,Activa,88.0,1,2,Al día,15/10/2026
-ALU-0116,Andrés Ríos Castillo,andres.rios116@example.com,Taller,Ballet,Virtual,Octubre 2026,Retirada,63.5,3,3,Sin deuda,15/10/2026
-ALU-0117,Luciana Silva Salazar,luciana.silva117@example.com,Curso,Guitarra,La Molina – Camacho,Octubre 2026,Activa,72.7,2,1,Al día,15/10/2026
-ALU-0118,Daniela Vega Romero,daniela.vega118@example.com,Taller,Marinera Norteña,Virtual,Setiembre 2026,Activa,90.3,1,1,Al día,15/10/2026
-ALU-0119,Micaela Mendoza Flores,micaela.mendoza119@example.com,Curso,Teatro y Actuación,Virtual,Setiembre 2026,Activa,79.9,2,1,Al día,15/10/2026
-ALU-0120,Iván Paredes Medina,ivan.paredes120@example.com,Curso,Violín,San Miguel 1,Octubre 2026,Activa,86.9,1,1,Al día,15/10/2026
-ALU-0121,Bruno Silva Ríos,bruno.silva121@example.com,Curso,Guitarra,La Molina – Camacho,Octubre 2026,Activa,63.3,3,2,Al día,15/10/2026
-ALU-0122,Nicolás Ríos Mendoza,nicolas.rios122@example.com,Curso,Guitarra,San Miguel 1,Setiembre 2026,Activa,63.2,3,2,Incidencia de pago,15/10/2026
-ALU-0123,Adrián Mendoza Ríos,adrian.mendoza123@example.com,Taller,Marinera Norteña,Lima – Principal,Octubre 2026,Activa,63.2,3,3,Incidencia de pago,15/10/2026
-ALU-0124,Renata Quispe Medina,renata.quispe124@example.com,Curso,Oratoria y Liderazgo,SJL – Arabiscos,Octubre 2026,Pendiente de pago,74.4,2,1,Pago pendiente,15/10/2026
-ALU-0125,Luciana Torres Aguilar,luciana.torres125@example.com,Taller,Marinera Norteña,Chorrillos – Faisanes,Octubre 2026,Activa,66.1,3,1,Al día,15/10/2026
-ALU-0126,Lucía Mendoza Torres,lucia.mendoza126@example.com,Taller,Taekwondo,Virtual,Setiembre 2026,Activa,88.1,1,1,Al día,15/10/2026
-ALU-0127,Camila Cárdenas Aguilar,camila.cardenas127@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Octubre 2026,Activa,87.8,1,2,Al día,15/10/2026
-ALU-0128,Emilio Huamán Vega,emilio.huaman128@example.com,Taller,Taekwondo,Chorrillos – Faisanes,Octubre 2026,Retirada,69.9,2,1,Sin deuda,15/10/2026
-ALU-0129,Mateo Salazar Ríos,mateo.salazar129@example.com,Curso,Teatro y Actuación,Virtual,Setiembre 2026,Activa,68.2,3,3,Incidencia de pago,15/10/2026
-ALU-0130,Renata Vega Cárdenas,renata.vega130@example.com,Taller,Kpop,Virtual,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
-ALU-0131,Rodrigo Huamán Vega,rodrigo.huaman131@example.com,Diplomado,Gestión Cultural,SJL – Arabiscos,Setiembre 2026,Activa,49.5,4,1,Incidencia de pago,15/10/2026
-ALU-0132,Mateo Castillo Ramírez,mateo.castillo132@example.com,Curso,Dibujo y Pintura,La Molina – Camacho,Setiembre 2026,Activa,85.2,1,2,Incidencia de pago,15/10/2026
-ALU-0133,Daniela Flores Huamán,daniela.flores133@example.com,Curso,Guitarra,Virtual,Setiembre 2026,Activa,100,0,1,Al día,15/10/2026
-ALU-0134,Renata Medina Vega,renata.medina134@example.com,Diplomado,Museografía y Diseño de Exhibiciones,SJL – Arabiscos,Setiembre 2026,Retirada,98.0,0,2,Sin deuda,15/10/2026
-ALU-0135,Lucía Rojas Medina,lucia.rojas135@example.com,Curso,Oratoria y Liderazgo,Virtual,Octubre 2026,Activa,88.7,1,2,Al día,15/10/2026
-ALU-0136,Fernanda Aguilar Ríos,fernanda.aguilar136@example.com,Curso,Dibujo y Pintura,SJL – Arabiscos,Octubre 2026,Activa,69.4,2,3,Al día,15/10/2026
-ALU-0137,Thiago Ríos Ramírez,thiago.rios137@example.com,Diplomado,Gestión Cultural,Virtual,Setiembre 2026,Activa,100,0,1,Al día,15/10/2026
-ALU-0138,Antonella Vargas Medina,antonella.vargas138@example.com,Curso,Dibujo y Pintura,La Molina – Camacho,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
-ALU-0139,Renata Vega Cárdenas,renata.vega139@example.com,Taller,Ballet,Chorrillos – Faisanes,Setiembre 2026,Activa,80.5,2,1,Al día,15/10/2026
-ALU-0140,Renata Castillo Ríos,renata.castillo140@example.com,Curso,Fotografía digital,San Miguel 1,Setiembre 2026,Activa,94.4,0,1,Al día,15/10/2026
-ALU-0141,Paula Vargas Vega,paula.vargas141@example.com,Curso,Oratoria y Liderazgo,La Molina – Camacho,Setiembre 2026,Activa,79.7,2,1,Al día,15/10/2026
-ALU-0142,Paula Ramírez Medina,paula.ramirez142@example.com,Curso,Teatro y Actuación,Los Olivos – Villa Sol,Octubre 2026,Retirada,90.7,1,1,Sin deuda,15/10/2026
-ALU-0143,Camila Romero Huamán,camila.romero143@example.com,Taller,Marinera Norteña,San Miguel 1,Octubre 2026,Activa,84.3,1,1,Al día,15/10/2026
-ALU-0144,Mariana Medina Salazar,mariana.medina144@example.com,Diplomado,Gestión Cultural,La Molina – Camacho,Setiembre 2026,Activa,93.1,1,1,Incidencia de pago,15/10/2026
-ALU-0145,Valeria Castillo Romero,valeria.castillo145@example.com,Curso,Oratoria y Liderazgo,Virtual,Octubre 2026,Pendiente de pago,86.7,1,2,Pago pendiente,15/10/2026
-ALU-0146,Valeria Ramírez Chávez,valeria.ramirez146@example.com,Taller,Kpop,SJL – Arabiscos,Setiembre 2026,Activa,42.9,5,1,Al día,15/10/2026
-ALU-0147,Rodrigo Huamán Mendoza,rodrigo.huaman147@example.com,Curso,Oratoria y Liderazgo,Lima – Principal,Setiembre 2026,Activa,80.8,2,1,Al día,15/10/2026
-ALU-0148,Antonella Paredes Mendoza,antonella.paredes148@example.com,Curso,Guitarra,Chorrillos – Faisanes,Setiembre 2026,Activa,56.1,4,2,Al día,15/10/2026
-ALU-0149,Daniela Mendoza Medina,daniela.mendoza149@example.com,Curso,Teatro y Actuación,La Molina – Camacho,Octubre 2026,Activa,79.9,2,2,Al día,15/10/2026
-ALU-0150,Sebastián Huamán Gutiérrez,sebastian.huaman150@example.com,Taller,Marinera Norteña,Virtual,Octubre 2026,Pendiente de pago,71.3,2,2,Pago pendiente,15/10/2026
-ALU-0151,Paula Cárdenas Torres,paula.cardenas151@example.com,Curso,Teatro y Actuación,Chorrillos – Faisanes,Octubre 2026,Activa,85.3,1,3,Al día,15/10/2026
-ALU-0152,Bruno Castillo Torres,bruno.castillo152@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Octubre 2026,Activa,65.2,3,1,Al día,15/10/2026
-ALU-0153,Antonella Romero Ríos,antonella.romero153@example.com,Curso,Guitarra,SJL – Arabiscos,Octubre 2026,Activa,64.2,3,1,Al día,15/10/2026
-ALU-0154,Mariana Salazar Romero,mariana.salazar154@example.com,Taller,Kpop,San Miguel 1,Octubre 2026,Activa,97.1,0,2,Al día,15/10/2026
-ALU-0155,Sofía Paredes Salazar,sofia.paredes155@example.com,Taller,Kpop,SJL – Arabiscos,Octubre 2026,Activa,68.1,3,1,Al día,15/10/2026
-ALU-0156,Valeria Paredes Quispe,valeria.paredes156@example.com,Curso,Dibujo y Pintura,Los Olivos – Villa Sol,Setiembre 2026,Retirada,64.1,3,1,Sin deuda,15/10/2026
-ALU-0157,Fernanda Vega Medina,fernanda.vega157@example.com,Curso,Violín,San Miguel 1,Octubre 2026,Activa,90.1,1,1,Al día,15/10/2026
-ALU-0158,Isabella Quispe Gutiérrez,isabella.quispe158@example.com,Diplomado,Gestión Cultural,Virtual,Octubre 2026,Activa,91.6,1,1,Al día,15/10/2026
-ALU-0159,Fernanda Ríos Aguilar,fernanda.rios159@example.com,Taller,Marinera Norteña,Virtual,Octubre 2026,Activa,93.2,1,1,Incidencia de pago,15/10/2026
-ALU-0160,Andrés Ríos Rojas,andres.rios160@example.com,Curso,Oratoria y Liderazgo,SJL – Arabiscos,Octubre 2026,Activa,82.7,1,1,Incidencia de pago,15/10/2026
-ALU-0161,Santiago Castillo Huamán,santiago.castillo161@example.com,Taller,Marinera Norteña,SJL – Arabiscos,Setiembre 2026,Pendiente de pago,82.6,1,1,Pago pendiente,15/10/2026
-ALU-0162,Valeria Vargas Vargas,valeria.vargas162@example.com,Taller,Taekwondo,La Molina – Camacho,Setiembre 2026,Retirada,86.6,1,3,Sin deuda,15/10/2026
-ALU-0163,Mateo Torres Vargas,mateo.torres163@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,75.2,2,1,Al día,15/10/2026
-ALU-0164,Luciana Mendoza Romero,luciana.mendoza164@example.com,Taller,Ballet,La Molina – Camacho,Setiembre 2026,Activa,77.9,2,3,Al día,15/10/2026
-ALU-0165,Gonzalo Vargas Gutiérrez,gonzalo.vargas165@example.com,Curso,Violín,Lima – Principal,Octubre 2026,Activa,80.0,2,2,Al día,15/10/2026
-ALU-0166,Camila Vega Ríos,camila.vega166@example.com,Taller,Kpop,La Molina – Camacho,Setiembre 2026,Activa,88.7,1,1,Al día,15/10/2026
-ALU-0167,Ximena Cárdenas Salazar,ximena.cardenas167@example.com,Curso,Fotografía digital,San Miguel 1,Setiembre 2026,Activa,57.1,3,1,Al día,15/10/2026
-ALU-0168,Valeria Vargas Flores,valeria.vargas168@example.com,Taller,Kpop,Virtual,Octubre 2026,Retirada,76.2,2,1,Sin deuda,15/10/2026
-ALU-0169,Rodrigo Torres Romero,rodrigo.torres169@example.com,Curso,Dibujo y Pintura,Los Olivos – Villa Sol,Octubre 2026,Activa,94.8,0,1,Al día,15/10/2026
-ALU-0170,Paula Rojas Vargas,paula.rojas170@example.com,Curso,Pintura al Óleo,Chorrillos – Faisanes,Octubre 2026,Activa,86.0,1,1,Al día,15/10/2026
-ALU-0171,Lucía Rojas Vargas,lucia.rojas171@example.com,Taller,Taekwondo,Los Olivos – Villa Sol,Octubre 2026,Retirada,68.2,3,1,Sin deuda,15/10/2026
-ALU-0172,Valeria Aguilar Castillo,valeria.aguilar172@example.com,Diplomado,Gestión Cultural,San Miguel 1,Setiembre 2026,Activa,76.3,2,1,Al día,15/10/2026
-ALU-0173,Valeria Vargas Huamán,valeria.vargas173@example.com,Taller,Kpop,La Molina – Camacho,Octubre 2026,Activa,57.5,3,1,Al día,15/10/2026
-ALU-0174,Isabella Quispe Salazar,isabella.quispe174@example.com,Taller,Marinera Norteña,Los Olivos – Villa Sol,Setiembre 2026,Activa,93.5,1,1,Al día,15/10/2026
-ALU-0175,Adrián Romero Vargas,adrian.romero175@example.com,Curso,Pintura al Óleo,San Miguel 1,Setiembre 2026,Activa,85.3,1,1,Al día,15/10/2026
-ALU-0176,Thiago Mendoza Flores,thiago.mendoza176@example.com,Curso,Violín,Los Olivos – Villa Sol,Octubre 2026,Activa,83.5,1,2,Al día,15/10/2026
-ALU-0177,Renata Castillo Huamán,renata.castillo177@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,52.4,4,1,Al día,15/10/2026
-ALU-0178,Diego Vargas Flores,diego.vargas178@example.com,Taller,Kpop,Virtual,Setiembre 2026,Activa,94.5,0,1,Al día,15/10/2026
-ALU-0179,Diego Ramírez Chávez,diego.ramirez179@example.com,Curso,Violín,Virtual,Setiembre 2026,Activa,64.0,3,1,Al día,15/10/2026
-ALU-0180,Alessia Chávez Ríos,alessia.chavez180@example.com,Curso,Oratoria y Liderazgo,Chorrillos – Faisanes,Octubre 2026,Pendiente de pago,97.6,0,2,Pago pendiente,15/10/2026
-ALU-0181,Luciana Ramírez Chávez,luciana.ramirez181@example.com,Taller,Marinera Norteña,SJL – Arabiscos,Octubre 2026,Activa,91.5,1,1,Al día,15/10/2026
-ALU-0182,Isabella Ríos Torres,isabella.rios182@example.com,Diplomado,Gestión Cultural,Chorrillos – Faisanes,Octubre 2026,Activa,73.8,2,1,Al día,15/10/2026
-ALU-0183,Daniela Paredes Quispe,daniela.paredes183@example.com,Curso,Teatro y Actuación,San Miguel 1,Setiembre 2026,Activa,86.6,1,2,Incidencia de pago,15/10/2026
-ALU-0184,Daniela Flores Quispe,daniela.flores184@example.com,Taller,Ballet,SJL – Arabiscos,Setiembre 2026,Activa,90.1,1,1,Al día,15/10/2026
-ALU-0185,Lucía Ríos Vega,lucia.rios185@example.com,Curso,Oratoria y Liderazgo,San Miguel 1,Setiembre 2026,Activa,63.0,3,1,Al día,15/10/2026
-ALU-0186,Sofía Ríos Cárdenas,sofia.rios186@example.com,Curso,Pintura al Óleo,Los Olivos – Villa Sol,Octubre 2026,Activa,88.8,1,1,Al día,15/10/2026
-ALU-0187,Sebastián Medina Huamán,sebastian.medina187@example.com,Curso,Fotografía digital,Virtual,Setiembre 2026,Activa,84.7,1,2,Incidencia de pago,15/10/2026
-ALU-0188,Bruno Romero Cárdenas,bruno.romero188@example.com,Taller,Marinera Norteña,SJL – Arabiscos,Octubre 2026,Activa,79.5,2,1,Al día,15/10/2026
-ALU-0189,Adrián Gutiérrez Ríos,adrian.gutierrez189@example.com,Curso,Fotografía digital,La Molina – Camacho,Setiembre 2026,Activa,70.1,2,1,Al día,15/10/2026
-ALU-0190,Andrés Ramírez Castillo,andres.ramirez190@example.com,Diplomado,Gestión Cultural,Virtual,Octubre 2026,Activa,77.9,2,1,Al día,15/10/2026
-ALU-0191,Fernanda Ramírez Mendoza,fernanda.ramirez191@example.com,Taller,Taekwondo,La Molina – Camacho,Setiembre 2026,Activa,63.5,3,2,Al día,15/10/2026
-ALU-0192,Mariana Paredes Flores,mariana.paredes192@example.com,Taller,Taekwondo,La Molina – Camacho,Setiembre 2026,Activa,91.3,1,1,Al día,15/10/2026
-ALU-0193,Micaela Mendoza Quispe,micaela.mendoza193@example.com,Curso,Pintura al Óleo,La Molina – Camacho,Octubre 2026,Activa,80.8,2,1,Al día,15/10/2026
-ALU-0194,Valeria Vargas Romero,valeria.vargas194@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,98.6,0,2,Al día,15/10/2026
-ALU-0195,Diego Flores Rojas,diego.flores195@example.com,Curso,Teatro y Actuación,Lima – Principal,Setiembre 2026,Activa,59.1,3,1,Al día,15/10/2026
-ALU-0196,Bruno Gutiérrez Ríos,bruno.gutierrez196@example.com,Taller,Ballet,SJL – Arabiscos,Setiembre 2026,Activa,100,0,1,Al día,15/10/2026
-ALU-0197,Bruno Chávez Aguilar,bruno.chavez197@example.com,Diplomado,Museografía y Diseño de Exhibiciones,San Miguel 1,Octubre 2026,Activa,69.2,2,2,Al día,15/10/2026
-ALU-0198,Sebastián Chávez Flores,sebastian.chavez198@example.com,Curso,Oratoria y Liderazgo,Los Olivos – Villa Sol,Octubre 2026,Activa,68.7,3,1,Al día,15/10/2026
-ALU-0199,Isabella Torres Torres,isabella.torres199@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,79.3,2,1,Al día,15/10/2026
-ALU-0200,Daniela Medina Quispe,daniela.medina200@example.com,Taller,Marinera Norteña,Virtual,Setiembre 2026,Activa,84.7,1,1,Al día,15/10/2026
-ALU-0201,Mario Yllisca,mario.ych@gmail.com,Curso,Oratoria y Liderazgo,Virtual,Verano 2027,Pendiente de pago,,0,1,Pago pendiente,17/10/2026
-ALU-0202,Jose Olaya,olaya@gmail.com,Curso,Guitarra,Lima – Principal,Verano 2027,Pendiente de pago,,0,1,Pago pendiente,17/10/2026
-ALU-0203,Condor Mendoza,condor@gmail.com,Curso,Marinera Norteña,Los Olivos – Villa Sol,Verano 2027,Pendiente de pago,,0,1,Pago pendiente,17/10/2026
-ALU-0204,Felipe Castro,felipe_castro@gmail.com,Curso,Marinera Norteña,San Miguel 1,Noviembre 2026,Pendiente de pago,,0,1,Pago pendiente,17/10/2026
+id_alumno,nombre,numero_documento,telefono,correo,programa,curso,sede,periodo,estado_matricula,porcentaje_asistencia,inasistencias,cursos_inscritos,situacion_administrativa,actualizado_al
+ALU-0001,Fernanda Mendoza Gutiérrez,99682554,900 000 001,fernanda.mendoza001@example.com,Curso,Oratoria y Liderazgo,Lima – Principal,Setiembre 2026,Activa,97.6,0,1,Al día,15/10/2026
+ALU-0002,Mateo Rojas Vega,99098702,900 000 002,mateo.rojas002@example.com,Curso,Dibujo y Pintura,San Miguel 1,Setiembre 2026,Activa,94.8,0,1,Al día,15/10/2026
+ALU-0003,Gabriel Silva Flores,99953893,900 000 003,gabriel.silva003@example.com,Diplomado,Gestión Cultural,Lima – Principal,Setiembre 2026,Activa,69.7,2,1,Al día,15/10/2026
+ALU-0004,Renata Ramírez Flores,99090122,900 000 004,renata.ramirez004@example.com,Curso,Teatro y Actuación,Virtual,Octubre 2026,Activa,65.8,3,1,Al día,15/10/2026
+ALU-0005,Nicolás Romero Rojas,99252353,900 000 005,nicolas.romero005@example.com,Curso,Fotografía digital,SJL – Arabiscos,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0006,Valeria Vega Romero,99061981,900 000 006,valeria.vega006@example.com,Curso,Fotografía digital,SJL – Arabiscos,Octubre 2026,Activa,95.5,0,1,Al día,15/10/2026
+ALU-0007,Micaela Silva Huamán,99993473,900 000 007,micaela.silva007@example.com,Diplomado,Gestión Cultural,Virtual,Setiembre 2026,Activa,98.7,0,1,Incidencia de pago,15/10/2026
+ALU-0008,Sebastián Silva Flores,99605136,900 000 008,sebastian.silva008@example.com,Curso,Guitarra,La Molina – Camacho,Octubre 2026,Activa,88.7,1,1,Al día,15/10/2026
+ALU-0009,Ximena Gutiérrez Flores,99231821,900 000 009,ximena.gutierrez009@example.com,Taller,Marinera Norteña,San Miguel 1,Setiembre 2026,Activa,73.7,2,1,Al día,15/10/2026
+ALU-0010,Mateo Vega Mendoza,99303677,900 000 010,mateo.vega010@example.com,Curso,Fotografía digital,SJL – Arabiscos,Setiembre 2026,Activa,59.7,3,1,Incidencia de pago,15/10/2026
+ALU-0011,Nicolás Mendoza Vega,99123514,900 000 011,nicolas.mendoza011@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,81.6,1,2,Al día,15/10/2026
+ALU-0012,Ximena Chávez Vega,99855770,900 000 012,ximena.chavez012@example.com,Taller,Taekwondo,SJL – Arabiscos,Octubre 2026,Pendiente de pago,70.0,2,1,Pago pendiente,15/10/2026
+ALU-0013,Bruno Torres Huamán,99609851,900 000 013,bruno.torres013@example.com,Curso,Oratoria y Liderazgo,La Molina – Camacho,Octubre 2026,Activa,69.4,2,2,Al día,15/10/2026
+ALU-0014,Ximena Ramírez Paredes,99102163,900 000 014,ximena.ramirez014@example.com,Curso,Fotografía digital,Chorrillos – Faisanes,Octubre 2026,Activa,82.8,1,1,Incidencia de pago,15/10/2026
+ALU-0015,Adrián Rojas Silva,99062496,900 000 015,adrian.rojas015@example.com,Curso,Dibujo y Pintura,San Miguel 1,Setiembre 2026,Activa,85.2,1,1,Al día,15/10/2026
+ALU-0016,Thiago Ramírez Cárdenas,99713451,900 000 016,thiago.ramirez016@example.com,Taller,Taekwondo,San Miguel 1,Setiembre 2026,Retirada,73.8,2,1,Sin deuda,15/10/2026
+ALU-0017,Adrián Romero Salazar,99488218,900 000 017,adrian.romero017@example.com,Curso,Pintura al Óleo,Lima – Principal,Octubre 2026,Activa,72.8,2,1,Al día,15/10/2026
+ALU-0018,Ximena Medina Paredes,99314328,900 000 018,ximena.medina018@example.com,Curso,Guitarra,SJL – Arabiscos,Octubre 2026,Activa,64.2,3,3,Al día,15/10/2026
+ALU-0019,Sebastián Torres Castillo,99085831,900 000 019,sebastian.torres019@example.com,Diplomado,Museografía y Diseño de Exhibiciones,San Miguel 1,Setiembre 2026,Pendiente de pago,93.4,1,1,Pago pendiente,15/10/2026
+ALU-0020,Ximena Chávez Ríos,99519167,900 000 020,ximena.chavez020@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Lima – Principal,Octubre 2026,Activa,100,0,1,Incidencia de pago,15/10/2026
+ALU-0021,Paula Salazar Medina,99301924,900 000 021,paula.salazar021@example.com,Curso,Pintura al Óleo,Lima – Principal,Setiembre 2026,Pendiente de pago,100,0,2,Pago pendiente,15/10/2026
+ALU-0022,Thiago Rojas Huamán,99536800,900 000 022,thiago.rojas022@example.com,Curso,Pintura al Óleo,Lima – Principal,Setiembre 2026,Activa,67.6,3,1,Al día,15/10/2026
+ALU-0023,Nicolás Torres Salazar,99159367,900 000 023,nicolas.torres023@example.com,Curso,Guitarra,Chorrillos – Faisanes,Setiembre 2026,Activa,87.9,1,2,Al día,15/10/2026
+ALU-0024,Iván Cárdenas Romero,99041111,900 000 024,ivan.cardenas024@example.com,Curso,Fotografía digital,Los Olivos – Villa Sol,Octubre 2026,Retirada,77.2,2,1,Sin deuda,15/10/2026
+ALU-0025,Bruno Rojas Vega,99600861,900 000 025,bruno.rojas025@example.com,Taller,Kpop,Lima – Principal,Setiembre 2026,Activa,82.7,1,2,Al día,15/10/2026
+ALU-0026,Rodrigo Salazar Salazar,99729070,900 000 026,rodrigo.salazar026@example.com,Curso,Dibujo y Pintura,Virtual,Octubre 2026,Activa,81.1,2,1,Incidencia de pago,15/10/2026
+ALU-0027,Gabriel Aguilar Cárdenas,99608064,900 000 027,gabriel.aguilar027@example.com,Taller,Kpop,San Miguel 1,Octubre 2026,Activa,77.1,2,1,Al día,15/10/2026
+ALU-0028,Rodrigo Medina Rojas,99880770,900 000 028,rodrigo.medina028@example.com,Curso,Guitarra,Lima – Principal,Octubre 2026,Activa,95.9,0,1,Al día,15/10/2026
+ALU-0029,Valeria Vargas Cárdenas,99730901,900 000 029,valeria.vargas029@example.com,Curso,Fotografía digital,Lima – Principal,Setiembre 2026,Activa,57.9,3,1,Incidencia de pago,15/10/2026
+ALU-0030,Bruno Rojas Flores,99766676,900 000 030,bruno.rojas030@example.com,Curso,Teatro y Actuación,Chorrillos – Faisanes,Setiembre 2026,Activa,84.7,1,1,Al día,15/10/2026
+ALU-0031,Antonella Chávez Silva,99714328,900 000 031,antonella.chavez031@example.com,Taller,Ballet,Los Olivos – Villa Sol,Setiembre 2026,Activa,70.0,2,1,Incidencia de pago,15/10/2026
+ALU-0032,Micaela Medina Chávez,99751438,900 000 032,micaela.medina032@example.com,Curso,Violín,Virtual,Setiembre 2026,Pendiente de pago,85.3,1,1,Pago pendiente,15/10/2026
+ALU-0033,Mariana Paredes Quispe,99986341,900 000 033,mariana.paredes033@example.com,Curso,Guitarra,Lima – Principal,Octubre 2026,Pendiente de pago,52.2,4,1,Pago pendiente,15/10/2026
+ALU-0034,Isabella Paredes Torres,99640595,900 000 034,isabella.paredes034@example.com,Diplomado,Museografía y Diseño de Exhibiciones,SJL – Arabiscos,Octubre 2026,Activa,83.3,1,1,Al día,15/10/2026
+ALU-0035,Santiago Cárdenas Flores,99228807,900 000 035,santiago.cardenas035@example.com,Taller,Marinera Norteña,La Molina – Camacho,Setiembre 2026,Activa,81.0,2,1,Al día,15/10/2026
+ALU-0036,Luciana Chávez Mendoza,99774230,900 000 036,luciana.chavez036@example.com,Curso,Guitarra,Chorrillos – Faisanes,Setiembre 2026,Activa,84.8,1,3,Al día,15/10/2026
+ALU-0037,Sebastián Gutiérrez Gutiérrez,99961351,900 000 037,sebastian.gutierrez037@example.com,Curso,Pintura al Óleo,Los Olivos – Villa Sol,Setiembre 2026,Activa,83.1,1,3,Al día,15/10/2026
+ALU-0038,Gonzalo Cárdenas Rojas,99174447,900 000 038,gonzalo.cardenas038@example.com,Taller,Taekwondo,San Miguel 1,Setiembre 2026,Activa,75.8,2,1,Al día,15/10/2026
+ALU-0039,Isabella Gutiérrez Vega,99291335,900 000 039,isabella.gutierrez039@example.com,Taller,Taekwondo,La Molina – Camacho,Setiembre 2026,Activa,68.8,2,1,Al día,15/10/2026
+ALU-0040,Paula Mendoza Romero,99905953,900 000 040,paula.mendoza040@example.com,Taller,Ballet,La Molina – Camacho,Setiembre 2026,Activa,75.1,2,1,Al día,15/10/2026
+ALU-0041,Adrián Vargas Romero,99376198,900 000 041,adrian.vargas041@example.com,Taller,Taekwondo,La Molina – Camacho,Setiembre 2026,Activa,100,0,2,Al día,15/10/2026
+ALU-0042,Bruno Gutiérrez Castillo,99158252,900 000 042,bruno.gutierrez042@example.com,Curso,Pintura al Óleo,Chorrillos – Faisanes,Octubre 2026,Pendiente de pago,79.5,2,2,Pago pendiente,15/10/2026
+ALU-0043,Valeria Torres Mendoza,99243224,900 000 043,valeria.torres043@example.com,Diplomado,Gestión Cultural,San Miguel 1,Octubre 2026,Activa,67.0,3,2,Al día,15/10/2026
+ALU-0044,Bruno Castillo Quispe,99508520,900 000 044,bruno.castillo044@example.com,Curso,Pintura al Óleo,Lima – Principal,Setiembre 2026,Pendiente de pago,100,0,2,Pago pendiente,15/10/2026
+ALU-0045,Micaela Silva Torres,99275509,900 000 045,micaela.silva045@example.com,Taller,Ballet,SJL – Arabiscos,Octubre 2026,Activa,77.3,2,1,Al día,15/10/2026
+ALU-0046,Andrés Quispe Mendoza,99439297,900 000 046,andres.quispe046@example.com,Taller,Marinera Norteña,Lima – Principal,Octubre 2026,Pendiente de pago,98.9,0,2,Pago pendiente,15/10/2026
+ALU-0047,Adrián Paredes Aguilar,99593851,900 000 047,adrian.paredes047@example.com,Curso,Dibujo y Pintura,SJL – Arabiscos,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0048,Fernanda Mendoza Ríos,99996382,900 000 048,fernanda.mendoza048@example.com,Curso,Fotografía digital,SJL – Arabiscos,Setiembre 2026,Activa,80.5,2,1,Al día,15/10/2026
+ALU-0049,Thiago Flores Medina,99943228,900 000 049,thiago.flores049@example.com,Curso,Teatro y Actuación,Virtual,Setiembre 2026,Activa,73.1,2,2,Al día,15/10/2026
+ALU-0050,Gonzalo Vega Gutiérrez,99417406,900 000 050,gonzalo.vega050@example.com,Taller,Kpop,La Molina – Camacho,Octubre 2026,Activa,76.1,2,3,Al día,15/10/2026
+ALU-0051,Mariana Gutiérrez Huamán,99504913,900 000 051,mariana.gutierrez051@example.com,Diplomado,Gestión Cultural,Los Olivos – Villa Sol,Setiembre 2026,Pendiente de pago,98.2,0,1,Pago pendiente,15/10/2026
+ALU-0052,Alessia Gutiérrez Flores,99199868,900 000 052,alessia.gutierrez052@example.com,Curso,Teatro y Actuación,SJL – Arabiscos,Setiembre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0053,Valeria Ramírez Medina,99170187,900 000 053,valeria.ramirez053@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Octubre 2026,Activa,75.9,2,1,Al día,15/10/2026
+ALU-0054,Santiago Salazar Aguilar,99055129,900 000 054,santiago.salazar054@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Los Olivos – Villa Sol,Octubre 2026,Pendiente de pago,66.9,3,1,Pago pendiente,15/10/2026
+ALU-0055,Santiago Quispe Silva,99158612,900 000 055,santiago.quispe055@example.com,Curso,Pintura al Óleo,Virtual,Octubre 2026,Activa,91.1,1,2,Al día,15/10/2026
+ALU-0056,Adrián Huamán Paredes,99643550,900 000 056,adrian.huaman056@example.com,Curso,Pintura al Óleo,San Miguel 1,Octubre 2026,Pendiente de pago,77.7,2,1,Pago pendiente,15/10/2026
+ALU-0057,Lucía Rojas Ramírez,99643898,900 000 057,lucia.rojas057@example.com,Taller,Taekwondo,San Miguel 1,Setiembre 2026,Activa,59.3,3,1,Al día,15/10/2026
+ALU-0058,Mariana Mendoza Vargas,99364264,900 000 058,mariana.mendoza058@example.com,Taller,Taekwondo,Los Olivos – Villa Sol,Setiembre 2026,Activa,89.0,1,1,Al día,15/10/2026
+ALU-0059,Thiago Paredes Cárdenas,99128809,900 000 059,thiago.paredes059@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,58.3,3,3,Al día,15/10/2026
+ALU-0060,Santiago Cárdenas Medina,99503730,900 000 060,santiago.cardenas060@example.com,Curso,Teatro y Actuación,Lima – Principal,Octubre 2026,Activa,74.7,2,1,Al día,15/10/2026
+ALU-0061,Joaquín Chávez Rojas,99151118,900 000 061,joaquin.chavez061@example.com,Curso,Oratoria y Liderazgo,Los Olivos – Villa Sol,Octubre 2026,Activa,68.1,3,1,Al día,15/10/2026
+ALU-0062,Santiago Salazar Vargas,99501871,900 000 062,santiago.salazar062@example.com,Taller,Ballet,San Miguel 1,Setiembre 2026,Activa,87.7,1,1,Al día,15/10/2026
+ALU-0063,Micaela Torres Ríos,99024217,900 000 063,micaela.torres063@example.com,Taller,Kpop,Los Olivos – Villa Sol,Setiembre 2026,Activa,63.3,3,1,Al día,15/10/2026
+ALU-0064,Sofía Ríos Paredes,99153723,900 000 064,sofia.rios064@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Pendiente de pago,87.9,1,1,Pago pendiente,15/10/2026
+ALU-0065,Antonella Vega Quispe,99794970,900 000 065,antonella.vega065@example.com,Curso,Oratoria y Liderazgo,SJL – Arabiscos,Octubre 2026,Activa,71.5,2,1,Al día,15/10/2026
+ALU-0066,Renata Chávez Rojas,99730015,900 000 066,renata.chavez066@example.com,Taller,Kpop,Los Olivos – Villa Sol,Setiembre 2026,Activa,70.6,2,1,Al día,15/10/2026
+ALU-0067,Gonzalo Vargas Ríos,99384512,900 000 067,gonzalo.vargas067@example.com,Curso,Oratoria y Liderazgo,Chorrillos – Faisanes,Setiembre 2026,Activa,60.2,3,2,Al día,15/10/2026
+ALU-0068,Iván Torres Paredes,99809435,900 000 068,ivan.torres068@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Octubre 2026,Pendiente de pago,69.8,2,1,Pago pendiente,15/10/2026
+ALU-0069,Sebastián Vega Vega,99816898,900 000 069,sebastian.vega069@example.com,Taller,Kpop,San Miguel 1,Octubre 2026,Activa,86.2,1,3,Al día,15/10/2026
+ALU-0070,Renata Salazar Castillo,99643016,900 000 070,renata.salazar070@example.com,Curso,Guitarra,San Miguel 1,Octubre 2026,Activa,76.5,2,2,Al día,15/10/2026
+ALU-0071,Rodrigo Ramírez Castillo,99858084,900 000 071,rodrigo.ramirez071@example.com,Curso,Violín,Virtual,Setiembre 2026,Pendiente de pago,72.2,2,2,Pago pendiente,15/10/2026
+ALU-0072,Mariana Castillo Ramírez,99542783,900 000 072,mariana.castillo072@example.com,Taller,Marinera Norteña,SJL – Arabiscos,Setiembre 2026,Activa,82.7,1,1,Al día,15/10/2026
+ALU-0073,Joaquín Paredes Quispe,99029294,900 000 073,joaquin.paredes073@example.com,Curso,Pintura al Óleo,Lima – Principal,Setiembre 2026,Activa,77.7,2,1,Al día,15/10/2026
+ALU-0074,Rodrigo Vargas Cárdenas,99271764,900 000 074,rodrigo.vargas074@example.com,Curso,Fotografía digital,Lima – Principal,Octubre 2026,Activa,70.0,2,1,Al día,15/10/2026
+ALU-0075,Sofía Aguilar Paredes,99468952,900 000 075,sofia.aguilar075@example.com,Curso,Violín,Virtual,Setiembre 2026,Pendiente de pago,75.1,2,2,Pago pendiente,15/10/2026
+ALU-0076,Rodrigo Paredes Paredes,99084450,900 000 076,rodrigo.paredes076@example.com,Diplomado,Museografía y Diseño de Exhibiciones,La Molina – Camacho,Octubre 2026,Activa,81.1,2,2,Al día,15/10/2026
+ALU-0077,Sebastián Huamán Castillo,99492914,900 000 077,sebastian.huaman077@example.com,Curso,Fotografía digital,Los Olivos – Villa Sol,Setiembre 2026,Activa,57.8,3,1,Al día,15/10/2026
+ALU-0078,Sofía Salazar Ramírez,99506098,900 000 078,sofia.salazar078@example.com,Curso,Guitarra,SJL – Arabiscos,Octubre 2026,Activa,74.6,2,2,Al día,15/10/2026
+ALU-0079,Thiago Aguilar Quispe,99502764,900 000 079,thiago.aguilar079@example.com,Curso,Guitarra,San Miguel 1,Setiembre 2026,Activa,100,0,1,Incidencia de pago,15/10/2026
+ALU-0080,Iván Paredes Rojas,99875192,900 000 080,ivan.paredes080@example.com,Curso,Fotografía digital,Lima – Principal,Octubre 2026,Activa,60.9,3,1,Al día,15/10/2026
+ALU-0081,Bruno Huamán Gutiérrez,99820304,900 000 081,bruno.huaman081@example.com,Taller,Kpop,Virtual,Octubre 2026,Pendiente de pago,67.8,3,1,Pago pendiente,15/10/2026
+ALU-0082,Antonella Ramírez Cárdenas,99932195,900 000 082,antonella.ramirez082@example.com,Curso,Pintura al Óleo,Lima – Principal,Octubre 2026,Activa,83.6,1,1,Al día,15/10/2026
+ALU-0083,Diego Romero Salazar,99090963,900 000 083,diego.romero083@example.com,Curso,Pintura al Óleo,Chorrillos – Faisanes,Setiembre 2026,Activa,84.0,1,1,Incidencia de pago,15/10/2026
+ALU-0084,Rodrigo Gutiérrez Medina,99420884,900 000 084,rodrigo.gutierrez084@example.com,Taller,Kpop,San Miguel 1,Setiembre 2026,Activa,60.1,3,1,Al día,15/10/2026
+ALU-0085,Emilio Rojas Torres,99178261,900 000 085,emilio.rojas085@example.com,Taller,Marinera Norteña,Lima – Principal,Setiembre 2026,Activa,80.9,2,3,Al día,15/10/2026
+ALU-0086,Camila Quispe Mendoza,99619511,900 000 086,camila.quispe086@example.com,Curso,Pintura al Óleo,San Miguel 1,Octubre 2026,Activa,71.6,2,1,Incidencia de pago,15/10/2026
+ALU-0087,Paula Medina Mendoza,99641281,900 000 087,paula.medina087@example.com,Diplomado,Gestión Cultural,La Molina – Camacho,Setiembre 2026,Pendiente de pago,86.0,1,2,Pago pendiente,15/10/2026
+ALU-0088,Micaela Aguilar Cárdenas,99689195,900 000 088,micaela.aguilar088@example.com,Taller,Taekwondo,Los Olivos – Villa Sol,Octubre 2026,Activa,97.8,0,1,Al día,15/10/2026
+ALU-0089,Iván Paredes Mendoza,99575311,900 000 089,ivan.paredes089@example.com,Curso,Oratoria y Liderazgo,La Molina – Camacho,Octubre 2026,Pendiente de pago,65.2,3,2,Pago pendiente,15/10/2026
+ALU-0090,Adrián Mendoza Quispe,99014934,900 000 090,adrian.mendoza090@example.com,Curso,Fotografía digital,SJL – Arabiscos,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0091,Rodrigo Huamán Ríos,99785903,900 000 091,rodrigo.huaman091@example.com,Curso,Violín,La Molina – Camacho,Setiembre 2026,Pendiente de pago,82.4,1,2,Pago pendiente,15/10/2026
+ALU-0092,Iván Mendoza Romero,99914088,900 000 092,ivan.mendoza092@example.com,Curso,Pintura al Óleo,Virtual,Octubre 2026,Activa,64.5,3,1,Al día,15/10/2026
+ALU-0093,Sofía Ramírez Quispe,99264067,900 000 093,sofia.ramirez093@example.com,Curso,Oratoria y Liderazgo,Chorrillos – Faisanes,Octubre 2026,Pendiente de pago,77.6,2,2,Pago pendiente,15/10/2026
+ALU-0094,Sofía Chávez Ríos,99252223,900 000 094,sofia.chavez094@example.com,Curso,Teatro y Actuación,La Molina – Camacho,Setiembre 2026,Activa,82.3,1,1,Al día,15/10/2026
+ALU-0095,Luciana Silva Salazar,99271963,900 000 095,luciana.silva095@example.com,Taller,Kpop,SJL – Arabiscos,Octubre 2026,Activa,99.2,0,1,Al día,15/10/2026
+ALU-0096,Adrián Romero Mendoza,99063863,900 000 096,adrian.romero096@example.com,Curso,Guitarra,La Molina – Camacho,Setiembre 2026,Activa,91.4,1,1,Al día,15/10/2026
+ALU-0097,Iván Paredes Medina,99694655,900 000 097,ivan.paredes097@example.com,Taller,Kpop,Los Olivos – Villa Sol,Octubre 2026,Activa,73.6,2,1,Al día,15/10/2026
+ALU-0098,Ximena Ríos Romero,99867318,900 000 098,ximena.rios098@example.com,Curso,Guitarra,Lima – Principal,Setiembre 2026,Activa,97.3,0,1,Al día,15/10/2026
+ALU-0099,Iván Ríos Mendoza,99557658,900 000 099,ivan.rios099@example.com,Diplomado,Gestión Cultural,Virtual,Octubre 2026,Activa,56.9,3,3,Al día,15/10/2026
+ALU-0100,Camila Ríos Ríos,99019613,900 000 100,camila.rios100@example.com,Taller,Kpop,La Molina – Camacho,Setiembre 2026,Activa,74.7,2,2,Al día,15/10/2026
+ALU-0101,Gonzalo Medina Torres,99638115,900 000 101,gonzalo.medina101@example.com,Taller,Ballet,Chorrillos – Faisanes,Octubre 2026,Activa,74.2,2,1,Al día,15/10/2026
+ALU-0102,Lucía Mendoza Torres,99148435,900 000 102,lucia.mendoza102@example.com,Curso,Dibujo y Pintura,Los Olivos – Villa Sol,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0103,Joaquín Aguilar Huamán,99583506,900 000 103,joaquin.aguilar103@example.com,Curso,Dibujo y Pintura,Los Olivos – Villa Sol,Setiembre 2026,Activa,79.6,2,1,Al día,15/10/2026
+ALU-0104,Mateo Salazar Ríos,99556506,900 000 104,mateo.salazar104@example.com,Curso,Oratoria y Liderazgo,San Miguel 1,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0105,Adrián Cárdenas Huamán,99926131,900 000 105,adrian.cardenas105@example.com,Taller,Kpop,Chorrillos – Faisanes,Octubre 2026,Activa,97.5,0,1,Al día,15/10/2026
+ALU-0106,Adrián Flores Castillo,99200599,900 000 106,adrian.flores106@example.com,Curso,Guitarra,Los Olivos – Villa Sol,Octubre 2026,Activa,96.1,0,1,Al día,15/10/2026
+ALU-0107,Daniela Flores Huamán,99532376,900 000 107,daniela.flores107@example.com,Curso,Dibujo y Pintura,Chorrillos – Faisanes,Octubre 2026,Retirada,62.3,3,1,Sin deuda,15/10/2026
+ALU-0108,Isabella Vega Quispe,99796910,900 000 108,isabella.vega108@example.com,Taller,Ballet,Chorrillos – Faisanes,Setiembre 2026,Activa,65.4,3,1,Al día,15/10/2026
+ALU-0109,Paula Rojas Medina,99341430,900 000 109,paula.rojas109@example.com,Diplomado,Gestión Cultural,Los Olivos – Villa Sol,Setiembre 2026,Activa,70.3,2,1,Al día,15/10/2026
+ALU-0110,Thiago Ríos Aguilar,99537040,900 000 110,thiago.rios110@example.com,Taller,Marinera Norteña,SJL – Arabiscos,Setiembre 2026,Activa,73.5,2,1,Al día,15/10/2026
+ALU-0111,Sofía Vargas Medina,99532840,900 000 111,sofia.vargas111@example.com,Curso,Violín,Lima – Principal,Setiembre 2026,Activa,81.3,1,2,Al día,15/10/2026
+ALU-0112,Adrián Cárdenas Ríos,99987235,900 000 112,adrian.cardenas112@example.com,Taller,Taekwondo,La Molina – Camacho,Octubre 2026,Activa,87.9,1,1,Al día,15/10/2026
+ALU-0113,Sebastián Ríos Vargas,99967609,900 000 113,sebastian.rios113@example.com,Diplomado,Gestión Cultural,Virtual,Setiembre 2026,Activa,75.3,2,2,Al día,15/10/2026
+ALU-0114,Adrián Ramírez Medina,99143795,900 000 114,adrian.ramirez114@example.com,Diplomado,Gestión Cultural,Virtual,Setiembre 2026,Activa,93.4,1,3,Al día,15/10/2026
+ALU-0115,Nicolás Huamán Gutiérrez,99463594,900 000 115,nicolas.huaman115@example.com,Curso,Oratoria y Liderazgo,San Miguel 1,Octubre 2026,Activa,88.0,1,2,Al día,15/10/2026
+ALU-0116,Fernanda Rojas Castillo,99449145,900 000 116,fernanda.rojas116@example.com,Taller,Ballet,Virtual,Octubre 2026,Retirada,63.5,3,3,Sin deuda,15/10/2026
+ALU-0117,Valeria Ramírez Chávez,99822016,900 000 117,valeria.ramirez117@example.com,Curso,Guitarra,La Molina – Camacho,Octubre 2026,Activa,72.7,2,1,Al día,15/10/2026
+ALU-0118,Santiago Mendoza Paredes,99149924,900 000 118,santiago.mendoza118@example.com,Taller,Marinera Norteña,Virtual,Setiembre 2026,Activa,90.3,1,1,Al día,15/10/2026
+ALU-0119,Daniela Mendoza Medina,99230254,900 000 119,daniela.mendoza119@example.com,Curso,Teatro y Actuación,Virtual,Setiembre 2026,Activa,79.9,2,1,Al día,15/10/2026
+ALU-0120,Emilio Huamán Gutiérrez,99927919,900 000 120,emilio.huaman120@example.com,Curso,Violín,San Miguel 1,Octubre 2026,Activa,86.9,1,1,Al día,15/10/2026
+ALU-0121,Joaquín Torres Castillo,99169309,900 000 121,joaquin.torres121@example.com,Curso,Guitarra,La Molina – Camacho,Octubre 2026,Activa,63.3,3,2,Al día,15/10/2026
+ALU-0122,Antonella Romero Ríos,99423425,900 000 122,antonella.romero122@example.com,Curso,Guitarra,San Miguel 1,Setiembre 2026,Activa,63.2,3,2,Incidencia de pago,15/10/2026
+ALU-0123,Fernanda Romero Ramírez,99373937,900 000 123,fernanda.romero123@example.com,Taller,Marinera Norteña,Lima – Principal,Octubre 2026,Activa,63.2,3,3,Incidencia de pago,15/10/2026
+ALU-0124,Fernanda Rojas Paredes,99020429,900 000 124,fernanda.rojas124@example.com,Curso,Oratoria y Liderazgo,SJL – Arabiscos,Octubre 2026,Pendiente de pago,74.4,2,1,Pago pendiente,15/10/2026
+ALU-0125,Fernanda Vega Medina,99461853,900 000 125,fernanda.vega125@example.com,Taller,Marinera Norteña,Chorrillos – Faisanes,Octubre 2026,Activa,66.1,3,1,Al día,15/10/2026
+ALU-0126,Antonella Quispe Gutiérrez,99347600,900 000 126,antonella.quispe126@example.com,Taller,Taekwondo,Virtual,Setiembre 2026,Activa,88.1,1,1,Al día,15/10/2026
+ALU-0127,Renata Aguilar Chávez,99537145,900 000 127,renata.aguilar127@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Octubre 2026,Activa,87.8,1,2,Al día,15/10/2026
+ALU-0128,Valeria Huamán Castillo,99918963,900 000 128,valeria.huaman128@example.com,Taller,Taekwondo,Chorrillos – Faisanes,Octubre 2026,Retirada,69.9,2,1,Sin deuda,15/10/2026
+ALU-0129,Santiago Rojas Vargas,99285129,900 000 129,santiago.rojas129@example.com,Curso,Teatro y Actuación,Virtual,Setiembre 2026,Activa,68.2,3,3,Incidencia de pago,15/10/2026
+ALU-0130,Mateo Torres Vargas,99792489,900 000 130,mateo.torres130@example.com,Taller,Kpop,Virtual,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0131,Camila Romero Vargas,99425667,900 000 131,camila.romero131@example.com,Diplomado,Gestión Cultural,SJL – Arabiscos,Setiembre 2026,Activa,49.5,4,1,Incidencia de pago,15/10/2026
+ALU-0132,Camila Vega Ríos,99598312,900 000 132,camila.vega132@example.com,Curso,Dibujo y Pintura,La Molina – Camacho,Setiembre 2026,Activa,85.2,1,2,Incidencia de pago,15/10/2026
+ALU-0133,Joaquín Salazar Rojas,99292618,900 000 133,joaquin.salazar133@example.com,Curso,Guitarra,Virtual,Setiembre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0134,Mateo Torres Romero,99938774,900 000 134,mateo.torres134@example.com,Diplomado,Museografía y Diseño de Exhibiciones,SJL – Arabiscos,Setiembre 2026,Retirada,98.0,0,2,Sin deuda,15/10/2026
+ALU-0135,Valeria Vargas Quispe,99665258,900 000 135,valeria.vargas135@example.com,Curso,Oratoria y Liderazgo,Virtual,Octubre 2026,Activa,88.7,1,2,Al día,15/10/2026
+ALU-0136,Valeria Vargas Rojas,99637720,900 000 136,valeria.vargas136@example.com,Curso,Dibujo y Pintura,SJL – Arabiscos,Octubre 2026,Activa,69.4,2,3,Al día,15/10/2026
+ALU-0137,Gonzalo Castillo Rojas,99277296,900 000 137,gonzalo.castillo137@example.com,Diplomado,Gestión Cultural,Virtual,Setiembre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0138,Gonzalo Huamán Medina,99012107,900 000 138,gonzalo.huaman138@example.com,Curso,Dibujo y Pintura,La Molina – Camacho,Octubre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0139,Fernanda Vega Romero,99971683,900 000 139,fernanda.vega139@example.com,Taller,Ballet,Chorrillos – Faisanes,Setiembre 2026,Activa,80.5,2,1,Al día,15/10/2026
+ALU-0140,Iván Vargas Aguilar,99135502,900 000 140,ivan.vargas140@example.com,Curso,Fotografía digital,San Miguel 1,Setiembre 2026,Activa,94.4,0,1,Al día,15/10/2026
+ALU-0141,Mateo Ríos Castillo,99983696,900 000 141,mateo.rios141@example.com,Curso,Oratoria y Liderazgo,La Molina – Camacho,Setiembre 2026,Activa,79.7,2,1,Al día,15/10/2026
+ALU-0142,Santiago Torres Vargas,99052826,900 000 142,santiago.torres142@example.com,Curso,Teatro y Actuación,Los Olivos – Villa Sol,Octubre 2026,Retirada,90.7,1,1,Sin deuda,15/10/2026
+ALU-0143,Diego Ramírez Chávez,99659209,900 000 143,diego.ramirez143@example.com,Taller,Marinera Norteña,San Miguel 1,Octubre 2026,Activa,84.3,1,1,Al día,15/10/2026
+ALU-0144,Andrés Ríos Ramírez,99304045,900 000 144,andres.rios144@example.com,Diplomado,Gestión Cultural,La Molina – Camacho,Setiembre 2026,Activa,93.1,1,1,Incidencia de pago,15/10/2026
+ALU-0145,Isabella Ríos Torres,99283663,900 000 145,isabella.rios145@example.com,Curso,Oratoria y Liderazgo,Virtual,Octubre 2026,Pendiente de pago,86.7,1,2,Pago pendiente,15/10/2026
+ALU-0146,Gabriel Quispe Vargas,99038744,900 000 146,gabriel.quispe146@example.com,Taller,Kpop,SJL – Arabiscos,Setiembre 2026,Activa,42.9,5,1,Al día,15/10/2026
+ALU-0147,Lucía Quispe Ríos,99577816,900 000 147,lucia.quispe147@example.com,Curso,Oratoria y Liderazgo,Lima – Principal,Setiembre 2026,Activa,80.8,2,1,Al día,15/10/2026
+ALU-0148,Sofía Ríos Cárdenas,99257613,900 000 148,sofia.rios148@example.com,Curso,Guitarra,Chorrillos – Faisanes,Setiembre 2026,Activa,56.1,4,2,Al día,15/10/2026
+ALU-0149,Iván Medina Huamán,99690298,900 000 149,ivan.medina149@example.com,Curso,Teatro y Actuación,La Molina – Camacho,Octubre 2026,Activa,79.9,2,2,Al día,15/10/2026
+ALU-0150,Micaela Romero Cárdenas,99572424,900 000 150,micaela.romero150@example.com,Taller,Marinera Norteña,Virtual,Octubre 2026,Pendiente de pago,71.3,2,2,Pago pendiente,15/10/2026
+ALU-0151,Micaela Gutiérrez Ríos,99322733,900 000 151,micaela.gutierrez151@example.com,Curso,Teatro y Actuación,Chorrillos – Faisanes,Octubre 2026,Activa,85.3,1,3,Al día,15/10/2026
+ALU-0152,Antonella Ramírez Castillo,99359351,900 000 152,antonella.ramirez152@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Octubre 2026,Activa,65.2,3,1,Al día,15/10/2026
+ALU-0153,Sofía Mendoza Gutiérrez,99364434,900 000 153,sofia.mendoza153@example.com,Curso,Guitarra,SJL – Arabiscos,Octubre 2026,Activa,64.2,3,1,Al día,15/10/2026
+ALU-0154,Mateo Mendoza Quispe,99074158,900 000 154,mateo.mendoza154@example.com,Taller,Kpop,San Miguel 1,Octubre 2026,Activa,97.1,0,2,Al día,15/10/2026
+ALU-0155,Alessia Vargas Romero,99171176,900 000 155,alessia.vargas155@example.com,Taller,Kpop,SJL – Arabiscos,Octubre 2026,Activa,68.1,3,1,Al día,15/10/2026
+ALU-0156,Mateo Rojas Gutiérrez,99912825,900 000 156,mateo.rojas156@example.com,Curso,Dibujo y Pintura,Los Olivos – Villa Sol,Setiembre 2026,Retirada,64.1,3,1,Sin deuda,15/10/2026
+ALU-0157,Renata Chávez Aguilar,99253978,900 000 157,renata.chavez157@example.com,Curso,Violín,San Miguel 1,Octubre 2026,Activa,90.1,1,1,Al día,15/10/2026
+ALU-0158,Antonella Chávez Flores,99481771,900 000 158,antonella.chavez158@example.com,Diplomado,Gestión Cultural,Virtual,Octubre 2026,Activa,91.6,1,1,Al día,15/10/2026
+ALU-0159,Diego Torres Vargas,99467480,900 000 159,diego.torres159@example.com,Taller,Marinera Norteña,Virtual,Octubre 2026,Activa,93.2,1,1,Incidencia de pago,15/10/2026
+ALU-0160,Lucía Vargas Paredes,99344904,900 000 160,lucia.vargas160@example.com,Curso,Oratoria y Liderazgo,SJL – Arabiscos,Octubre 2026,Activa,82.7,1,1,Incidencia de pago,15/10/2026
+ALU-0161,Adrián Salazar Castillo,99036120,900 000 161,adrian.salazar161@example.com,Taller,Marinera Norteña,SJL – Arabiscos,Setiembre 2026,Pendiente de pago,82.6,1,1,Pago pendiente,15/10/2026
+ALU-0162,Paula Chávez Ramírez,99373905,900 000 162,paula.chavez162@example.com,Taller,Taekwondo,La Molina – Camacho,Setiembre 2026,Retirada,86.6,1,3,Sin deuda,15/10/2026
+ALU-0163,Diego Quispe Salazar,99400164,900 000 163,diego.quispe163@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,75.2,2,1,Al día,15/10/2026
+ALU-0164,Valeria Cárdenas Vargas,99527186,900 000 164,valeria.cardenas164@example.com,Taller,Ballet,La Molina – Camacho,Setiembre 2026,Activa,77.9,2,3,Al día,15/10/2026
+ALU-0165,Alessia Ramírez Castillo,99529253,900 000 165,alessia.ramirez165@example.com,Curso,Violín,Lima – Principal,Octubre 2026,Activa,80.0,2,2,Al día,15/10/2026
+ALU-0166,Luciana Quispe Rojas,99277000,900 000 166,luciana.quispe166@example.com,Taller,Kpop,La Molina – Camacho,Setiembre 2026,Activa,88.7,1,1,Al día,15/10/2026
+ALU-0167,Micaela Rojas Mendoza,99418917,900 000 167,micaela.rojas167@example.com,Curso,Fotografía digital,San Miguel 1,Setiembre 2026,Activa,57.1,3,1,Al día,15/10/2026
+ALU-0168,Ximena Flores Gutiérrez,99023586,900 000 168,ximena.flores168@example.com,Taller,Kpop,Virtual,Octubre 2026,Retirada,76.2,2,1,Sin deuda,15/10/2026
+ALU-0169,Andrés Chávez Castillo,99088586,900 000 169,andres.chavez169@example.com,Curso,Dibujo y Pintura,Los Olivos – Villa Sol,Octubre 2026,Activa,94.8,0,1,Al día,15/10/2026
+ALU-0170,Ximena Ríos Mendoza,99689484,900 000 170,ximena.rios170@example.com,Curso,Pintura al Óleo,Chorrillos – Faisanes,Octubre 2026,Activa,86.0,1,1,Al día,15/10/2026
+ALU-0171,Paula Aguilar Gutiérrez,99801438,900 000 171,paula.aguilar171@example.com,Taller,Taekwondo,Los Olivos – Villa Sol,Octubre 2026,Retirada,68.2,3,1,Sin deuda,15/10/2026
+ALU-0172,Fernanda Cárdenas Mendoza,99297980,900 000 172,fernanda.cardenas172@example.com,Diplomado,Gestión Cultural,San Miguel 1,Setiembre 2026,Activa,76.3,2,1,Al día,15/10/2026
+ALU-0173,Emilio Aguilar Mendoza,99045915,900 000 173,emilio.aguilar173@example.com,Taller,Kpop,La Molina – Camacho,Octubre 2026,Activa,57.5,3,1,Al día,15/10/2026
+ALU-0174,Micaela Ríos Romero,99769499,900 000 174,micaela.rios174@example.com,Taller,Marinera Norteña,Los Olivos – Villa Sol,Setiembre 2026,Activa,93.5,1,1,Al día,15/10/2026
+ALU-0175,Antonella Ríos Mendoza,99954086,900 000 175,antonella.rios175@example.com,Curso,Pintura al Óleo,San Miguel 1,Setiembre 2026,Activa,85.3,1,1,Al día,15/10/2026
+ALU-0176,Renata Ríos Silva,99875495,900 000 176,renata.rios176@example.com,Curso,Violín,Los Olivos – Villa Sol,Octubre 2026,Activa,83.5,1,2,Al día,15/10/2026
+ALU-0177,Micaela Quispe Silva,99836729,900 000 177,micaela.quispe177@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,52.4,4,1,Al día,15/10/2026
+ALU-0178,Paula Castillo Rojas,99032674,900 000 178,paula.castillo178@example.com,Taller,Kpop,Virtual,Setiembre 2026,Activa,94.5,0,1,Al día,15/10/2026
+ALU-0179,Mateo Mendoza Paredes,99110012,900 000 179,mateo.mendoza179@example.com,Curso,Violín,Virtual,Setiembre 2026,Activa,64.0,3,1,Al día,15/10/2026
+ALU-0180,Mariana Medina Vega,99053247,900 000 180,mariana.medina180@example.com,Curso,Oratoria y Liderazgo,Chorrillos – Faisanes,Octubre 2026,Pendiente de pago,97.6,0,2,Pago pendiente,15/10/2026
+ALU-0181,Alessia Quispe Vega,99713728,900 000 181,alessia.quispe181@example.com,Taller,Marinera Norteña,SJL – Arabiscos,Octubre 2026,Activa,91.5,1,1,Al día,15/10/2026
+ALU-0182,Sebastián Cárdenas Vargas,99003475,900 000 182,sebastian.cardenas182@example.com,Diplomado,Gestión Cultural,Chorrillos – Faisanes,Octubre 2026,Activa,73.8,2,1,Al día,15/10/2026
+ALU-0183,Isabella Rojas Ríos,99941471,900 000 183,isabella.rojas183@example.com,Curso,Teatro y Actuación,San Miguel 1,Setiembre 2026,Activa,86.6,1,2,Incidencia de pago,15/10/2026
+ALU-0184,Adrián Rojas Ríos,99069258,900 000 184,adrian.rojas184@example.com,Taller,Ballet,SJL – Arabiscos,Setiembre 2026,Activa,90.1,1,1,Al día,15/10/2026
+ALU-0185,Emilio Cárdenas Vargas,99848527,900 000 185,emilio.cardenas185@example.com,Curso,Oratoria y Liderazgo,San Miguel 1,Setiembre 2026,Activa,63.0,3,1,Al día,15/10/2026
+ALU-0186,Valeria Vargas Castillo,99764763,900 000 186,valeria.vargas186@example.com,Curso,Pintura al Óleo,Los Olivos – Villa Sol,Octubre 2026,Activa,88.8,1,1,Al día,15/10/2026
+ALU-0187,Luciana Ramírez Castillo,99775766,900 000 187,luciana.ramirez187@example.com,Curso,Fotografía digital,Virtual,Setiembre 2026,Activa,84.7,1,2,Incidencia de pago,15/10/2026
+ALU-0188,Alessia Medina Cárdenas,99886603,900 000 188,alessia.medina188@example.com,Taller,Marinera Norteña,SJL – Arabiscos,Octubre 2026,Activa,79.5,2,1,Al día,15/10/2026
+ALU-0189,Mariana Rojas Cárdenas,99954693,900 000 189,mariana.rojas189@example.com,Curso,Fotografía digital,La Molina – Camacho,Setiembre 2026,Activa,70.1,2,1,Al día,15/10/2026
+ALU-0190,Bruno Chávez Flores,99646944,900 000 190,bruno.chavez190@example.com,Diplomado,Gestión Cultural,Virtual,Octubre 2026,Activa,77.9,2,1,Al día,15/10/2026
+ALU-0191,Alessia Ramírez Rojas,99628836,900 000 191,alessia.ramirez191@example.com,Taller,Taekwondo,La Molina – Camacho,Setiembre 2026,Activa,63.5,3,2,Al día,15/10/2026
+ALU-0192,Camila Salazar Vargas,99683183,900 000 192,camila.salazar192@example.com,Taller,Taekwondo,La Molina – Camacho,Setiembre 2026,Activa,91.3,1,1,Al día,15/10/2026
+ALU-0193,Emilio Chávez Aguilar,99595341,900 000 193,emilio.chavez193@example.com,Curso,Pintura al Óleo,La Molina – Camacho,Octubre 2026,Activa,80.8,2,1,Al día,15/10/2026
+ALU-0194,Camila Quispe Cárdenas,99063607,900 000 194,camila.quispe194@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,98.6,0,2,Al día,15/10/2026
+ALU-0195,Joaquín Vargas Huamán,99725808,900 000 195,joaquin.vargas195@example.com,Curso,Teatro y Actuación,Lima – Principal,Setiembre 2026,Activa,59.1,3,1,Al día,15/10/2026
+ALU-0196,Sofía Cárdenas Chávez,99743305,900 000 196,sofia.cardenas196@example.com,Taller,Ballet,SJL – Arabiscos,Setiembre 2026,Activa,100,0,1,Al día,15/10/2026
+ALU-0197,Renata Chávez Medina,99488529,900 000 197,renata.chavez197@example.com,Diplomado,Museografía y Diseño de Exhibiciones,San Miguel 1,Octubre 2026,Activa,69.2,2,2,Al día,15/10/2026
+ALU-0198,Isabella Huamán Vega,99208928,900 000 198,isabella.huaman198@example.com,Curso,Oratoria y Liderazgo,Los Olivos – Villa Sol,Octubre 2026,Activa,68.7,3,1,Al día,15/10/2026
+ALU-0199,Andrés Rojas Cárdenas,99018354,900 000 199,andres.rojas199@example.com,Diplomado,Museografía y Diseño de Exhibiciones,Virtual,Setiembre 2026,Activa,79.3,2,1,Al día,15/10/2026
+ALU-0200,Andrés Medina Rojas,99859725,900 000 200,andres.medina200@example.com,Taller,Marinera Norteña,Virtual,Setiembre 2026,Activa,84.7,1,1,Al día,15/10/2026
+ALU-0201,Mario Yllisca,,,mario.ych@gmail.com,Curso,Oratoria y Liderazgo,Virtual,Verano 2027,Pendiente de pago,,0,1,Pago pendiente,17/10/2026
+ALU-0202,Jose Olaya,,,olaya@gmail.com,Curso,Guitarra,Lima – Principal,Verano 2027,Pendiente de pago,,0,1,Pago pendiente,17/10/2026
+ALU-0203,Condor Mendoza,,,condor@gmail.com,Curso,Marinera Norteña,Los Olivos – Villa Sol,Verano 2027,Pendiente de pago,,0,1,Pago pendiente,17/10/2026
+ALU-0204,Felipe Castro,,,felipe_castro@gmail.com,Curso,Marinera Norteña,San Miguel 1,Noviembre 2026,Pendiente de pago,,0,1,Pago pendiente,17/10/2026

@@ -170,7 +170,7 @@ def _alumnos() -> list[dict]:
         return list(csv.DictReader(f))
 
 
-CAMPOS_ALUMNOS = ["id_alumno", "nombre", "correo", "programa", "curso", "sede", "periodo", "estado_matricula",
+CAMPOS_ALUMNOS = ["id_alumno", "nombre", "numero_documento", "telefono", "correo", "programa", "curso", "sede", "periodo", "estado_matricula",
                   "porcentaje_asistencia", "inasistencias", "cursos_inscritos", "situacion_administrativa",
                   "actualizado_al"]
 
@@ -182,19 +182,24 @@ def _guardar_alumnos(filas: list[dict]) -> None:
         w.writerows(filas)
 
 
-def alumno_para_inscripcion(nombre: str, correo: str, curso: str, sede: str, periodo: str, programa: str) -> str:
+def alumno_para_inscripcion(nombre: str, correo: str, curso: str, sede: str, periodo: str, programa: str,
+                            numero_documento: str = "", telefono: str = "") -> str:
     """Devuelve el código del alumno (lo crea en el padrón de alumnos si es nuevo, buscando por correo).
     Así matricula.csv y alumnos_sinteticos.csv usan siempre los mismos códigos ALU-…"""
     alumnos = _alumnos()
     hoy = datetime.now().strftime("%d/%m/%Y")
-    a = next((x for x in alumnos if x.get("correo", "").lower() == correo.strip().lower()), None)
+    a = next((x for x in alumnos if numero_documento and x.get("numero_documento") == numero_documento), None) or \
+        next((x for x in alumnos if x.get("correo", "").lower() == correo.strip().lower()), None)
     if a:
+        a.update(telefono=telefono or a.get("telefono", ""), correo=correo.strip() or a.get("correo", ""),
+                 numero_documento=a.get("numero_documento") or numero_documento)
         a.update(curso=curso, sede=sede, periodo=periodo, estado_matricula="Pendiente de pago",
                  situacion_administrativa="Pago pendiente", actualizado_al=hoy,
                  cursos_inscritos=str(int(a.get("cursos_inscritos") or 0) + 1))
     else:
         ultimo = max([int(x["id_alumno"][4:]) for x in alumnos if x["id_alumno"].startswith("ALU-")] + [0])
-        a = {"id_alumno": f"ALU-{ultimo + 1:04d}", "nombre": nombre.strip(), "correo": correo.strip(),
+        a = {"id_alumno": f"ALU-{ultimo + 1:04d}", "nombre": nombre.strip(), "numero_documento": numero_documento,
+             "telefono": telefono, "correo": correo.strip(),
              "programa": programa, "curso": curso, "sede": sede, "periodo": periodo,
              "estado_matricula": "Pendiente de pago", "porcentaje_asistencia": "", "inasistencias": "0",
              "cursos_inscritos": "1", "situacion_administrativa": "Pago pendiente", "actualizado_al": hoy}
@@ -214,17 +219,20 @@ def marcar_alumno_activo(id_alumno: str) -> None:
 
 
 def _ficha(a: dict) -> str:
-    contacto = f"\n- Nombre: {a['nombre']}\n- Correo: {a['correo']}" if a.get("nombre") else ""
+    contacto = (f"\n- Nombre: {a['nombre']}\n- Documento: {a.get('numero_documento') or '-'}\n"
+                f"- Teléfono: {a.get('telefono') or '-'}\n- Correo: {a['correo']}") if a.get("nombre") else ""
     asistencia = (f"{a['porcentaje_asistencia']} % ({a['inasistencias']} inasistencia(s))"
                   if a.get("porcentaje_asistencia") else "sin clases registradas aún")
-    return (f"**{a['id_alumno']}** (dato sintético){contacto}\n- Programa: {a['programa']} – {a['curso']} – {a['sede']} "
+    origen = "dato sintético" if int(a["id_alumno"][4:]) <= 200 else "inscrito por el asistente"
+    return (f"**{a['id_alumno']}** ({origen}){contacto}\n- Programa: {a['programa']} – {a['curso']} – {a['sede']} "
             f"({a['periodo']})\n- Matrícula: {a['estado_matricula']}\n- Asistencia: {asistencia}\n"
             f"- Cursos inscritos: {a['cursos_inscritos']}\n"
             f"- Situación administrativa: {a['situacion_administrativa']}\n(actualizado al {a['actualizado_al']})")
 
 
 def _linea_matricula(x: dict) -> str:
-    quien = f"{x['id_alumno']}" + (f" ({x['nombre']})" if x.get("nombre") else "")
+    quien = f"{x['id_alumno']}" + (f" ({x['nombre']}, doc. {x.get('numero_documento') or '-'}, "
+                                    f"tel. {x.get('telefono') or '-'})" if x.get("nombre") else "")
     horario = f" · {x['horario']}" if x.get("horario") else ""
     return f"- {x['codigo_matricula']} · {quien} · {x['curso']} · {x['sede']}{horario} · {x['periodo']} · {x['estado']}"
 

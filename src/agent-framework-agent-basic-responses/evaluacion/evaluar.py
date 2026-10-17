@@ -84,7 +84,7 @@ def _prueba_preinscripcion(tmp: Path) -> tuple[bool, str]:
             patch.object(matricula, "ARCHIVO_MATRICULAS", tmp / "matriculas.csv"):
         matricula.reiniciar()
         antes = next(f for f in vacantes._leer_vacantes() if f["codigo"] == "H17")["vacantes_disponibles"]
-        for paso in ("quiero inscribirme en guitarra", "2", "Ana Torres ana@correo.com", "sí"):
+        for paso in ("quiero inscribirme en guitarra", "2", "Ana Torres, DNI 45678912, teléfono 987654321, ana@correo.com", "sí"):
             r = asistente.responder(paso)
         despues = next(f for f in vacantes._leer_vacantes() if f["codigo"] == "H17")["vacantes_disponibles"]
         registrado = (tmp / "matriculas.csv").exists() and "H17" in (tmp / "matriculas.csv").read_text("utf-8")

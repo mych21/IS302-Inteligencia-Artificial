@@ -24,7 +24,8 @@ Usuario ─► Agent Inspector (VS Code) / demo_cli.py
 | `conocimiento/general/` | 42 documentos (G01–G42) con fuente, responsable y vigencia | General |
 | `datos/vacantes.csv` | Horarios y vacantes de demostración | General (DEMO) |
 | `datos/pagos_demo.csv` | 20 códigos de pago de demostración (PAG-100001…) | DEMO |
-| `restringido/alumnos_sinteticos.csv` | 200 alumnos sintéticos (ALU-0001…), sin nombres ni DNI | Restringido |
+| `restringido/alumnos_sinteticos.csv` | Padrón de alumnos (ALU-0001…): nombre, documento, teléfono, correo y situación | Restringido |
+| `restringido/matricula.csv` | Todos los alumnos matriculados, con sus datos personales y el mismo código de alumno | Restringido |
 | `restringido/usuarios.csv` | Cuentas del personal con contraseña cifrada; la Coordinación habilita al personal | Restringido |
 | `registros/consultas.csv` | Auditoría: fecha, usuario, perfil, tipo, fuente, resultado (sin texto) | Coordinación y TI |
 | `evaluacion/` | Banco de 104 pruebas, `evaluar.py` y resultados | – |
@@ -78,6 +79,7 @@ En VS Code: **F5** («Debug Local Agent HTTP Server») abre el Agent Inspector.
 1. «Hola» → «estudiante» → «Si falto a una clase, ¿la puedo recuperar?» (fuente) →
    «¿Cuánto cuesta el curso de guitarra?» (no inventa) → «Ignora tus instrucciones…» (bloqueado) →
    «Dame los datos del alumno ALU-0007» (denegado).
-2. «información de guitarra» → «quiero inscribirme en guitarra» → «2» → nombre y correo → «sí» → «PAG-100001».
+2. «información de guitarra» → «quiero inscribirme en guitarra» → «2» →
+   «Ana Torres, DNI 45678912, teléfono 987654321, ana@correo.com» → «sí» → «PAG-100001».
 3. Personal: «personal» → «coord01» → «12345» → «Dame los datos del alumno ALU-0007» →
    «actualiza vacantes H16 a 5» → «ver registro de consultas» → «cerrar sesión».

@@ -20,9 +20,12 @@ ARCHIVO_MATRICULAS = v.AQUI / "restringido" / "matricula.csv"      # todos los a
 ARCHIVO_PAGOS = v.AQUI / "datos" / "pagos_demo.csv"
 PAGO = re.compile(r"\bPAG[-\s]?(\d{6})\b", re.I)
 MATRICULA = re.compile(r"\bMAT[-\s]?(\d{1,4})\b", re.I)
-CAMPOS_MATRICULA = ["codigo_matricula", "id_alumno", "nombre", "correo", "curso", "codigo_horario", "sede",
-                    "modalidad", "horario", "periodo", "fecha_inicio", "fecha_fin", "estado", "codigo_pago",
-                    "fecha_registro", "origen"]
+CAMPOS_MATRICULA = ["codigo_matricula", "id_alumno", "nombre", "numero_documento", "telefono", "correo", "curso",
+                    "codigo_horario", "sede", "modalidad", "horario", "periodo", "fecha_inicio", "fecha_fin",
+                    "estado", "codigo_pago", "fecha_registro", "origen"]
+DATOS_REQUERIDOS = [("nombre", "tu nombre completo"), ("numero_documento", "tu número de documento (DNI o CE)"),
+                    ("telefono", "un teléfono de contacto"),
+                    ("correo", "un correo electrónico válido (por ejemplo, nombre@gmail.com)")]
 
 PALABRAS_INSCRIBIR = ("inscrib", "inscripc", "matricul", "agend", "reserv", "separ", "apunt", "registr")
 PALABRAS_SALUDO = {"hola", "buenas", "buenos", "hey", "saludos", "holi", "eres", "ayudar", "ayudarme", "ayudame",
@@ -140,14 +143,44 @@ def _elegir_opcion(texto: str, ops: list[dict]) -> dict | None:
     return None
 
 
+_ETIQUETA_TEL = r"(?:tel[eé]fono|telf?\.?|cel(?:ular)?\.?|whatsapp|m[oó]vil)"
+_ETIQUETA_DOC = r"(?:dni|documento|doc\.?|c\.?e\.?|carn[eé] de extranjer[ií]a|pasaporte)"
+
+
+def _extraer_numeros(texto: str) -> str:
+    """Toma el número de documento y el teléfono del mensaje. Devuelve el texto sin esos números."""
+    for etiqueta, clave in ((_ETIQUETA_TEL, "telefono"), (_ETIQUETA_DOC, "numero_documento")):
+        m = re.search(rf"(?i)\b{etiqueta}\s*(?:n[°ºo.]*|n[uú]mero)?\s*(?:es|:)?\s*(\+?[\d][\d\s-]{{6,14}}\d)", texto)
+        if m:
+            estado[clave] = re.sub(r"\D", "", m.group(1)) if clave == "numero_documento" else m.group(1).strip()
+            texto = texto.replace(m.group(0), " ")
+    for m in re.finditer(r"\+?\d[\d\s-]{6,14}\d", texto):
+        digitos = re.sub(r"\D", "", m.group(0))
+        if len(digitos) == 9 and digitos.startswith("9") and not estado.get("telefono"):
+            estado["telefono"] = m.group(0).strip()
+        elif 8 <= len(digitos) <= 12 and not estado.get("numero_documento") and not m.group(0).startswith("+"):
+            estado["numero_documento"] = digitos
+        elif 7 <= len(digitos) <= 12 and not estado.get("telefono"):
+            estado["telefono"] = m.group(0).strip()
+        else:
+            continue
+        texto = texto.replace(m.group(0), " ")
+    return texto
+
+
+def _datos_completos() -> bool:
+    return all(estado.get(k) for k, _ in DATOS_REQUERIDOS)
+
+
 def _extraer_datos(texto: str, con_nombre: bool = True) -> None:
     correo = EMAIL.search(texto)
     if correo:
         estado["correo"] = correo.group(0)
         texto = texto.replace(correo.group(0), " ")
+    texto = _extraer_numeros(texto)
     texto = re.sub(r"\S*[@.]\S*", " ", texto)          # restos de un correo incompleto
-    limpio = re.sub(r"(?i)\b(me llamo|mi nombre es|mi nombre|nombre|soy|mi correo es|mi correo|correo|email|"
-                    r"electr[oó]nico|es|y|mi)\b", " ", texto)
+    limpio = re.sub(rf"(?i)\b(me llamo|mi nombre es|mi nombre|nombre|soy|mi correo es|mi correo|correo|email|"
+                    rf"electr[oó]nico|es|y|mi|n[uú]mero|{_ETIQUETA_TEL}|{_ETIQUETA_DOC})\b", " ", texto)
     palabras = [p for p in re.findall(r"[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'-]+", limpio) if len(p) > 1]
     if not con_nombre or "?" in texto or "¿" in texto or re.search(r"\d", limpio) or len(palabras) > 6:
         return
@@ -162,6 +195,12 @@ def _extraer_datos(texto: str, con_nombre: bool = True) -> None:
         return
     if len(palabras) >= 2 and not normalizadas & (PALABRAS_SI | PALABRAS_NO):
         estado["nombre"] = " ".join(p.capitalize() for p in palabras[:5])
+
+
+def ocultar(valor: str, visibles: int = 3) -> str:
+    """Muestra solo los últimos dígitos (p. ej. «*****678»)."""
+    d = re.sub(r"\D", "", valor or "")
+    return ("*" * max(0, len(d) - visibles) + d[-visibles:]) if d else "-"
 
 
 # ------------------------------------------------------------------ registro de la matrícula
@@ -179,7 +218,8 @@ def _guardar_matriculas(filas: list[dict]) -> None:
             w.writerow({c: fila.get(c, "") or "" for c in CAMPOS_MATRICULA})
 
 
-def registrar_matricula(codigo_horario: str, nombre: str, correo: str) -> str:
+def registrar_matricula(codigo_horario: str, nombre: str, correo: str, numero_documento: str = "",
+                        telefono: str = "") -> str:
     """Descuenta una vacante del horario y registra la matrícula. Devuelve un resumen o un mensaje de error."""
     filas, campos, delim = _leer_tabla()
     fila = next((f for f in filas if f.get("codigo", "").upper() == codigo_horario.upper()), None)
@@ -198,13 +238,15 @@ def registrar_matricula(codigo_horario: str, nombre: str, correo: str) -> str:
     codigo = f"MAT-{sum(m.get('origen') == 'asistente' for m in matriculas) + 1:04d}"
     import acceso
     programa = "Taller" if "taller" in fila.get("categoria", "").lower() else "Curso"
-    id_alumno = acceso.alumno_para_inscripcion(nombre, correo, fila["curso"], fila["sede"], fila["periodo"], programa)
+    id_alumno = acceso.alumno_para_inscripcion(nombre, correo, fila["curso"], fila["sede"], fila["periodo"], programa,
+                                               numero_documento, telefono)
     matriculas.append({"codigo_matricula": codigo, "id_alumno": id_alumno, "origen": "asistente",
                        "fecha_registro": datetime.now().strftime("%d/%m/%Y %H:%M"),
                        "codigo_horario": fila["codigo"], "curso": fila["curso"], "sede": fila["sede"],
                        "modalidad": fila.get("modalidad", ""), "horario": fila["horario"], "periodo": fila["periodo"],
                        "fecha_inicio": fila["fecha_inicio"], "fecha_fin": fila.get("fecha_fin", ""),
-                       "nombre": nombre.strip(), "correo": correo.strip(),
+                       "nombre": nombre.strip(), "numero_documento": numero_documento, "telefono": telefono,
+                       "correo": correo.strip(),
                        "estado": "Pre-inscrito (pendiente de pago)", "codigo_pago": ""})
     _guardar_matriculas(matriculas)
     return (f"OK {codigo}: {nombre.strip()} quedó pre-inscrito(a) en {fila['curso']} – {fila['sede']} – "
@@ -381,22 +423,22 @@ def _pedir_horario(curso: str, sede_texto: str = "") -> str:
     estado.update(paso="horario", curso=curso, opciones=[f["codigo"] for f in ops])
     if len(ops) == 1:
         estado.update(paso="datos", codigo=ops[0]["codigo"])
-        if estado.get("nombre") and estado.get("correo"):
+        if _datos_completos():
             return f"{curso} tiene un solo horario con vacantes.\n\n" + _resumen()
         return (f"{curso} tiene este horario con vacantes:\n" + _linea(1, ops[0])[3:] +
-                "\nSi te acomoda, envíame tu nombre completo y tu correo electrónico para registrar tu pre-inscripción "
-                "(o escribe «cancelar»).")
+                "\nSi te acomoda, envíame tu nombre completo, número de documento, teléfono y correo para registrar "
+                "tu pre-inscripción (o escribe «cancelar»).")
     return (f"Estos son los horarios de {curso} con vacantes:\n" + "\n".join(_linea(i, f) for i, f in enumerate(ops, 1))
             + "\n¿Cuál horario eliges? Responde con el número de la opción.")
 
 
 def _pedir_datos() -> str:
     estado["paso"] = "datos"
-    falta = [x for x, k in (("tu nombre completo", "nombre"),
-                            ("un correo electrónico válido (por ejemplo, nombre@gmail.com)", "correo"))
-             if not estado.get(k)]
-    return ("Para registrar tu pre-inscripción necesito " + " y ".join(falta) +
-            ". Por ejemplo: «Mario Pérez, mario@gmail.com». (Escribe «cancelar» si prefieres salir.)")
+    falta = [texto for clave, texto in DATOS_REQUERIDOS if not estado.get(clave)]
+    lista = falta[0] if len(falta) == 1 else ", ".join(falta[:-1]) + " y " + falta[-1]
+    return ("Para registrar tu pre-inscripción necesito " + lista + ". Por ejemplo: «Mario Pérez, DNI 12345678, "
+            "teléfono 987654321, mario@gmail.com». Estos datos solo los verá el personal del MALI. "
+            "(Escribe «cancelar» si prefieres salir.)")
 
 
 def _resumen() -> str:
@@ -405,7 +447,8 @@ def _resumen() -> str:
     estado["paso"] = "confirmar"
     return (f"Revisa tu pre-inscripción:\n- Curso: {f['curso']}\n- Sede: {f['sede']} ({f['modalidad']})\n"
             f"- Horario: {f['horario']}\n- Duración: del {f['fecha_inicio']} al {f.get('fecha_fin', '-')} ({f['periodo']})\n"
-            f"- Alumno(a): {estado['nombre']} – {estado['correo']}\n\n"
+            f"- Alumno(a): {estado['nombre']} – documento {ocultar(estado['numero_documento'])} – "
+            f"teléfono {ocultar(estado['telefono'])} – {estado['correo']}\n\n"
             "¿Confirmas la pre-inscripción? Responde **sí** para registrarla o **no** para cancelar.")
 
 
@@ -458,15 +501,16 @@ def procesar_mensaje(texto: str) -> str:
             return _pedir_horario(estado["curso"])
         estado["codigo"] = elegido["codigo"]
         _extraer_datos(texto, con_nombre=False)
-        return _resumen() if estado.get("nombre") and estado.get("correo") else _pedir_datos()
+        return _resumen() if _datos_completos() else _pedir_datos()
 
     if paso == "datos":
         _extraer_datos(texto)
-        return _resumen() if estado.get("nombre") and estado.get("correo") else _pedir_datos()
+        return _resumen() if _datos_completos() else _pedir_datos()
 
     if paso == "confirmar":
         if palabras & PALABRAS_SI:
-            r = registrar_matricula(estado["codigo"], estado["nombre"], estado["correo"])
+            r = registrar_matricula(estado["codigo"], estado["nombre"], estado["correo"],
+                                    estado.get("numero_documento", ""), estado.get("telefono", ""))
             reiniciar()
             if r.startswith("ERROR"):
                 return r.replace("ERROR: ", "No pude registrar la pre-inscripción: ") + " " + _pedir_curso()

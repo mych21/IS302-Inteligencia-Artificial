@@ -67,8 +67,8 @@ _POLITICA = re.compile(r"\b(si me|cuando me|asegurad\w*|asegura|garantiz\w*|que 
 _GRACIAS = {"gracias", "chau", "adios", "hasta luego", "nos vemos", "ok gracias", "muchas gracias"}
 
 AVISO_PRIVACIDAD = (
-    "🔒 *Aviso de privacidad:* soy un prototipo académico. No compartas DNI, tarjetas ni contraseñas personales "
-    "(solo el personal ingresa su clave del asistente al iniciar sesión). "
+    "🔒 *Aviso de privacidad:* soy un prototipo académico. No compartas tarjetas ni contraseñas personales. "
+    "Tu documento y teléfono solo te los pediré al inscribirte y solo los verá el personal del MALI. "
     "Las consultas se registran solo con fecha, perfil, tipo y fuente (sin guardar tu conversación). "
     "Para tus derechos sobre datos personales (Ley N.º 29733) escribe a datos@mali.pe.")
 
@@ -246,6 +246,9 @@ def _decidir(pregunta: str) -> Respuesta:
                                       "o pre-inscripción.")
 
     limpio, sensibles = _datos_sensibles(texto)
+    if matricula.estado.get("paso") == "datos":   # al inscribirse sí se pide el documento (solo lo ve el personal)
+        sensibles = [x for x in sensibles if x != "DNI"]
+        limpio = texto if not sensibles else limpio
     if sensibles:
         acceso.registrar("dato_sensible", "-", "descartado")
         aviso = (f"⚠️ Por tu seguridad no compartas tu {', '.join(sensibles)}: no lo necesito y no lo guardé.")

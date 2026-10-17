@@ -17,12 +17,13 @@ ESTADOS = {"Activa": "Matriculado", "Pendiente de pago": "Pendiente de pago", "R
 
 
 def generar() -> list[dict]:
-    alumnos = list(csv.DictReader((AQUI / "alumnos_sinteticos.csv").open(encoding="utf-8")))
+    alumnos = [a for a in csv.DictReader((AQUI / "alumnos_sinteticos.csv").open(encoding="utf-8"))
+               if int(a["id_alumno"][4:]) <= 200]           # solo los sintéticos
     filas = []
     for n, a in enumerate(alumnos, 1):
         ini, fin = PERIODOS.get(a["periodo"], ("", ""))
         filas.append({"codigo_matricula": f"MAT-S{n:04d}", "id_alumno": a["id_alumno"], "nombre": a["nombre"],
-                      "correo": a["correo"],
+                      "numero_documento": a["numero_documento"], "telefono": a["telefono"], "correo": a["correo"],
                       "curso": a["curso"], "codigo_horario": "", "sede": a["sede"],
                       "modalidad": "Virtual (Zoom)" if a["sede"] == "Virtual" else "Presencial", "horario": "",
                       "periodo": a["periodo"], "fecha_inicio": ini, "fecha_fin": fin,

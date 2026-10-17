@@ -89,7 +89,7 @@ class MatriculaTests(unittest.TestCase):
     def test_flujo_completo_actualiza_archivos(self):
         matricula.procesar_mensaje("quiero inscribirme en dibujo y pintura")
         self.assertIn("necesito", matricula.procesar_mensaje("el segundo"))
-        self.assertIn("Confirmas", matricula.procesar_mensaje("Ana Torres ana@correo.com"))
+        self.assertIn("Confirmas", matricula.procesar_mensaje("Ana Torres, DNI 45678912, teléfono 987654321, ana@correo.com"))
         r = matricula.procesar_mensaje("sí")
         self.assertIn("MAT-0001", r)
         filas, _, _ = matricula._leer_tabla()
@@ -107,7 +107,7 @@ class MatriculaTests(unittest.TestCase):
     def test_pago_completa_la_inscripcion(self):
         import acceso
         esperado = "ALU-{:04d}".format(max(int(a["id_alumno"][4:]) for a in acceso._alumnos()) + 1)
-        for paso in ("quiero inscribirme en dibujo y pintura", "2", "Ana Torres ana@correo.com"):
+        for paso in ("quiero inscribirme en dibujo y pintura", "2", "Ana Torres, DNI 45678912, teléfono 987654321, ana@correo.com"):
             matricula.procesar_mensaje(paso)
         self.assertIn("código de pago", matricula.procesar_mensaje("sí"))
         self.assertIn("No reconocí", matricula.procesar_mensaje("12345"))
@@ -118,10 +118,10 @@ class MatriculaTests(unittest.TestCase):
         self.assertIn("PAG-100002,usado,MAT-0001", (self.tmp / "pagos.csv").read_text(encoding="utf-8"))
         self.assertIn(f"código de alumno** es **{esperado}", r)
         padron = (self.tmp / "alumnos.csv").read_text(encoding="utf-8")
-        self.assertIn(f"{esperado},Ana Torres,ana@correo.com", padron)       # mismo código en el padrón de alumnos
+        self.assertIn(f"{esperado},Ana Torres,45678912,987654321,ana@correo.com", padron)       # mismo código en el padrón de alumnos
 
     def test_pago_posterior_y_codigo_usado(self):
-        for paso in ("quiero inscribirme en dibujo y pintura", "1", "Ana Torres ana@correo.com", "sí", "después"):
+        for paso in ("quiero inscribirme en dibujo y pintura", "1", "Ana Torres, DNI 45678912, teléfono 987654321, ana@correo.com", "sí", "después"):
             r = matricula.procesar_mensaje(paso)
         self.assertIn("pendiente de pago", r)
         r = matricula.procesar_mensaje("pago MAT-0001 PAG-100001")
