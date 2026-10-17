@@ -83,7 +83,6 @@ def _prueba_preinscripcion(tmp: Path) -> tuple[bool, str]:
     with patch.dict("os.environ", {"VACANTES_ARCHIVO": str(vac)}), \
             patch.object(matricula, "ARCHIVO_MATRICULAS", tmp / "matriculas.csv"):
         matricula.reiniciar()
-        acceso.iniciar_sesion("estudiante01")
         antes = next(f for f in vacantes._leer_vacantes() if f["codigo"] == "H17")["vacantes_disponibles"]
         for paso in ("quiero inscribirme en guitarra", "2", "Ana Torres ana@correo.com", "sí"):
             r = asistente.responder(paso)
@@ -109,17 +108,18 @@ async def _con_modelo(filas: list[dict]) -> dict[str, float]:
 def main(con_modelo: bool = False) -> None:
     banco = list(csv.DictReader(BANCO.open(encoding="utf-8")))
     tmp = Path(tempfile.mkdtemp())
-    shutil.copy(acceso.PERMISOS, tmp / "permisos.csv")
+    shutil.copy(acceso.USUARIOS, tmp / "usuarios.csv")
     filas_res = []
-    with patch.object(acceso, "PERMISOS", tmp / "permisos.csv"), \
+    with patch.object(acceso, "USUARIOS", tmp / "usuarios.csv"), \
             patch.object(acceso, "REGISTRO", tmp / "consultas.csv"), \
             patch.object(matricula, "ARCHIVO_MATRICULAS", tmp / "matriculas_eval.csv"):
         for f in banco:
             matricula.reiniciar()
-            acceso.sesion.update(acceso.SIN_SESION)
-            usuario = f["usuario"] or "estudiante01"       # sin usuario: consulta de un estudiante autenticado
-            if usuario != "invitado":                       # «invitado» = persona que no inició sesión
-                acceso.iniciar_sesion(usuario)
+            acceso.sesion.update(acceso.PUBLICO)
+            acceso.pendiente.clear()
+            usuario = f["usuario"]
+            if usuario and usuario not in ("invitado", "estudiante01"):   # estudiantes: sin sesión
+                acceso.iniciar_sesion(usuario, "12345")
             r = asistente.responder(f["pregunta"])
             ok, detalle = _evaluar_fila(f, r)
             filas_res.append({**f, "tipo_respuesta": r.tipo, "fuentes": " ".join(r.fuentes),
@@ -127,7 +127,7 @@ def main(con_modelo: bool = False) -> None:
         registros = list(csv.DictReader((tmp / "consultas.csv").open(encoding="utf-8")))
         act_ok, act_det = _prueba_actualizacion(tmp)
         pre_ok, pre_det = _prueba_preinscripcion(tmp)
-    acceso.sesion.update(acceso.SIN_SESION)
+    acceso.sesion.update(acceso.PUBLICO)
 
     tiempos_modelo = {}
     if con_modelo:

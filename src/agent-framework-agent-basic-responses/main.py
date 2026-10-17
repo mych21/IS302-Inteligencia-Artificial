@@ -101,6 +101,9 @@ async def orquestar(context, call_next):
         await call_next()
         return
     r = asistente.responder(pregunta)
+    for i, m in enumerate(msgs):         # el modelo nunca ve mensajes con contraseñas del historial
+        if m.role == "user" and i != idx and asistente.ocultar_si_sensible(m.text or "") != (m.text or ""):
+            msgs[i] = Message(role="user", contents=[asistente.ocultar_si_sensible(m.text or "")])
     if r.texto is not None:
         _fijar_respuesta(context, r.texto)
         return

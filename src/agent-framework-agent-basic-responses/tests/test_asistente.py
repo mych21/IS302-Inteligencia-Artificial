@@ -17,23 +17,23 @@ class AsistenteTests(unittest.TestCase):
 
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
-        shutil.copy(acceso.PERMISOS, self.tmp / "permisos.csv")
-        self.parches = [patch.object(acceso, "PERMISOS", self.tmp / "permisos.csv"),
+        shutil.copy(acceso.USUARIOS, self.tmp / "usuarios.csv")
+        self.parches = [patch.object(acceso, "USUARIOS", self.tmp / "usuarios.csv"),
                         patch.object(acceso, "REGISTRO", self.tmp / "consultas.csv")]
         for p in self.parches:
             p.start()
-        acceso.sesion.update(acceso.SIN_SESION)
-        acceso.iniciar_sesion("estudiante01")
+        acceso.sesion.update(acceso.PUBLICO)
+        acceso.pendiente.clear()
+        acceso.intentos.clear()
         matricula.reiniciar()
 
     def tearDown(self):
         for p in self.parches:
             p.stop()
-        acceso.sesion.update(acceso.SIN_SESION)
+        acceso.sesion.update(acceso.PUBLICO)
         matricula.reiniciar()
 
     def test_saludo_con_aviso_de_privacidad(self):
-        acceso.cerrar_sesion()
         r = asistente.responder("hola")
         self.assertEqual(r.tipo, "saludo")
         self.assertIn("Aviso de privacidad", r.texto)
@@ -55,18 +55,18 @@ class AsistenteTests(unittest.TestCase):
         self.assertNotIn("Asistencia", r.texto)
 
     def test_coordinacion_ve_datos_sin_pasar_por_el_modelo(self):
-        acceso.iniciar_sesion("coord01")
+        acceso.iniciar_sesion("coord01", "12345")
         r = asistente.responder("Dame los datos del alumno ALU-0001")
         self.assertEqual(r.tipo, "gestion")
         self.assertIn("ALU-0001", r.texto)
         self.assertEqual(r.contexto, "")          # nada se envía al modelo
 
     def test_solo_coordinacion_habilita(self):
-        acceso.iniciar_sesion("docente01")
+        acceso.iniciar_sesion("docente01", "12345")
         self.assertIn("Solo la Coordinación", asistente.responder("habilita a docente01").texto)
-        acceso.iniciar_sesion("coord01")
+        acceso.iniciar_sesion("coord01", "12345")
         asistente.responder("habilita a docente01")
-        acceso.iniciar_sesion("docente01")
+        acceso.iniciar_sesion("docente01", "12345")
         self.assertEqual(asistente.responder("Dame los datos del alumno ALU-0002").tipo, "gestion")
 
     def test_prompt_injection_bloqueado(self):
@@ -85,26 +85,42 @@ class AsistenteTests(unittest.TestCase):
         self.assertIn("denegado", registro)
         self.assertNotIn("Dame los datos", registro)
 
-    def test_sin_sesion_no_se_atiende(self):
-        acceso.cerrar_sesion()
-        self.assertEqual(asistente.responder("¿Desde qué edad pueden inscribirse los niños?").tipo, "sin_sesion")
-        self.assertIn("Sesión iniciada", asistente.responder("iniciar sesión estudiante01").texto)
+    def test_estudiante_consulta_sin_iniciar_sesion(self):
         self.assertEqual(asistente.responder("¿Desde qué edad pueden inscribirse los niños?").tipo, "rag")
+        self.assertIn("No existe esa cuenta", asistente.responder("iniciar sesión estudiante01").texto)
+
+    def test_login_del_personal_con_contrasena(self):
+        self.assertIn("Ingresa la contraseña", asistente.responder("iniciar sesión coord01").texto)
+        self.assertIn("incorrectos", asistente.responder("00000").texto)
+        self.assertFalse(acceso.autenticado())
+        asistente.responder("iniciar sesión coord01")
+        self.assertIn("Sesión iniciada", asistente.responder("12345").texto)
+        self.assertEqual(acceso.sesion["perfil"], "Coordinación Académica")
+        self.assertEqual(asistente.ocultar_si_sensible("12345"), "[mensaje de inicio de sesión oculto]")
+        self.assertNotIn("12345", (self.tmp / "consultas.csv").read_text(encoding="utf-8"))
+
+    def test_bloqueo_por_intentos(self):
+        for _ in range(3):
+            asistente.responder("iniciar sesión docente02 mala")
+        self.assertIn("bloqueada", asistente.responder("iniciar sesión docente02 12345").texto)
+
+    def test_contrasenas_cifradas(self):
+        contenido = acceso.USUARIOS.read_text(encoding="utf-8")
+        self.assertNotIn("12345", contenido)
 
     def test_permisos_por_perfil(self):
-        acceso.iniciar_sesion("docente01")
+        acceso.iniciar_sesion("docente01", "12345")
         self.assertEqual(asistente.responder("quiero inscribirme en guitarra").tipo, "permiso_denegado")
-        acceso.iniciar_sesion("soporte01")
+        acceso.iniciar_sesion("soporte01", "12345")
         self.assertIn("Registro de consultas", asistente.responder("ver registro de consultas").texto)
-        acceso.iniciar_sesion("estudiante01")
+        acceso.cerrar_sesion()
         self.assertIn("Solo la Coordinación", asistente.responder("ver registro de consultas").texto)
 
     def test_coordinacion_actualiza_vacantes(self):
         shutil.copy(asistente.v.ARCHIVO_VACANTES_DEFECTO, self.tmp / "vacantes.csv")
         with patch.dict("os.environ", {"VACANTES_ARCHIVO": str(self.tmp / "vacantes.csv")}):
-            acceso.iniciar_sesion("estudiante01")
             self.assertIn("Solo la Coordinación", asistente.responder("actualiza vacantes H16 a 5").texto)
-            acceso.iniciar_sesion("coord01")
+            acceso.iniciar_sesion("coord01", "12345")
             self.assertIn("a 5 vacante", asistente.responder("actualiza vacantes H16 a 5").texto)
             self.assertIn("5 vacante(s)", asistente.responder("vacantes de guitarra").texto)
 

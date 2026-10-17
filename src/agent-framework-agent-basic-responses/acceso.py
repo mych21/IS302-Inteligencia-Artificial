@@ -1,30 +1,41 @@
 """
 Perfiles, control de acceso, base restringida de gestión de alumnos y registro de consultas.
 
-- Nadie consulta sin autenticarse: primero «iniciar sesión <usuario>» con una cuenta de prueba de
-  restringido/permisos.csv (simula la cuenta institucional; en producción, p. ej. Microsoft Entra ID).
+- Los estudiantes usan el asistente sin iniciar sesión (perfil público «Estudiante»): base general, vacantes y
+  pre-inscripción.
+- El personal (Personal, Coordinación Académica y Soporte TI) inicia sesión con usuario y contraseña. Las cuentas
+  están en restringido/usuarios.csv con la contraseña cifrada (PBKDF2 con sal); la de prueba es 12345 y se cambia
+  con restringido/gestionar_usuarios.py. En producción: cuenta institucional (p. ej. Microsoft Entra ID).
 - Antes de cada consulta se verifica el rol y sus permisos (PERMISOS_POR_PERFIL).
 - Solo la Coordinación Académica y el personal que esta habilite consultan la gestión de alumnos.
-- Los datos de alumnos (sintéticos) se leen aquí y se devuelven al usuario sin pasar por el modelo de lenguaje.
-- Cada consulta queda en registros/consultas.csv con fecha, usuario de prueba, perfil, tipo, fuente y resultado,
-  sin guardar el texto de la conversación.
+- Los datos de alumnos (sintéticos) se devuelven al usuario sin pasar por el modelo de lenguaje.
+- Cada consulta queda en registros/consultas.csv con fecha, usuario, perfil, tipo, fuente y resultado, sin
+  guardar el texto de la conversación (tampoco contraseñas).
 """
 from __future__ import annotations
 
 import csv
+import hashlib
+import hmac
 import re
+import secrets
 from datetime import datetime
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-PERMISOS = AQUI / "restringido" / "permisos.csv"
+USUARIOS = AQUI / "restringido" / "usuarios.csv"
 ALUMNOS = AQUI / "restringido" / "alumnos_sinteticos.csv"
 REGISTRO = AQUI / "registros" / "consultas.csv"
 CAMPOS_REGISTRO = ["fecha", "usuario", "perfil", "tipo_consulta", "fuente", "resultado"]
+CAMPOS_USUARIOS = ["usuario", "perfil", "sal", "clave_hash", "gestion_alumnos", "habilitado_por", "descripcion"]
+MAX_INTENTOS = 3
+ITERACIONES = 100_000
 
 ID_ALUMNO = re.compile(r"\bALU[-\s]?(\d{1,4})\b", re.I)
-SIN_SESION = {"usuario": "sin_sesion", "perfil": "Sin autenticar"}
-sesion: dict = dict(SIN_SESION)
+PUBLICO = {"usuario": "publico", "perfil": "Estudiante"}
+sesion: dict = dict(PUBLICO)
+pendiente: dict = {}            # usuario que está ingresando su contraseña
+intentos: dict = {}             # intentos fallidos por usuario (en esta sesión)
 
 # Qué tipo de consulta puede hacer cada perfil (la gestión de alumnos además exige estar habilitado).
 PERMISOS_POR_PERFIL = {
@@ -41,59 +52,85 @@ DESCRIPCION_PERMISOS = {
 }
 
 
-# ------------------------------------------------------------------ permisos y sesión
-def _leer_permisos() -> list[dict]:
-    with open(PERMISOS, encoding="utf-8") as f:
+# ------------------------------------------------------------------ usuarios y contraseñas
+def cifrar(clave: str, sal: str) -> str:
+    return hashlib.pbkdf2_hmac("sha256", clave.encode("utf-8"), bytes.fromhex(sal), ITERACIONES).hex()
+
+
+def nueva_clave(clave: str) -> tuple[str, str]:
+    sal = secrets.token_hex(16)
+    return sal, cifrar(clave, sal)
+
+
+def _leer_usuarios() -> list[dict]:
+    with open(USUARIOS, encoding="utf-8") as f:
         return list(csv.DictReader(f))
 
 
-def _guardar_permisos(filas: list[dict]) -> None:
-    with open(PERMISOS, "w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(filas[0]))
+def _guardar_usuarios(filas: list[dict]) -> None:
+    with open(USUARIOS, "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=CAMPOS_USUARIOS, extrasaction="ignore")
         w.writeheader()
         w.writerows(filas)
 
 
 def _cuenta(usuario: str) -> dict | None:
-    return next((p for p in _leer_permisos() if p["usuario"].lower() == usuario.lower()), None)
+    return next((p for p in _leer_usuarios() if p["usuario"].lower() == usuario.lower()), None)
 
 
-def iniciar_sesion(usuario: str) -> str:
+# ------------------------------------------------------------------ sesión
+def iniciar_sesion(usuario: str, clave: str | None = None) -> str:
+    """Inicio de sesión del personal. Sin contraseña, la pide en el siguiente mensaje."""
     cuenta = _cuenta(usuario)
     if not cuenta:
-        registrar("inicio_sesion", "permisos.csv", "denegado")
-        return (f"No encontré la cuenta «{usuario}». Cuentas de prueba: "
-                + ", ".join(p["usuario"] for p in _leer_permisos()) + ".")
+        pendiente.clear()
+        registrar("inicio_sesion", "usuarios.csv", "denegado")
+        return ("No existe esa cuenta de personal. Si eres estudiante no necesitas iniciar sesión: pregúntame "
+                "directamente por cursos, vacantes o tu pre-inscripción.")
+    if intentos.get(cuenta["usuario"], 0) >= MAX_INTENTOS:
+        registrar("inicio_sesion", "usuarios.csv", "bloqueado")
+        return "La cuenta está bloqueada en esta sesión por demasiados intentos fallidos. Contacta a Soporte TI."
+    if clave is None:
+        pendiente.update(usuario=cuenta["usuario"])
+        return f"🔐 Ingresa la contraseña de **{cuenta['usuario']}** (escribe «cancelar» para salir)."
+    pendiente.clear()
+    if not hmac.compare_digest(cifrar(clave, cuenta["sal"]), cuenta["clave_hash"]):
+        intentos[cuenta["usuario"]] = intentos.get(cuenta["usuario"], 0) + 1
+        registrar("inicio_sesion", "usuarios.csv", "denegado")
+        quedan = MAX_INTENTOS - intentos[cuenta["usuario"]]
+        return ("Usuario o contraseña incorrectos." + (f" Te quedan {quedan} intento(s)." if quedan > 0 else
+                " La cuenta quedó bloqueada en esta sesión."))
+    intentos.pop(cuenta["usuario"], None)
     sesion.update(usuario=cuenta["usuario"], perfil=cuenta["perfil"])
-    registrar("inicio_sesion", "permisos.csv", "permitido")
+    registrar("inicio_sesion", "usuarios.csv", "permitido")
     return (f"✅ Sesión iniciada como **{cuenta['usuario']}** (perfil: {cuenta['perfil']}).\n"
             f"Con este perfil puedes consultar: {DESCRIPCION_PERMISOS.get(cuenta['perfil'], 'información general')}.\n"
             "¿En qué te puedo ayudar?")
 
 
 def cerrar_sesion() -> str:
+    pendiente.clear()
+    if not autenticado():
+        return "No hay una sesión de personal abierta. Puedes seguir consultando como estudiante."
     registrar("cierre_sesion", "-", "permitido")
-    sesion.update(SIN_SESION)
-    return "Sesión cerrada. Para volver a consultar, inicia sesión con tu cuenta institucional."
+    sesion.update(PUBLICO)
+    return "Sesión cerrada. Sigues usando el asistente como estudiante (sin sesión)."
 
 
 def autenticado() -> bool:
-    return sesion["usuario"] != SIN_SESION["usuario"]
+    """True si hay un miembro del personal con sesión iniciada."""
+    return sesion["usuario"] != PUBLICO["usuario"]
 
 
 def autorizar(tipo: str) -> bool:
     """Verifica, antes de cada consulta, si el perfil de la sesión puede hacer ese tipo de consulta."""
-    if not autenticado():
-        return False
     permitido = tipo in PERMISOS_POR_PERFIL.get(sesion["perfil"], set())
     return permitido and (tipo != "gestion" or puede_gestionar())
 
 
-def cuentas_de_prueba() -> str:
-    return "\n".join(f"- `{p['usuario']}` – {p['perfil']}" for p in _leer_permisos())
-
-
 def puede_gestionar() -> bool:
+    if not autenticado():
+        return False
     cuenta = _cuenta(sesion["usuario"])
     return bool(cuenta) and cuenta["gestion_alumnos"].strip().lower() == "si" \
         and cuenta["perfil"] in ("Coordinación Académica", "Personal")
@@ -101,7 +138,7 @@ def puede_gestionar() -> bool:
 
 def describir_sesion() -> str:
     if not autenticado():
-        return "Aún no has iniciado sesión."
+        return "Estás usando el asistente como estudiante (no necesitas iniciar sesión)."
     return (f"Estás como **{sesion['usuario']}** (perfil: {sesion['perfil']}). Puedes consultar: "
             f"{DESCRIPCION_PERMISOS.get(sesion['perfil'], 'información general')}. Gestión de alumnos: "
             + ("habilitada." if puede_gestionar() else "no habilitada."))
@@ -110,16 +147,16 @@ def describir_sesion() -> str:
 def cambiar_habilitacion(usuario: str, habilitar: bool) -> str:
     """Solo la Coordinación Académica habilita o retira el acceso del personal a la gestión de alumnos."""
     if sesion["perfil"] != "Coordinación Académica":
-        registrar("habilitacion", "permisos.csv", "denegado")
+        registrar("habilitacion", "usuarios.csv", "denegado")
         return "Solo la Coordinación Académica puede habilitar o retirar el acceso a la gestión de alumnos."
-    filas = _leer_permisos()
+    filas = _leer_usuarios()
     cuenta = next((p for p in filas if p["usuario"].lower() == usuario.lower()), None)
     if not cuenta or cuenta["perfil"] != "Personal":
         return "Solo se puede habilitar a cuentas del perfil Personal (administrativo o docente)."
     cuenta["gestion_alumnos"] = "si" if habilitar else "no"
     cuenta["habilitado_por"] = sesion["usuario"] if habilitar else ""
-    _guardar_permisos(filas)
-    registrar("habilitacion", "permisos.csv", "permitido")
+    _guardar_usuarios(filas)
+    registrar("habilitacion", "usuarios.csv", "permitido")
     return f"Listo: {cuenta['usuario']} {'ahora tiene' if habilitar else 'ya no tiene'} acceso a la gestión de alumnos."
 
 
@@ -200,7 +237,7 @@ def ver_registro(n: int = 10) -> str:
         registrar("registro_consultas", "consultas.csv", "denegado")
         return "Solo la Coordinación Académica y Soporte de TI pueden revisar el registro de consultas."
     registrar("registro_consultas", "consultas.csv", "permitido")
-    filas = list(csv.DictReader(REGISTRO.open(encoding="utf-8"))) if REGISTRO.exists() else []
+    filas = list(csv.DictReader(REGISTRO.read_text(encoding="utf-8").splitlines())) if REGISTRO.exists() else []
     resumen = {}
     for f in filas:
         resumen[f["resultado"]] = resumen.get(f["resultado"], 0) + 1
@@ -213,12 +250,12 @@ def ver_registro(n: int = 10) -> str:
 
 def ver_permisos() -> str:
     if not autorizar("administracion"):
-        registrar("permisos", "permisos.csv", "denegado")
+        registrar("permisos", "usuarios.csv", "denegado")
         return "Solo la Coordinación Académica puede revisar los permisos."
-    registrar("permisos", "permisos.csv", "permitido")
+    registrar("permisos", "usuarios.csv", "permitido")
     return "Permisos de gestión de alumnos:\n" + "\n".join(
         f"- {p['usuario']} ({p['perfil']}): {'sí' if p['gestion_alumnos'] == 'si' else 'no'}"
-        + (f", habilitado por {p['habilitado_por']}" if p['habilitado_por'] else "") for p in _leer_permisos())
+        + (f", habilitado por {p['habilitado_por']}" if p['habilitado_por'] else "") for p in _leer_usuarios())
 
 
 def actualizar_vacantes(codigo_horario: str, cantidad: int) -> str:

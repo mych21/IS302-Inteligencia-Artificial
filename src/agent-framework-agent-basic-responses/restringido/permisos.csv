@@ -1,7 +1,0 @@
-usuario,perfil,gestion_alumnos,habilitado_por,descripcion
-estudiante01,Estudiante,no,,Cuenta de prueba de un estudiante
-docente01,Personal,no,,Docente sin acceso a gestión de alumnos
-docente02,Personal,si,coord01,Docente habilitado por la Coordinación Académica
-coord01,Coordinación Académica,si,,Coordinación Académica (administra la gestión de alumnos)
-soporte01,Soporte TI,no,,Soporte técnico: configura el asistente pero no consulta datos de alumnos
-estudiante02,Estudiante,no,,Cuenta de prueba de otra estudiante

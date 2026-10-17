@@ -48,7 +48,7 @@ _INYECCION = re.compile(
     r"(cuales|que)\s+(son|eran)\s+tus\s+(instrucciones|reglas)|system\s*prompt|prompt\s+del\s+sistema|"
     r"modo\s+(desarrollador|developer|dios|administrador|sin\s+restricciones)|jailbreak|"
     r"sin\s+restricciones|actua\s+como\s+(si\s+fueras\s+)?(administrador|coordinacion|coordinador|root)|"
-    r"(contenido|muestra|lee|abre|descarga)\w*\s+.{0,20}(permisos\s*csv|alumnos\s*sinteticos|archivo\s+restringido|"
+    r"(contenido|muestra|lee|abre|descarga)\w*\s+.{0,20}(permisos\s*csv|usuarios\s*csv|alumnos\s*sinteticos|archivo\s+restringido|"
     r"base\s+restringida)|eres\s+ahora|a\s+partir\s+de\s+ahora\s+eres|desactiva\w*\s+.{0,15}(filtros|seguridad)")
 _DNI = re.compile(r"\b\d{8}\b")
 _TARJETA = re.compile(r"\b(?:\d[ -]?){13,19}\b")
@@ -65,7 +65,8 @@ _POLITICA = re.compile(r"\b(si me|cuando me|asegurad\w*|asegura|garantiz\w*|que 
 _GRACIAS = {"gracias", "chau", "adios", "hasta luego", "nos vemos", "ok gracias", "muchas gracias"}
 
 AVISO_PRIVACIDAD = (
-    "🔒 *Aviso de privacidad:* soy un prototipo académico. No compartas DNI, tarjetas ni contraseñas. "
+    "🔒 *Aviso de privacidad:* soy un prototipo académico. No compartas DNI, tarjetas ni contraseñas personales "
+    "(solo el personal ingresa su clave del asistente al iniciar sesión). "
     "Las consultas se registran solo con fecha, perfil, tipo y fuente (sin guardar tu conversación). "
     "Para tus derechos sobre datos personales (Ley N.º 29733) escribe a datos@mali.pe.")
 
@@ -74,18 +75,32 @@ def presentacion() -> str:
     if not acceso.autenticado():
         return (
             "¡Hola! Soy **MALI Asistente** 🎨, un prototipo académico de chatbot con IA para orientar a la comunidad "
-            "educativa del Museo de Arte de Lima.\n\n"
-            "🔐 Antes de atenderte necesito verificar tu perfil con tu **cuenta institucional**. Escribe "
-            "«iniciar sesión <usuario>». Cuentas de prueba del prototipo:\n"
-            f"{acceso.cuentas_de_prueba()}\n\n{AVISO_PRIVACIDAD}")
+            "educativa del Museo de Arte de Lima. Puedo ayudarte a:\n"
+            "- Resolver dudas sobre cursos, talleres, sedes, procedimientos y canales de atención (con la fuente).\n"
+            "- Ver los horarios y vacantes de los cursos.\n"
+            "- Inscribirte en un curso (pre-inscripción y código de pago de demostración).\n\n"
+            "Si eres **personal del MALI**, escribe «iniciar sesión <usuario>» para acceder a las opciones de tu perfil.\n\n"
+            f"{AVISO_PRIVACIDAD}\n\n¿En qué te puedo ayudar?")
     return (
         f"¡Hola, {acceso.sesion['usuario']}! Soy **MALI Asistente** 🎨. {acceso.describir_sesion()}\n\n"
         "Respondo con la fuente de cada dato y, si no tengo la información, te derivo al canal oficial.\n\n"
         f"{AVISO_PRIVACIDAD}\n\n¿En qué te puedo ayudar?")
 
 
-PIDE_SESION = ("🔐 Para atender tu consulta primero necesito verificar tu perfil. Inicia sesión con tu cuenta "
-               "institucional escribiendo «iniciar sesión <usuario>» (por ejemplo «iniciar sesión estudiante01»).")
+_MENSAJES_SENSIBLES: set[str] = set()     # huellas de mensajes con contraseña (para ocultarlos al modelo)
+
+
+def registrar_mensaje_sensible(texto: str) -> None:
+    import hashlib
+    _MENSAJES_SENSIBLES.add(hashlib.sha256(texto.strip().encode("utf-8")).hexdigest())
+
+
+def ocultar_si_sensible(texto: str) -> str:
+    """Si el mensaje tenía una contraseña, devuelve una versión sin ella (para el historial que ve el modelo)."""
+    import hashlib
+    if hashlib.sha256(texto.strip().encode("utf-8")).hexdigest() in _MENSAJES_SENSIBLES:
+        return "[mensaje de inicio de sesión oculto]"
+    return texto
 
 
 def _denegado(tipo: str, que: str) -> "Respuesta":
@@ -107,11 +122,20 @@ def _datos_sensibles(texto: str) -> tuple[str, list[str]]:
     return texto.strip(), hallados
 
 
+_LOGIN = re.compile(r"(?:iniciar|inicia|inicio|abrir)\s+sesi[oó]n(?:\s+como)?\s+([\w.-]+)"
+                    r"(?:\s+(?:con\s+)?(?:clave|contrase[nñ]a|password)?\s*:?\s*(\S+))?|\blogin\s+([\w.-]+)(?:\s+(\S+))?",
+                    re.I)
+
+
+def es_login(texto: str) -> bool:
+    return bool(_LOGIN.search(texto))
+
+
 def _comando_sesion(texto: str) -> str | None:
     n = v._normalizar(texto)
-    m = re.search(r"(iniciar|inicia|inicio|abrir)\s+sesion(\s+como)?\s+([a-z0-9_.-]+)|\blogin\s+([a-z0-9_.-]+)", n)
+    m = _LOGIN.search(texto)
     if m:
-        return acceso.iniciar_sesion(m.group(3) or m.group(4))
+        return acceso.iniciar_sesion(m.group(1) or m.group(3), m.group(2) or m.group(4))
     if re.search(r"(cerrar|cierra|salir de( la)?)\s+sesion|\blogout\b", n):
         return acceso.cerrar_sesion()
     if re.search(r"(que|cual)\s+(es\s+)?mi\s+perfil|\bmi perfil\b|que perfil tengo|con que (cuenta|perfil) estoy|"
@@ -161,6 +185,16 @@ def _ficha_curso(curso: str) -> Respuesta:
 # ------------------------------------------------------------------ orquestación
 def _decidir(pregunta: str) -> Respuesta:
     texto = pregunta.strip()
+    if acceso.pendiente:                 # el mensaje es la contraseña del usuario que inició sesión
+        usuario = acceso.pendiente["usuario"]
+        if v._normalizar(texto).strip() in ("cancelar", "salir"):
+            acceso.pendiente.clear()
+            return Respuesta("sesion", "Inicio de sesión cancelado.")
+        registrar_mensaje_sensible(texto)
+        return Respuesta("sesion", acceso.iniciar_sesion(usuario, texto), fuentes=["usuarios.csv"])
+    if es_login(texto):                  # antes de los filtros: la contraseña no es un dato a descartar
+        registrar_mensaje_sensible(texto)
+        return Respuesta("sesion", _comando_sesion(texto), fuentes=["usuarios.csv"])
     if es_inyeccion(texto):
         acceso.registrar("intento_inyeccion", "-", "bloqueado")
         return Respuesta("inyeccion", "No puedo compartir mis instrucciones internas, cambiar mis reglas ni mostrar "
@@ -181,20 +215,13 @@ def _decidir(pregunta: str) -> Respuesta:
 
     cmd = _comando_sesion(texto)
     if cmd:
-        return Respuesta("sesion", cmd, fuentes=["permisos.csv"])
-
-    # Autenticación y perfil: nadie consulta sin identificarse
-    if not acceso.autenticado():
-        if matricula.es_saludo(texto):
-            return Respuesta("saludo", presentacion())
-        acceso.registrar("consulta_sin_sesion", "-", "denegado")
-        return Respuesta("sin_sesion", PIDE_SESION)
+        return Respuesta("sesion", cmd, fuentes=["usuarios.csv"])
 
     norm0 = v._normalizar(texto)
     if re.search(r"registro de consultas|\bauditoria\b|ver (el )?registro", norm0):
         return Respuesta("administracion", acceso.ver_registro(), fuentes=["consultas.csv"])
     if re.search(r"(ver|revisar|lista\w*) (los )?permisos|quien(es)? tiene(n)? acceso", norm0):
-        return Respuesta("administracion", acceso.ver_permisos(), fuentes=["permisos.csv"])
+        return Respuesta("administracion", acceso.ver_permisos(), fuentes=["usuarios.csv"])
     m = re.search(r"(actualiza\w*|cambia\w*|modifica\w*)\s+(las\s+)?vacantes\s+(de(l)?\s+)?(h\s?\d{1,2})\s+(a\s+)?(\d{1,3})", norm0)
     if m:
         codigo = "H{:02d}".format(int(re.sub(r"\D", "", m.group(5))))
